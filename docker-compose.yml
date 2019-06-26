@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  website:
+    build: .
+    links:
+      - db
+    env_file:
+      - '.env'
+    ports:
+      - '8000:5000'
+    volumes:
+      - './app:/home/App/app'
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "32000:3306"
+    environment:
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_USER: javi-anton
+        MYSQL_PASSWORD: Janyu97
+        MYSQL_DATABASE: tfg_db
