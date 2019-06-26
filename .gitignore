@@ -102,3 +102,6 @@ celerybeat-schedule
 
 # mypy
 .mypy_cache/
+
+#Old README
+README.md.old
