@@ -5,7 +5,7 @@ from flask_security.utils import encrypt_password
 import flask_admin
 from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
-from flask_admin import BaseView, expose
+from flask_admin import BaseView, expose, Admin
 from flask_security import Security, SQLAlchemyUserDatastore, \
     UserMixin, RoleMixin, login_required, current_user
 
@@ -13,6 +13,7 @@ from flask_security import Security, SQLAlchemyUserDatastore, \
 
 # Create customized model view class
 class MyModelView(sqla.ModelView):
+    
     def is_accessible(self):
         if not current_user.is_active or not current_user.is_authenticated:
             return False
@@ -56,6 +57,12 @@ class CustomView(BaseView):
     def index(self):
         return self.render('admin/custom_index.html')
 
+#Vista para hacer que la pagina root sea la de admin/index.html
+class MyView(BaseView):
+    def __init__(self, *args, **kwargs):
+        self._default_view = True
+        super(MyView, self).__init__(*args, **kwargs)
+        self.admin = Admin()
 
 
 # @security.context_processor

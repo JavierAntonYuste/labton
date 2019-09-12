@@ -15,15 +15,15 @@
 
   {% block head_css %}
   <!-- Bootstrap 3.3.6 -->
-  <link href="{{url_for('static',filename='css/bootstrap.min.css')}}" rel="stylesheet"></link>
+  <link href="{{url_for('static',filename='css/bootstrap.css')}}" rel="stylesheet"></link>
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <!-- Ionicons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
   <!-- Theme style -->
-  <link href="{{url_for('static',filename='css/AdminLTE.min.css')}}" rel="stylesheet"></link>
+  <link href="{{url_for('static',filename='css/AdminLTE.css')}}" rel="stylesheet"></link>
   <!-- AdminLTE Skins. Choose a skin from the css/skins folder instead of downloading all of them to reduce the load. -->
-  <link href="{{url_for('static',filename='css/skins/_all-skins.min.css')}}" rel="stylesheet"></link>
+  <link href="{{url_for('static',filename='css/skins/_all-skins.css')}}" rel="stylesheet"></link>
   <!-- iCheck -->
   <link href="{{url_for('static',filename='plugins/iCheck/flat/blue.css')}}" rel="stylesheet"></link>
   <!-- Morris chart -->
@@ -161,7 +161,6 @@
              {{ current_user.email }}
              {%- endif %}
            </p>
-           <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
          </div>
        </div>
        <!-- search form -->

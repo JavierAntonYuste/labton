@@ -13,10 +13,8 @@ from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
 from flask_admin import BaseView, expose
 
-
 from sqlalchemy import create_engine
 from sqlalchemy.event import listens_for, listen
-from sqlalchemy.event import listen
 from sqlalchemy.orm import sessionmaker
 
 from instance import config
@@ -62,9 +60,12 @@ def create_app(config_name):
     login_manager.login_message = 'You must be logged in to access this page'
     login_manager.login_view = 'auth.login' #Cambiar cuando se haga la pantalla de login
 
+
+
     # Rutas
     @app.route('/')
     def root_directory():
+        # return views.MyView().render('admin/index.html') ## Si se borra, borrar tambien MyView de views.py
         # return render_template('security/login_user.html')
         return render_template('index.html')
 
@@ -87,6 +88,8 @@ def create_app(config_name):
     admin.add_view(views.UserView(models.User, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Users"))
     admin.add_view(views.CustomView(name="Custom view", endpoint='custom', menu_icon_type='fa', menu_icon_value='fa-connectdevelop',))
 
+
+
     # define a context processor for merging flask-admin's template context into the
     # flask-security views.
     @security.context_processor
@@ -98,11 +101,6 @@ def create_app(config_name):
             get_url=url_for
         )
 
-    @app.route('/hello/')
-    @app.route('/hello/<name>')
-    def hello(name=None):
-        return render_template('index.html', name=name)
-
     migrate = Migrate(app,db)
 
     return app
@@ -110,16 +108,6 @@ def create_app(config_name):
 def init_system():
     global app
     with app.app_context():
-
-        # if not engine.dialect.has_table(engine, 'profesores'):
-        #     return
-        # else:
-        #     if (models.Profesor.query.filter_by(name='root').first()==None):
-        #         me = models.Profesor('root', 'noMail')
-        #         me.set_password('root')
-        #
-        #         db.session.add(me)
-        #         db.session.commit()
 
         if not engine.dialect.has_table(engine, 'role'):
           return

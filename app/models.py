@@ -36,7 +36,6 @@ class Profesor (db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-# Define models
 roles_users = db.Table(
     'roles_users',
     db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),

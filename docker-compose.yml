@@ -17,7 +17,7 @@ services:
     ports:
       - "32000:3306"
     environment:
-        MYSQL_ROOT_PASSWORD: root
+        # MYSQL_ROOT_PASSWORD: root
         MYSQL_USER: javi-anton
         MYSQL_PASSWORD: Janyu97
         MYSQL_DATABASE: tfg_db
