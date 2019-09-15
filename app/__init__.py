@@ -21,7 +21,9 @@ from instance import config
 
 from config import app_config
 from app import views
+from app import CustomLoginForm
 
+from wtforms import Form, TextField, PasswordField, validators
 
 
 db = SQLAlchemy()
@@ -46,7 +48,7 @@ def create_app(config_name):
     # Setup Flask-Security
     global user_datastore
     user_datastore = SQLAlchemyUserDatastore(db, models.User, models.Role)
-    security = Security(app, user_datastore)
+    security = Security(app, user_datastore, login_form=CustomLoginForm.CustomLoginForm)
 
 
     db.init_app(app)
