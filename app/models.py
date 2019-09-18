@@ -11,9 +11,7 @@ from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
 from flask_admin import BaseView, expose
 
-
-from app import db, login_manager
-
+from app import db
 
 class Profesor (db.Model):
     """

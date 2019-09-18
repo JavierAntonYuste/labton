@@ -21,7 +21,6 @@ from instance import config
 
 from config import app_config
 from app import views
-from app import CustomLoginForm
 
 from wtforms import Form, TextField, PasswordField, validators
 
@@ -31,6 +30,8 @@ engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
 Session = sessionmaker(bind=engine)
 session = Session()
 
+## CustomLoginForm depende de la base de datos, por eso se importa despues de crearla
+from app import CustomLoginForm
 
 login_manager = LoginManager()
 
@@ -130,5 +131,31 @@ def init_system():
                     password=encrypt_password('admin'),
                     roles=[user_role, super_user_role]
                 )
+
+            db.session.commit()
+
+    def addUser(email, password):
+        global app
+        with app.app_context():
+
+            user_role = models.Role(name='user')
+            super_user_role = models.Role(name='superuser')
+
+            if (models.User.query.filter_by(email=email).first()==None):
+                global user_datastore
+                if not password == None:
+                    test_user = user_datastore.create_user(
+                        first_name=email.split('@')[0],
+                        email=email,
+                        password=encrypt_password(password),
+                        roles=[user_role]
+                    )
+                else:
+                    test_user = user_datastore.create_user(
+                        first_name=email.split('@')[0],
+                        email=email,
+                        password=encrypt_password(password),
+                        roles=[user_role]
+                    )
 
             db.session.commit()
