@@ -3,27 +3,19 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 
-from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, \
-    UserMixin, RoleMixin, login_required, current_user
+from flask_security import Security, SQLAlchemyUserDatastore
 
 from flask_security.utils import encrypt_password
 import flask_admin
-from flask_admin.contrib import sqla
+# from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
-from flask_admin import BaseView, expose
 
 from sqlalchemy import create_engine
-from sqlalchemy.event import listens_for, listen
 from sqlalchemy.orm import sessionmaker
 
 from instance import config
 
-from config import app_config
 from app import views
-
-from wtforms import Form, TextField, PasswordField, validators
-
 
 db = SQLAlchemy()
 engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
@@ -40,7 +32,6 @@ def create_app(config_name):
     global app
     app = Flask(__name__, instance_relative_config=True)
 
-    #app.config.from_object(app_config[config_name])
     app.config.from_pyfile('config.py')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -117,6 +108,7 @@ def init_system():
         else:
             user_role = models.Role(name='user')
             super_user_role = models.Role(name='superuser')
+
             if (models.Role.query.filter_by(name='user').first()==None):
                 db.session.add(user_role)
             if (models.Role.query.filter_by(name='superuser').first()==None):
@@ -131,31 +123,5 @@ def init_system():
                     password=encrypt_password('admin'),
                     roles=[user_role, super_user_role]
                 )
-
-            db.session.commit()
-
-    def addUser(email, password):
-        global app
-        with app.app_context():
-
-            user_role = models.Role(name='user')
-            super_user_role = models.Role(name='superuser')
-
-            if (models.User.query.filter_by(email=email).first()==None):
-                global user_datastore
-                if not password == None:
-                    test_user = user_datastore.create_user(
-                        first_name=email.split('@')[0],
-                        email=email,
-                        password=encrypt_password(password),
-                        roles=[user_role]
-                    )
-                else:
-                    test_user = user_datastore.create_user(
-                        first_name=email.split('@')[0],
-                        email=email,
-                        password=encrypt_password(password),
-                        roles=[user_role]
-                    )
 
             db.session.commit()
