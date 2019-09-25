@@ -13,7 +13,7 @@ from flask_security import Security, SQLAlchemyUserDatastore, \
 
 # Create customized model view class
 class MyModelView(sqla.ModelView):
-    
+
     def is_accessible(self):
         if not current_user.is_active or not current_user.is_authenticated:
             return False

@@ -22,8 +22,8 @@ engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-## CustomLoginForm depende de la base de datos, por eso se importa despues de crearla
-from app import CustomLoginForm
+## IMAPLoginForm depende de la base de datos, por eso se importa despues de crearla
+from app import IMAPLoginForm
 
 login_manager = LoginManager()
 
@@ -40,7 +40,7 @@ def create_app(config_name):
     # Setup Flask-Security
     global user_datastore
     user_datastore = SQLAlchemyUserDatastore(db, models.User, models.Role)
-    security = Security(app, user_datastore, login_form=CustomLoginForm.CustomLoginForm)
+    security = Security(app, user_datastore, login_form=IMAPLoginForm.IMAPLoginForm)
 
 
     db.init_app(app)
@@ -65,8 +65,18 @@ def create_app(config_name):
 
     @app.route('/admin')
     def admin():
-
         return render_template('admin.html')
+
+    @app.route('/test')
+    def test():
+        with app.app_context():
+            roles=models.Role.query.filter_by(name="superuser").all()
+            id=(o.id for o in roles)
+            print (next(id))
+
+        return render_template('index.html')
+
+
 
 
     # Create admin
@@ -116,12 +126,16 @@ def init_system():
 
 
             if (models.User.query.filter_by(email='admin').first()==None):
-                global user_datastore
-                test_user = user_datastore.create_user(
-                    first_name='Admin',
-                    email='admin',
-                    password=encrypt_password('admin'),
-                    roles=[user_role, super_user_role]
-                )
+                superuser_id=models.Role.query.filter_by(name="superuser").all()
+                id=(o.id for o in superuser_id)
+
+                if (session.query(models.roles_users).filter(models.roles_users.c.role_id==next(id)).first()==None):
+                    global user_datastore
+                    test_user = user_datastore.create_user(
+                        first_name='Admin',
+                        email='admin',
+                        password=encrypt_password('admin'),
+                        roles=[user_role, super_user_role]
+                    )
 
             db.session.commit()
