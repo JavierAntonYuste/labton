@@ -34,11 +34,15 @@ class IMAPLoginForm(LoginForm):
 
 
         ## Seleccion del servidor IMAP
-        ##TODO devolver error si no es ninguno de los dos
         def mail_server(server):
-            return appconfig.IMAP_servers.get(server, "correo.upm.es")
+            return appconfig.IMAP_servers.get(server)
 
         IMAP_server = mail_server(server)
+
+        if (IMAP_server==None):
+            response= False
+            super(IMAPLoginForm, self).validate()
+            return response
 
         imap = imaplib.IMAP4_SSL(IMAP_server, port=993)
 
