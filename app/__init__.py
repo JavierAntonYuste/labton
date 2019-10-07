@@ -3,8 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 
-from flask_security import Security, SQLAlchemyUserDatastore
+from flask_user import UserManager
 
+from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security.utils import encrypt_password
 import flask_admin
 # from flask_admin.contrib import sqla
@@ -24,9 +25,7 @@ session = Session()
 
 ## IMAPLoginForm depende de la base de datos, por eso se importa despues de crearla
 from app import IMAPLoginForm
-
 login_manager = LoginManager()
-
 
 def create_app(config_name):
     global app
@@ -41,7 +40,7 @@ def create_app(config_name):
     global user_datastore
     user_datastore = SQLAlchemyUserDatastore(db, models.User, models.Role)
     security = Security(app, user_datastore, login_form=IMAPLoginForm.IMAPLoginForm)
-
+    # user_manager = UserManager(app, db, models.User)
 
     db.init_app(app)
     init_system()
@@ -56,7 +55,17 @@ def create_app(config_name):
 
 
 
-    # Rutas
+    # # ErrorHandlers
+    # @app.errorhandler(404)
+    # def internal_error(error):
+    #     return render_template('404.html'), 404
+    #
+    # @app.errorhandler(500)
+    # def internal_error(error):
+    #     db.session.rollback()
+    #     return render_template('500.html'), 500
+
+    # Routes
     @app.route('/')
     def root_directory():
         # return views.MyView().render('admin/index.html') ## Si se borra, borrar tambien MyView de views.py
@@ -65,6 +74,7 @@ def create_app(config_name):
 
     @app.route('/admin')
     def admin():
+
         return render_template('admin.html')
 
     @app.route('/test')
@@ -77,8 +87,6 @@ def create_app(config_name):
         return render_template('index.html')
 
 
-
-
     # Create admin
     admin = flask_admin.Admin(
         app,
@@ -88,9 +96,12 @@ def create_app(config_name):
     )
 
     # Add model views
-    admin.add_view(views.MyModelView(models.Role, db.session, menu_icon_type='fa', menu_icon_value='fa-server', name="Roles"))
-    admin.add_view(views.UserView(models.User, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Users"))
-    admin.add_view(views.CustomView(name="Custom view", endpoint='custom', menu_icon_type='fa', menu_icon_value='fa-connectdevelop',))
+    admin.add_view(views.MyModelView(models.Role, db.session, menu_icon_type='fa', menu_icon_value='fa-server', name="Roles", url='/roles'))
+    admin.add_view(views.UserView(models.User, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Users", url = '/user'))
+    admin.add_view(views.CustomView(name="Custom view", endpoint='custom', menu_icon_type='fa', menu_icon_value='fa-connectdevelop',url='/custom'))
+    # admin.add_view(views.MyTestView(models.Profesor, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Profesor"))
+    # admin.add_view(views.CustomView(name="Hola", menu_icon_type='fa', menu_icon_value='fa-connectdevelop',))
+    admin.add_view(views.ProfessorView(models.Profesor, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Profesor", url = '/profesor', ))
 
 
 

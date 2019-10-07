@@ -28,10 +28,8 @@ class IMAPLoginForm(LoginForm):
             super(IMAPLoginForm, self).validate()
             return response
 
-        user=(email.split('@'))[0]
-        server= (email.split('@'))[1]
-
-
+        ## TODO verificar que email.split tiene dos posiciones
+        user,server=(email.split('@'))
 
         ## Seleccion del servidor IMAP
         def mail_server(server):

@@ -6,10 +6,6 @@ from flask_security import Security, SQLAlchemyUserDatastore, \
     UserMixin, RoleMixin, login_required, current_user
 
 from flask_security.utils import encrypt_password
-import flask_admin
-from flask_admin.contrib import sqla
-from flask_admin import helpers as admin_helpers
-from flask_admin import BaseView, expose
 
 from app import db
 

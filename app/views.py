@@ -1,6 +1,7 @@
 # from flask_appbuilder import ModelView
 # from flask_appbuilder.models.sqla.interface import SQLAInterface
-
+import os
+from flask import abort
 from flask_security.utils import encrypt_password
 import flask_admin
 from flask_admin.contrib import sqla
@@ -9,14 +10,13 @@ from flask_admin import BaseView, expose, Admin
 from flask_security import Security, SQLAlchemyUserDatastore, \
     UserMixin, RoleMixin, login_required, current_user
 
-
-
 # Create customized model view class
 class MyModelView(sqla.ModelView):
 
     def is_accessible(self):
         if not current_user.is_active or not current_user.is_authenticated:
             return False
+
 
         if current_user.has_role('superuser'):
             return True
@@ -54,11 +54,46 @@ class UserView(MyModelView):
 
 class CustomView(BaseView):
     @expose('/')
+    # @roles_required('user')
     def index(self):
         return self.render('admin/custom_index.html')
 
+
+# Create customized model view class
+class MyTestView(sqla.ModelView):
+    def is_accessible(self):
+        if not current_user.is_active or not current_user.is_authenticated:
+            return False
+
+        if current_user.has_role('user'):
+            return True
+
+        return False
+
+    def _handle_view(self, name, **kwargs):
+        """
+        Override builtin _handle_view in order to redirect users when a view is not accessible.
+        """
+        if not self.is_accessible():
+            if current_user.is_authenticated:
+                # permission denied
+                abort(403)
+            else:
+                # login
+                return redirect('security/login_user.html', next=request.url)
+
+class ProfessorView(MyTestView):
+    @expose('/')
+        # @roles_required('user')
+    def index(self):
+        super(ProfessorView, self).index()
+        return self.render('admin/custom_index.html')
+
+
+
 #Vista para hacer que la pagina root sea la de admin/index.html
 class MyView(BaseView):
+
     def __init__(self, *args, **kwargs):
         self._default_view = True
         super(MyView, self).__init__(*args, **kwargs)
