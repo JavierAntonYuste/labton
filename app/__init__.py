@@ -23,6 +23,7 @@ engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
 Session = sessionmaker(bind=engine)
 session = Session()
 
+
 ## IMAPLoginForm depende de la base de datos, por eso se importa despues de crearla
 from app import IMAPLoginForm
 login_manager = LoginManager()
