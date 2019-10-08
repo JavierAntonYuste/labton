@@ -19,3 +19,4 @@ Werkzeug==0.14.1
 Flask-Admin
 Flask-Security>=1.7.5
 enum34==1.1.6
+Flask-SSLify == 0.1.5

@@ -1,15 +1,10 @@
-from flask import Flask, url_for, redirect, render_template, request, abort
+from flask import Flask, url_for, redirect, render_template, request, abort, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 
-from flask_user import UserManager
-
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security.utils import encrypt_password
-import flask_admin
-# from flask_admin.contrib import sqla
-from flask_admin import helpers as admin_helpers
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -18,19 +13,26 @@ from instance import config
 
 from app import views
 
+from flask_sslify import SSLify
+
+from functools import wraps
+
+
+
 db = SQLAlchemy()
 engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
-Session = sessionmaker(bind=engine)
-session = Session()
+DB_Session = sessionmaker(bind=engine)
+db_session = DB_Session()
 
 
-## IMAPLoginForm depende de la base de datos, por eso se importa despues de crearla
-from app import IMAPLoginForm
+## IMAPLogin depende de la base de datos, por eso se importa despues de crearla
+from app import IMAPLogin
 login_manager = LoginManager()
 
 def create_app(config_name):
     global app
     app = Flask(__name__, instance_relative_config=True)
+    sslify = SSLify(app, subdomains=True)
 
     app.config.from_pyfile('config.py')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -40,44 +42,41 @@ def create_app(config_name):
     # Setup Flask-Security
     global user_datastore
     user_datastore = SQLAlchemyUserDatastore(db, models.User, models.Role)
-    security = Security(app, user_datastore, login_form=IMAPLoginForm.IMAPLoginForm)
-    # user_manager = UserManager(app, db, models.User)
+    # security = Security(app, user_datastore)
+    # security = Security(app, user_datastore, login_form=IMAPLoginForm.IMAPLoginForm) ##Para cuando se haga IMAPLoginForm
 
     db.init_app(app)
     init_system()
 
-    @login_manager.user_loader
-    def load_user(user_id):
-        return models.User.get(user_id)
-
-    login_manager.init_app(app)
-    login_manager.login_message = 'You must be logged in to access this page'
-    login_manager.login_view = 'auth.login' #Cambiar cuando se haga la pantalla de login
-
-
-
-    # # ErrorHandlers
-    # @app.errorhandler(404)
-    # def internal_error(error):
-    #     return render_template('404.html'), 404
+    # @login_manager.user_loader
+    # def load_user(user_id):
+    #     return models.User.get(user_id)
     #
-    # @app.errorhandler(500)
-    # def internal_error(error):
-    #     db.session.rollback()
-    #     return render_template('500.html'), 500
+    # login_manager.init_app(app)
+    # login_manager.login_message = 'You must be logged in to access this page'
+    # login_manager.login_view = 'auth.login' #Cambiar cuando se haga la pantalla de login
+
 
     # Routes
     @app.route('/')
     def root_directory():
-        # return views.MyView().render('admin/index.html') ## Si se borra, borrar tambien MyView de views.py
-        # return render_template('security/login_user.html')
         return render_template('index.html')
 
-    @app.route('/admin')
-    def admin():
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        error = None
+        if request.method == 'POST':
 
-        return render_template('admin.html')
+            response=IMAPLogin.IMAPLogin(request.form['email'], request.form['password'])
+            if (response==False):
+                error = 'Invalid Credentials. Please try again.'
+            else:
+                session['logged_in'] = True
+                return redirect('/')
 
+        return render_template('login.html', error=error)
+
+    @login_required
     @app.route('/test')
     def test():
         with app.app_context():
@@ -88,38 +87,33 @@ def create_app(config_name):
         return render_template('index.html')
 
 
-    # Create admin
-    admin = flask_admin.Admin(
-        app,
-        'My Dashboard',
-        base_template='my_master.html',
-        template_mode='bootstrap3',
-    )
-
-    # Add model views
-    admin.add_view(views.MyModelView(models.Role, db.session, menu_icon_type='fa', menu_icon_value='fa-server', name="Roles", url='/roles'))
-    admin.add_view(views.UserView(models.User, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Users", url = '/user'))
-    admin.add_view(views.CustomView(name="Custom view", endpoint='custom', menu_icon_type='fa', menu_icon_value='fa-connectdevelop',url='/custom'))
-    # admin.add_view(views.MyTestView(models.Profesor, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Profesor"))
-    # admin.add_view(views.CustomView(name="Hola", menu_icon_type='fa', menu_icon_value='fa-connectdevelop',))
-    admin.add_view(views.ProfessorView(models.Profesor, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Profesor", url = '/profesor', ))
-
-
-
     # define a context processor for merging flask-admin's template context into the
     # flask-security views.
-    @security.context_processor
-    def security_context_processor():
-        return dict(
-            admin_base_template=admin.base_template,
-            admin_view=admin.index_view,
-            h=admin_helpers,
-            get_url=url_for
-        )
+        # @security.context_processor
+        # def security_context_processor():
+        #     return dict(
+        #         admin_base_template=admin.base_template,
+        #         admin_view=admin.index_view,
+        #         h=admin_helpers,
+        #         get_url=url_for
+        #     )
 
     migrate = Migrate(app,db)
 
     return app
+
+
+## Decorators
+def login_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash("You need to login first")
+            return redirect("login")
+
+    return wrap
 
 def init_system():
     global app

@@ -1,0 +1,49 @@
+{% extends 'index.html' %}
+
+{% block nav %}
+  <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="/">Playlab</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+          </ul>
+        </div>
+      </div>
+    </nav>
+{% endblock nav %}
+
+{% block body %}
+
+		<div class="container-login100" style="background-image: url('static/img/bg-01.jpg');">
+			<div class="wrap-login100 p-l-55 p-r-55 p-t-80 p-b-30">
+
+		      <form class="login100-form validate-form" action="" method="POST">
+						<span class="login100-form-title p-b-37">
+							Sign In
+						</span>
+						<div class="wrap-input100 validate-input m-b-20" data-validate="Enter email">
+			        <input class="input100" type="text" placeholder="Email" name="email" value="{{request.form.username }}">
+							<span class="focus-input100"></span>
+						</div>
+						<div class="wrap-input100 validate-input m-b-25" data-validate = "Enter password">
+		         <input class="input100" type="password" placeholder="Password" name="password" value="{{request.form.password }}">
+						 <span class="focus-input100"></span>
+					 </div>
+					 	<div class="container-login100-form-btn">
+		        <input class="login100-form-btn" type="submit" value="Login">
+					</div>
+		      </form>
+		      {% if error %}
+		        <p class="error"><strong>Error:</strong> {{ error }}
+		      {% endif %}
+				</div>
+			</div>
+
+
+
+
+	{% endblock body %}
