@@ -59,7 +59,7 @@ header.masthead {
   overflow: hidden;
   padding-top: calc(7rem + 72px);
   padding-bottom: 7rem;
-  background: linear-gradient(0deg, #00b8ff 0%, #ee0979 100%);
+  background: linear-gradient(0deg, #FFFF00 0%, #32CD32 100%);
   background-repeat: no-repeat;
   background-position: center center;
   background-attachment: scroll;
@@ -83,7 +83,7 @@ header.masthead .bg-circle {
   z-index: 0;
   position: absolute;
   border-radius: 100%;
-  background: linear-gradient(0deg, #ee0979 0%, #ff6a00 100%);
+  background: linear-gradient(0deg, #32CD32 0%, #008000 100%);
 }
 
 header.masthead .bg-circle-1 {
@@ -137,8 +137,8 @@ header.masthead .bg-circle-4 {
 }
 
 .btn-primary:active, .btn-primary:focus, .btn-primary:hover {
-  background-color: #bd0760 !important;
-  border-color: #bd0760 !important;
+  background-color: #228B22 !important;
+  border-color: #228B22 !important;
 }
 
 .btn-primary:focus {

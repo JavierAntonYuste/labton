@@ -7,30 +7,30 @@
 
 @font-face {
   font-family: SourceSansPro-Regular;
-  src: url('../fonts/source-sans-pro/SourceSansPro-Regular.ttf'); 
+  src: url('../fonts/source-sans-pro/SourceSansPro-Regular.ttf');
 }
 
 @font-face {
   font-family: SourceSansPro-Bold;
-  src: url('../fonts/source-sans-pro/SourceSansPro-Bold.ttf'); 
+  src: url('../fonts/source-sans-pro/SourceSansPro-Bold.ttf');
 }
 
 @font-face {
   font-family: SourceSansPro-SemiBold;
-  src: url('../fonts/source-sans-pro/SourceSansPro-SemiBold.ttf'); 
+  src: url('../fonts/source-sans-pro/SourceSansPro-SemiBold.ttf');
 }
 
 @font-face {
   font-family: JosefinSans-Bold;
-  src: url('../fonts/JosefinSans/JosefinSans-Bold.ttf'); 
+  src: url('../fonts/JosefinSans/JosefinSans-Bold.ttf');
 }
 
 /*//////////////////////////////////////////////////////////////////
 [ RESTYLE TAG ]*/
 
 * {
-	margin: 0px; 
-	padding: 0px; 
+	margin: 0px;
+	padding: 0px;
 	box-sizing: border-box;
 }
 
@@ -147,7 +147,7 @@ iframe {
 [ login ]*/
 
 .container-login100 {
-  width: 100%;  
+  width: 100%;
   min-height: 100vh;
   display: -webkit-box;
   display: -webkit-flex;
@@ -175,10 +175,10 @@ iframe {
   top: 0;
   left: 0;
   background: rgba(93,84,240,0.5);
-  background: -webkit-linear-gradient(left, rgba(0,168,255,0.5), rgba(185,0,255,0.5));
-  background: -o-linear-gradient(left, rgba(0,168,255,0.5), rgba(185,0,255,0.5));
-  background: -moz-linear-gradient(left, rgba(0,168,255,0.5), rgba(185,0,255,0.5));
-  background: linear-gradient(left, rgba(0,168,255,0.5), rgba(185,0,255,0.5));
+  background: -webkit-linear-gradient(-30deg, rgba(255,255,0,0.85), rgba(0,100,0,0.85));
+  background: -o-linear-gradient(-30deg, rgba(255,255,0,0.85), rgba(0,100,0,0.85));
+  background: -moz-linear-gradient(-30deg, rgba(255,255,0,0.85), rgba(0,100,0,0.85));
+  background: linear-gradient(-30deg, rgba(255,255,0,0.85), rgba(0,100,0,0.85));
   pointer-events: none;
 }
 
@@ -207,7 +207,7 @@ iframe {
   display: block;
   font-family: SourceSansPro-Bold;
   font-size: 30px;
-  color: #4b2354;
+  color: #006400;
   line-height: 1.2;
   text-align: center;
 }
@@ -222,10 +222,11 @@ iframe {
   border-radius: 20px;
 }
 
+
 .input100 {
   font-family: SourceSansPro-Bold;
   font-size: 16px;
-  color: #4b2354;
+  color: #006400;
   line-height: 1.2;
 
   display: block;
@@ -233,6 +234,10 @@ iframe {
   height: 62px;
   background: transparent;
   padding: 0 20px 0 23px;
+}
+
+.input100::placeholder{
+  color: rgba(0,100,0,0.4)
 }
 
 
@@ -292,7 +297,7 @@ iframe {
   padding: 0 20px;
   min-width: 160px;
   height: 50px;
-  background-color: #bd59d4;
+  background-color: #006400;
   border-radius: 25px;
 
   font-family: SourceSansPro-SemiBold;
@@ -306,20 +311,20 @@ iframe {
   -moz-transition: all 0.4s;
   transition: all 0.4s;
 
-  box-shadow: 0 10px 30px 0px rgba(189, 89, 212, 0.5);
-  -moz-box-shadow: 0 10px 30px 0px rgba(189, 89, 212, 0.5);
-  -webkit-box-shadow: 0 10px 30px 0px rgba(189, 89, 212, 0.5);
-  -o-box-shadow: 0 10px 30px 0px rgba(189, 89, 212, 0.5);
-  -ms-box-shadow: 0 10px 30px 0px rgba(189, 89, 212, 0.5);
+  box-shadow: 0 10px 30px 0px rgba(0, 100, 0, 0.5);
+  -moz-box-shadow: 0 10px 30px 0px rgba(0, 100, 0, 0.5);
+  -webkit-box-shadow: 0 10px 30px 0px rgba(0, 100, 0, 0.5);
+  -o-box-shadow: 0 10px 30px 0px rgba(0, 100, 0, 0.5);
+  -ms-box-shadow: 0 10px 30px 0px rgba(0, 100, 0, 0.5);
 }
 
 .login100-form-btn:hover {
-  background-color: #4b2354;
-  box-shadow: 0 10px 30px 0px rgba(189, 89, 212, 0.8);
-  -moz-box-shadow: 0 10px 30px 0px rgba(189, 89, 212, 0.8);
-  -webkit-box-shadow: 0 10px 30px 0px rgba(189, 89, 212, 0.8);
-  -o-box-shadow: 0 10px 30px 0px rgba(189, 89, 212, 0.8);
-  -ms-box-shadow: 0 10px 30px 0px rgba(189, 89, 212, 0.8);
+  background-color: #009900;
+  box-shadow: 0 10px 30px 0px rgba(0, 100, 0, 0.8);
+  -moz-box-shadow: 0 10px 30px 0px rgba(0, 100, 0, 0.8);
+  -webkit-box-shadow: 0 10px 30px 0px rgba(0, 100, 0, 0.8);
+  -o-box-shadow: 0 10px 30px 0px rgba(0, 100, 0, 0.8);
+  -ms-box-shadow: 0 10px 30px 0px rgba(0, 100, 0, 0.8);
 }
 
 
@@ -365,7 +370,7 @@ iframe {
 .btn-hide-validate {
   font-family: Material-Design-Iconic-Font;
   font-size: 15px;
-  color: #fa4251;
+  color:º;
   cursor: pointer;
   display: -webkit-box;
   display: -webkit-flex;

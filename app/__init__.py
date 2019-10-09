@@ -1,6 +1,8 @@
-from flask import Flask, url_for, redirect, render_template, request, abort, session
+from flask import Flask, url_for, redirect,  \
+render_template, request, abort, session, flash
+
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+# from flask_login import LoginManager
 from flask_migrate import Migrate
 
 from flask_security import Security, SQLAlchemyUserDatastore
@@ -11,12 +13,9 @@ from sqlalchemy.orm import sessionmaker
 
 from instance import config
 
-from app import views
-
 from flask_sslify import SSLify
 
-from functools import wraps
-
+from app import decorators
 
 
 db = SQLAlchemy()
@@ -27,7 +26,6 @@ db_session = DB_Session()
 
 ## IMAPLogin depende de la base de datos, por eso se importa despues de crearla
 from app import IMAPLogin
-login_manager = LoginManager()
 
 def create_app(config_name):
     global app
@@ -72,12 +70,26 @@ def create_app(config_name):
                 error = 'Invalid Credentials. Please try again.'
             else:
                 session['logged_in'] = True
-                return redirect('/')
+                return redirect('/home')
 
         return render_template('login.html', error=error)
 
-    @login_required
+    @app.route('/logout', methods=['GET', 'POST'])
+    def logout():
+        error = None
+        session.clear()
+        return render_template('index.html', error=error)
+
+
+    @app.route('/home')
+    @decorators.login_required
+    def home():
+        error = None
+        return render_template('home.html', error=error)
+
+
     @app.route('/test')
+    @decorators.login_required
     def test():
         with app.app_context():
             roles=models.Role.query.filter_by(name="superuser").all()
@@ -85,6 +97,8 @@ def create_app(config_name):
             print (next(id))
 
         return render_template('index.html')
+
+
 
 
     # define a context processor for merging flask-admin's template context into the
@@ -102,18 +116,6 @@ def create_app(config_name):
 
     return app
 
-
-## Decorators
-def login_required(f):
-    @wraps(f)
-    def wrap(*args, **kwargs):
-        if 'logged_in' in session:
-            return f(*args, **kwargs)
-        else:
-            flash("You need to login first")
-            return redirect("login")
-
-    return wrap
 
 def init_system():
     global app

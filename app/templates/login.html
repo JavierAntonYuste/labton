@@ -1,4 +1,4 @@
-{% extends 'index.html' %}
+{% extends 'base.html' %}
 
 {% block nav %}
   <!-- Navigation -->
@@ -20,7 +20,6 @@
 
 		<div class="container-login100" style="background-image: url('static/img/bg-01.jpg');">
 			<div class="wrap-login100 p-l-55 p-r-55 p-t-80 p-b-30">
-
 		      <form class="login100-form validate-form" action="" method="POST">
 						<span class="login100-form-title p-b-37">
 							Sign In
@@ -36,6 +35,7 @@
 					 	<div class="container-login100-form-btn">
 		        <input class="login100-form-btn" type="submit" value="Login">
 					</div>
+          <br>
 		      </form>
 		      {% if error %}
 		        <p class="error"><strong>Error:</strong> {{ error }}
