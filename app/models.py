@@ -9,26 +9,13 @@ from flask_security.utils import encrypt_password
 
 from app import db
 
-class Profesor (db.Model):
-    """
-    Crear una tabla de profesores
-    """
-    __tablename__= 'profesores'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email = db.Column(db.String(100), nullable=False, unique=True)
-    password_hash = db.Column(db.String(128))
-    name = db.Column(db.String(100), nullable=False)
-
-    def __init__(self, name, email):
-        self.email=email
-        self.name=name
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+users_subjects= roles_users = db.Table(
+    'users_subjects',
+    db.Column('subject_id', db.Integer(), db.ForeignKey('subjects.id')),
+    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+)
 
 roles_users = db.Table(
     'roles_users',
@@ -67,3 +54,23 @@ class User(db.Model, UserMixin):
 
     def get (user_id):
         return User.query.filter_by(id=user_id).first()
+
+
+class Subject(db.Model):
+    """
+    Create a table for subjects
+    """
+    __tablename__= 'subjects'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    acronym = db.Column(db.String(10), nullable=False)
+    name = db.Column(db.String (100), nullable = False)
+    year = db.Column(db.Integer, nullable = False)
+    description = db.Column(db.String(1000))
+    degree = db.Column(db.String(100), nullable=False)
+    users = db.relationship('User', secondary=users_subjects,
+                            backref=db.backref('subjects', lazy='dynamic'))
+
+    def __init__(self, id, name):
+        self.id=id
+        self.name=name

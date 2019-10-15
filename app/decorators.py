@@ -1,6 +1,9 @@
 from flask import Flask, redirect,  \
 render_template, request, abort, session, flash
 
+from flask import current_app, g
+from flask_login import current_user
+
 from functools import wraps
 
 
