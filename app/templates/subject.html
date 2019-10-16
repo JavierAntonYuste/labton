@@ -1,0 +1,15 @@
+{% extends 'home.html' %}
+
+<!-- No funcionan animaciones JS, ver por que -->
+{% block body%}
+
+<h1>
+  Hola, estás en <br>
+</h1>
+<h1>
+  {% for element in subject %}
+    {{element.name}}
+  {% endfor %}
+</h1>
+
+{% endblock body%}

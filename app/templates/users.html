@@ -7,7 +7,9 @@
   {% if messages %}
     <ul class=flashes>
     {% for message in messages %}
-      <li>{{ message }}</li>
+    <div class="alert alert-danger text-center">
+      <strong>Error!</strong> {{message}}
+    </div>
     {% endfor %}
     </ul>
   {% endif %}

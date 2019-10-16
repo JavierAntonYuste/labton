@@ -169,7 +169,9 @@
             {% if messages %}
               <ul class=flashes>
               {% for message in messages %}
-                <li>{{ message }}</li>
+              <div class="alert alert-danger text-center">
+                <strong>Error!</strong> {{message}}
+              </div>
               {% endfor %}
               </ul>
             {% endif %}
@@ -193,7 +195,7 @@
                     </span>
                     <span class="text"> {{element.name}}</span> -->
 
-                    <form action="/action_page.php" method="get" id="form1">
+                    <form action="" method="POST">
                       <input type="hidden" name="id" value="{{element.id }}">
                       <span class="icon text-white-50">
                         <i class="pr-2 fas fa-clipboard"></i>
@@ -204,6 +206,12 @@
                   </a>
                 </div>
               </div>
+              <!-- <form class="login100-form validate-form" action="/subject" method="POST">
+    					 	<div class="container-login100-form-btn">
+    		        <input class="login100-form-btn" type="submit" value="Login">
+    					  </div>
+              <br>
+    		      </form> -->
             {% endfor %}
           </div>
 

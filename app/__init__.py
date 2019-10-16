@@ -1,16 +1,16 @@
 from flask import Flask, url_for, redirect,  \
 render_template, request, abort, session, flash
 
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user
 from flask_migrate import Migrate
 
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security.utils import encrypt_password
 
-from sqlalchemy import *
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy import *
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
 
 from instance import config
 from functools import wraps
@@ -18,12 +18,13 @@ from functools import wraps
 from flask_sslify import SSLify
 import datetime
 
-from app import decorators
+from app import decorators, db_init
 
-db = SQLAlchemy()
-engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
-DB_Session = sessionmaker(bind=engine)
-db_session = DB_Session()
+# db = SQLAlchemy()
+# engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
+# DB_Session = sessionmaker(bind=engine)
+# db_session = DB_Session()
+
 
 ## IMAPLogin depende de la base de datos, por eso se importa despues de crearla
 from app import IMAPLogin
@@ -42,11 +43,11 @@ def create_app(config_name):
 
     # Setup Flask-Security
     global user_datastore
-    user_datastore = SQLAlchemyUserDatastore(db, models.User, models.Role)
+    user_datastore = SQLAlchemyUserDatastore(db_init.db, models.User, models.Role)
     # security = Security(app, user_datastore)
     # security = Security(app, user_datastore, login_form=IMAPLoginForm.IMAPLoginForm) ##Para cuando se haga IMAPLoginForm
 
-    db.init_app(app)
+    db_init.db.init_app(app)
     init_system()
 
     @login_manager.user_loader
@@ -91,7 +92,6 @@ def create_app(config_name):
     @app.route('/home')
     @decorators.login_required
     def home():
-        #TODO Introduce year check and pass names to html
         now = datetime.datetime.now()
         if  now.month<9:
             current_year=now.year-1
@@ -99,19 +99,34 @@ def create_app(config_name):
             current_year=now.year
 
         subjects = []
-        user_id=db_session.query(models.User.id).filter_by(first_name=session["user"]).all()
+        user_id=db_init.db_session.query(models.User.id).filter_by(first_name=session["user"]).all()
         for item in user_id:
-            subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==item.id).all()
+            subjects_id=db_init.db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==item.id).all()
             for id in subjects_id:
-                subjects.extend(db_session.query(models.Subject).filter_by(id=id,year=current_year).all())
+                subjects.extend(db_init.db_session.query(models.Subject).filter_by(id=id,year=current_year).all())
         error = None
         return render_template('home.html', error=error, user=session["user"], subjects= subjects)
 
+    @app.route('/subject', methods=['GET', 'POST'])
+    @decorators.login_required
+    @decorators.roles_required('user')
+    def subject():
+        subject=db_init.db_session.query(models.Subject).filter_by(id=1).all()
+        error = None
+        print("hola")
+        
+        if request.method == 'POST':
+            id=request.form['id']
+            subject=db_init.db_session.query(models.Subject).filter(models.Subject.c.id==id).all()
+            return render_template('subject.html', error=error, user=session["user"], subject= subject)
+        else:
+            return render_template('subject.html', error=error, user=session["user"], subject= subject)
+
+
     @app.route('/users')
     @decorators.login_required
-    @roles_required('superuser')
+    @decorators.roles_required('superuser')
     def users():
-
         error = None
         return render_template('users.html', error=error,user=session["user"])
 
@@ -139,7 +154,7 @@ def create_app(config_name):
         #         get_url=url_for
         #     )
 
-    migrate = Migrate(app,db)
+    migrate = Migrate(app,db_init.db)
 
     return app
 
@@ -148,16 +163,16 @@ def init_system():
     global app
     with app.app_context():
 
-        if not engine.dialect.has_table(engine, 'role'):
+        if not db_init.engine.dialect.has_table(db_init.engine, 'role'):
           return
         else:
             user_role = models.Role(name='user')
             super_user_role = models.Role(name='superuser')
 
             if (models.Role.query.filter_by(name='user').first()==None):
-                db.session.add(user_role)
+                db_init.db.session.add(user_role)
             if (models.Role.query.filter_by(name='superuser').first()==None):
-                db.session.add(super_user_role)
+                db_init.db.session.add(super_user_role)
 
 
             if (models.User.query.filter_by(email='admin').first()==None):
@@ -181,29 +196,4 @@ def init_system():
                 #         roles=[user_role, super_user_role]
                 #     )
 
-                db.session.commit()
-
-
-def roles_required(*role_name):
-    def wrapper(view_function):
-
-        @wraps(view_function)    # Tells debuggers that is is a function wrapper
-        def decorator(*args, **kwargs):
-
-            # User must have the required roles
-            ## TODO fixing decorator
-
-
-            role_id = db_session.query(models.Role.id).filter(models.Role.name==role_name)
-            user_id = db_session.query(models.User.id).filter(models.User.first_name==session["user"])
-
-            if ((db_session.query(models.roles_users).filter_by(role_id=role_id, user_id=user_id).all())==None):
-
-            # if (db_session.query(models.roles_users).filter(and_(models.roles_users.c.role_id==role_id, models.roles_users.c.user_id==user_id))==None):
-
-                flash("You don't have access to this page")
-                return redirect("home") ## redirect better to 403 forbidden
-
-            return view_function(*args, **kwargs)
-        return decorator
-    return wrapper
+                db_init.db.session.commit()
