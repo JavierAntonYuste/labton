@@ -1,20 +1,7 @@
 {% extends 'base.html' %}
 
-{% block nav %}
-  <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
-      <div class="container">
-        <a class="navbar-brand" href="/">LabTon</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarResponsive">
-          <ul class="navbar-nav ml-auto">
-          </ul>
-        </div>
-      </div>
-    </nav>
-{% endblock nav %}
+{% block sidebar%}
+{% endblock sidebar%}
 
 {% block body %}
 
@@ -31,7 +18,7 @@
             </ul>
           {% endif %}
         {% endwith %}
-        
+
 		      <form class="login100-form validate-form" action="" method="POST">
 						<span class="login100-form-title p-b-37">
 							Sign In

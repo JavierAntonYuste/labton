@@ -8,10 +8,6 @@ from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security.utils import encrypt_password
 
-# from sqlalchemy import *
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-
 from instance import config
 from functools import wraps
 
@@ -107,20 +103,18 @@ def create_app(config_name):
         error = None
         return render_template('home.html', error=error, user=session["user"], subjects= subjects)
 
-    @app.route('/subject', methods=['GET', 'POST'])
+    @app.route('/subject/<acronym>', methods=['GET', 'POST'])
     @decorators.login_required
     @decorators.roles_required('user')
-    def subject():
-        subject=db_init.db_session.query(models.Subject).filter_by(id=1).all()
-        error = None
-        print("hola")
-        
-        if request.method == 'POST':
-            id=request.form['id']
-            subject=db_init.db_session.query(models.Subject).filter(models.Subject.c.id==id).all()
-            return render_template('subject.html', error=error, user=session["user"], subject= subject)
+    def subject(acronym):
+        now = datetime.datetime.now()
+        if  now.month<9:
+            current_year=now.year-1
         else:
-            return render_template('subject.html', error=error, user=session["user"], subject= subject)
+            current_year=now.year
+        error = None
+        subject=db_init.db_session.query(models.Subject).filter_by(acronym=acronym).filter_by(year=current_year).all()
+        return render_template('subject.html', error=error, user=session["user"], subject= subject)
 
 
     @app.route('/users')
