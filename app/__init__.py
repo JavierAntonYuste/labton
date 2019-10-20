@@ -1,6 +1,8 @@
 from flask import Flask, url_for, redirect,  \
 render_template, request, abort, session, flash
 
+import csv, codecs
+
 # from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user
 from flask_migrate import Migrate
@@ -16,22 +18,20 @@ import datetime
 
 from app import decorators, db_init
 
-# db = SQLAlchemy()
-# engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
-# DB_Session = sessionmaker(bind=engine)
-# db_session = DB_Session()
-
-
 ## IMAPLogin depende de la base de datos, por eso se importa despues de crearla
 from app import IMAPLogin
 login_manager = LoginManager()
 
-
 def create_app(config_name):
+    """ Main method of the server """
+
     global app
+    # Creation of the app
     app = Flask(__name__, instance_relative_config=True)
+    # Forced encription for deploying SSL connection
     sslify = SSLify(app, subdomains=True)
 
+    # Chargin config
     app.config.from_pyfile('config.py')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -43,13 +43,16 @@ def create_app(config_name):
     # security = Security(app, user_datastore)
     # security = Security(app, user_datastore, login_form=IMAPLoginForm.IMAPLoginForm) ##Para cuando se haga IMAPLoginForm
 
+    # Initialisation of the app and the system
     db_init.db.init_app(app)
     init_system()
 
+    # Function of Flask-Login. User loader
     @login_manager.user_loader
     def load_user(email):
         return models.User.get(email)
 
+    # Initialisation of Flask-Login
     login_manager.init_app(app)
     login_manager.login_message = 'You must be logged in to access this page'
 
@@ -64,15 +67,22 @@ def create_app(config_name):
         error = None
         if request.method == 'POST':
 
+            #  IMAP Login attempt
             response=IMAPLogin.IMAPLogin(request.form['email'], request.form['password'])
+
+            # Charging the username (first part of the email) in the session
             session["user"]=(request.form['email'].split('@'))[0]
+
+            # If failed attempt, error
             if (response==False):
                 error = 'Invalid Credentials. Please try again.'
             else:
+                # Charging the email in an User object
                 user = models.User()
                 user.email = request.form['email']
                 login_user(user)
 
+                # Changing param of logged_in in session
                 session['logged_in'] = True
                 return redirect('/home')
 
@@ -81,41 +91,55 @@ def create_app(config_name):
     @app.route('/logout', methods=['GET', 'POST'])
     def logout():
         error = None
+        # Clearing everything charged in session (id, username, logged_in, etc)
         session.clear()
         return render_template('index.html', error=error)
-
 
     @app.route('/home')
     @decorators.login_required
     def home():
+        # Obtaining current year for showing the active subjects
+        # An academic year is being considered (from 1/sep until 31/aug)
         now = datetime.datetime.now()
         if  now.month<9:
             current_year=now.year-1
         else:
             current_year=now.year
 
+        # Querying database for taking the subjects that each user has access
         subjects = []
         user_id=db_init.db_session.query(models.User.id).filter_by(first_name=session["user"]).all()
         for item in user_id:
             subjects_id=db_init.db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==item.id).all()
             for id in subjects_id:
                 subjects.extend(db_init.db_session.query(models.Subject).filter_by(id=id,year=current_year).all())
-        error = None
-        return render_template('home.html', error=error, user=session["user"], subjects= subjects)
 
-    @app.route('/subject/<acronym>', methods=['GET', 'POST'])
+        return render_template('home.html', user=session["user"], subjects= subjects)
+
+    @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
     @decorators.roles_required('user')
-    def subject(acronym):
-        now = datetime.datetime.now()
-        if  now.month<9:
-            current_year=now.year-1
-        else:
-            current_year=now.year
+    def subject(id):
         error = None
-        subject=db_init.db_session.query(models.Subject).filter_by(acronym=acronym).filter_by(year=current_year).all()
+        subject=db_init.db_session.query(models.Subject).filter_by(id=id).all()
         return render_template('subject.html', error=error, user=session["user"], subject= subject)
 
+    @app.route('/uploadUsers', methods=['POST'])
+    def uploadUsers():
+        flask_file = request.files['file']
+        if not flask_file:
+            return 'Upload a CSV file'
+
+        data = []
+        stream = codecs.iterdecode(flask_file.stream, 'utf-8')
+        for row in csv.reader(stream, dialect=csv.excel):
+            if row:
+                data.append(row)
+
+        print (data)
+        print(" ")
+
+        return redirect('/home')
 
     @app.route('/users')
     @decorators.login_required
@@ -133,7 +157,6 @@ def create_app(config_name):
             print (next(id))
 
         return render_template('index.html')
-
 
 
 
@@ -157,25 +180,31 @@ def init_system():
     global app
     with app.app_context():
 
+        # Checking if table role exists, if not, return
         if not db_init.engine.dialect.has_table(db_init.engine, 'role'):
           return
         else:
+            # Adding different core roles
             user_role = models.Role(name='user')
-            super_user_role = models.Role(name='superuser')
+            professor_role = models.Role(name='professor')
+            admin_role = models.Role(name='admin')
 
             if (models.Role.query.filter_by(name='user').first()==None):
                 db_init.db.session.add(user_role)
+            if (models.Role.query.filter_by(name='professor').first()==None):
+                db_init.db.session.add(professor_role)
             if (models.Role.query.filter_by(name='superuser').first()==None):
                 db_init.db.session.add(super_user_role)
 
-
+            # Adding first user admin
+            # IMPORTANT: delete after transferring admin role for security reasons
             if (models.User.query.filter_by(email='admin').first()==None):
                 global user_datastore
                 test_user = user_datastore.create_user(
                     first_name='Admin',
                     email='admin',
                     password='admin',
-                    roles=[user_role, super_user_role]
+                    roles=[user_role, admin_role]
                 )
 
                 # superuser_id=models.Role.query.filter_by(name="superuser").all()

@@ -9,16 +9,6 @@ from flask_security.utils import encrypt_password
 
 from app import db_init
 
-# from flask_sqlalchemy import SQLAlchemy
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-# from instance import config
-# db = SQLAlchemy()
-# engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
-# DB_Session = sessionmaker(bind=engine)
-# db_session = DB_Session()
-
-
 users_subjects= roles_users = db_init.db.Table(
     'users_subjects',
     db_init.db.Column('subject_id', db_init.db.Integer(), db_init.db.ForeignKey('subjects.id')),
