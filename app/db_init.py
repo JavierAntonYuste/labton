@@ -9,7 +9,6 @@ from instance import config
 
 Created apart for not making interdependencies among several scripts.
 """
-## TODO see singleton, if that is necessary or not
 db = SQLAlchemy()
 engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
 DB_Session = sessionmaker(bind=engine)

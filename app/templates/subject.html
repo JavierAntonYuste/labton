@@ -78,9 +78,7 @@
       {% endwith %}
       <!-- Page Heading -->
       <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        {% for element in subject %}
-        <h1 class="h3 mb-0 text-gray-800">{{element.acronym}} {{element.year}}-{{element.year+1}}</h1>
-        {% endfor%}
+        <h1 class="h3 mb-0 text-gray-800">{{subject.acronym}} {{subject.year}}-{{subject.year+1}}</h1>
 
       <div class="col-4"
         <!-- Button trigger modal -->
@@ -108,9 +106,7 @@
                   <div class="col">
                     <form action="/uploadUsers" method="post" id="upload-form" enctype="multipart/form-data">
                         <input type="file" name="file" id="js-upload-files" >
-                        {% for element in subject%}
-                        <input type="hidden" name="subject_id" value={{element.id}}>
-                        {% endfor %}
+                        <input type="hidden" name="subject_id" value={{subject.id}}>
 
                   </div>
 
@@ -141,12 +137,11 @@
 
                 <div class="row">
                   <div class="col">
+                    <div class="form-group">
                     <form action="/uploadUser" method="post" id="upload-form">
-                        <input type="email" name="email" id="js-upload-files" placeholder="User email" enctype="multipart/form-data" >
-                        {% for element in subject%}
-                        <input type="hidden" name="subject_id" value={{element.id}}>
-                        {% endfor%}
-
+                        <input class= "form-control" type="email" name="email" id="js-upload-files" placeholder="User email" enctype="multipart/form-data" >
+                        <input type="hidden" name="subject_id" value={{subject.id}}>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -155,6 +150,7 @@
                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                       <button type="submit" class="btn  btn-primary">Upload</button>
                     </form>
+
               </div>
             </div>
           </div>

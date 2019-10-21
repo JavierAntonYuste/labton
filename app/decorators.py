@@ -31,7 +31,7 @@ def roles_required(*role_names):
 
             for role_name in role_names:
                 role_ids=db_init.db_session.query(models.Role.id).filter(models.Role.name==role_name).all()
-            user_id = db_init.db_session.query(models.User.id).filter(models.User.first_name==session["user"]).all()
+            user_id = db_init.db_session.query(models.User.id).filter(models.User.email==session["email"]).all()
 
             for role_id in role_ids:
                 users=db_init.db_session.query(models.roles_users).filter_by(role_id=role_id).filter_by(user_id=user_id).all()

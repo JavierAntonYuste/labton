@@ -71,7 +71,7 @@ def create_app(config_name):
             response=IMAPLogin.IMAPLogin(request.form['email'], request.form['password'])
 
             # Charging the username (first part of the email) in the session
-            session["user"]=(request.form['email'].split('@'))[0]
+            session["email"]=request.form['email']
 
             # If failed attempt, error
             if (response==False):
@@ -108,25 +108,33 @@ def create_app(config_name):
 
         # Querying database for taking the subjects that each user has access
         subjects = []
-        user_id=db_init.db_session.query(models.User.id).filter_by(first_name=session["user"]).all()
+        user_id=db_init.db_session.query(models.User.id).filter_by(email=session["email"]).all()
         for item in user_id:
             subjects_id=db_init.db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==item.id).all()
             for id in subjects_id:
                 subjects.extend(db_init.db_session.query(models.Subject).filter_by(id=id,year=current_year).all())
 
-        return render_template('home.html', user=session["user"], subjects= subjects)
+        return render_template('home.html', user=(session["email"].split('@'))[0], subjects= subjects)
 
     @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
     @decorators.roles_required('user')
     def subject(id):
         error = None
-        subject=db_init.db_session.query(models.Subject).filter_by(id=id).all()
-        return render_template('subject.html', error=error, user=session["user"], subject= subject)
+        subject=db_init.db_session.query(models.Subject).filter_by(id=id).first()
+        if (subject == None):
+            flash('Subject does not exists')
+            return redirect('/home')
+
+        user=(session["email"].split('@'))[0]
+
+        return render_template('subject.html', error=error,user=user, subject= subject)
 
     @app.route('/uploadUsers', methods=['POST'])
+    @decorators.login_required
+    @decorators.roles_required('professor')
     def uploadUsers():
-        ## TODO
+        ## TODO this method and also hide buttons from normal users in HTML
         id = request.form['subject_id']
         if request.files['file']:
             flask_file = request.files['file']
@@ -136,60 +144,61 @@ def create_app(config_name):
                 if row:
                     data.append(row)
 
-            print (data)
-            print("")
-
             return redirect('/subject/'+ id)
         else:
             flash ("Error: It is not a valid input")
             return redirect('/subject/'+ id)
 
     @app.route('/uploadUser', methods=['POST'])
+    @decorators.login_required
+    @decorators.roles_required('professor')
     def uploadUser():
+        # Getting subject_id from form
         id = request.form['subject_id']
-        if request.form['email']:
-            name = (request.form['email'].split('@'))[0]
-            user_id = db_init.db_session.query(models.User.id).filter_by(first_name=name).first()
-            role = db_init.db_session.query(models.Role).filter_by(name='user').first()
 
+        # Checking if we have email in form
+        if request.form['email']:
+            # Taking email, name and id
+            email=request.form['email']
+            name = (email.split('@'))[0]
+            user_id = db_init.db_session.query(models.User.id).filter_by(email=request.form['email']).first()
+            role_id = db_init.db_session.query(models.Role.id).filter_by(name='user').first()
+
+
+            # If the user isn't in the DB, we add it
             if (user_id == None):
-                user= models.User(first_name=name, email= request.form['email'])
                 user = user_datastore.create_user(
                     first_name=name,
-                    email= request.form['email'],
+                    email= email,
                     roles=[models.Role(name='user')]
                 )
-
-                user_subject= ins = models.users_subjects.insert().values(
-                subject_id= id,
-                user_id = user_id,
-                role_id=role.id
-                )
-                user_id = db_init.db_session.query(models.User.id).filter_by(first_name=name).first()
                 db_init.db.session.commit()
 
-
-            user_id = db_init.db_session.query(models.User.id).filter_by(first_name=name).first()
+            # Taking id again in case the user didn't exist
+            user_id = db_init.db_session.query(models.User.id).filter_by(email=email).first()
+            # Creating relations with subjects
             user_subject= ins = models.users_subjects.insert().values(
             subject_id= id,
             user_id = user_id,
-            role_id=role.id
+            role_id=role_id
             )
+
             conn = db_init.engine.connect()
             conn.execute(ins)
-
+            # Redirecting to same page
             return redirect('/subject/'+ id)
         else:
+            # If there is not email, flash error
             flash ("Empty input")
             return redirect('/subject/'+ id)
 
 
     @app.route('/users')
     @decorators.login_required
-    @decorators.roles_required('superuser')
+    @decorators.roles_required('admin')
     def users():
         error = None
-        return render_template('users.html', error=error,user=session["user"])
+        return render_template('users.html', error=error,user=(session["email"].split('@'))[0])
 
     @app.route('/test')
     @decorators.login_required
