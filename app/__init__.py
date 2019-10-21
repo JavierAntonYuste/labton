@@ -126,20 +126,63 @@ def create_app(config_name):
 
     @app.route('/uploadUsers', methods=['POST'])
     def uploadUsers():
-        flask_file = request.files['file']
-        if not flask_file:
-            return 'Upload a CSV file'
+        ## TODO
+        id = request.form['subject_id']
+        if request.files['file']:
+            flask_file = request.files['file']
+            data = []
+            stream = codecs.iterdecode(flask_file.stream, 'utf-8')
+            for row in csv.reader(stream, dialect=csv.excel):
+                if row:
+                    data.append(row)
 
-        data = []
-        stream = codecs.iterdecode(flask_file.stream, 'utf-8')
-        for row in csv.reader(stream, dialect=csv.excel):
-            if row:
-                data.append(row)
+            print (data)
+            print("")
 
-        print (data)
-        print(" ")
+            return redirect('/subject/'+ id)
+        else:
+            flash ("Error: It is not a valid input")
+            return redirect('/subject/'+ id)
 
-        return redirect('/home')
+    @app.route('/uploadUser', methods=['POST'])
+    def uploadUser():
+        id = request.form['subject_id']
+        if request.form['email']:
+            name = (request.form['email'].split('@'))[0]
+            user_id = db_init.db_session.query(models.User.id).filter_by(first_name=name).first()
+            role = db_init.db_session.query(models.Role).filter_by(name='user').first()
+
+            if (user_id == None):
+                user= models.User(first_name=name, email= request.form['email'])
+                user = user_datastore.create_user(
+                    first_name=name,
+                    email= request.form['email'],
+                    roles=[models.Role(name='user')]
+                )
+
+                user_subject= ins = models.users_subjects.insert().values(
+                subject_id= id,
+                user_id = user_id,
+                role_id=role.id
+                )
+                user_id = db_init.db_session.query(models.User.id).filter_by(first_name=name).first()
+                db_init.db.session.commit()
+
+
+            user_id = db_init.db_session.query(models.User.id).filter_by(first_name=name).first()
+            user_subject= ins = models.users_subjects.insert().values(
+            subject_id= id,
+            user_id = user_id,
+            role_id=role.id
+            )
+            conn = db_init.engine.connect()
+            conn.execute(ins)
+
+            return redirect('/subject/'+ id)
+        else:
+            flash ("Empty input")
+            return redirect('/subject/'+ id)
+
 
     @app.route('/users')
     @decorators.login_required
@@ -193,8 +236,8 @@ def init_system():
                 db_init.db.session.add(user_role)
             if (models.Role.query.filter_by(name='professor').first()==None):
                 db_init.db.session.add(professor_role)
-            if (models.Role.query.filter_by(name='superuser').first()==None):
-                db_init.db.session.add(super_user_role)
+            if (models.Role.query.filter_by(name='admin').first()==None):
+                db_init.db.session.add(admin_role)
 
             # Adding first user admin
             # IMPORTANT: delete after transferring admin role for security reasons

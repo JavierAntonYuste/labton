@@ -1,6 +1,6 @@
 import imaplib, sys
 from flask_security import SQLAlchemyUserDatastore
-from app import models, appconfig
+from app import models, appconfig, db_init
 
 
 ## IMAP server selection
