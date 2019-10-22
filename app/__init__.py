@@ -16,7 +16,11 @@ from functools import wraps
 from flask_sslify import SSLify
 import datetime
 
-from app import decorators, db_init
+from app import decorators
+import os
+
+from app.db_init import init_db, db, db_session, engine
+
 
 ## IMAPLogin depende de la base de datos, por eso se importa despues de crearla
 from app import IMAPLogin
@@ -39,12 +43,12 @@ def create_app(config_name):
 
     # Setup Flask-Security
     global user_datastore
-    user_datastore = SQLAlchemyUserDatastore(db_init.db, models.User, models.Role)
+    user_datastore = SQLAlchemyUserDatastore(db, models.User, models.Role)
     # security = Security(app, user_datastore)
     # security = Security(app, user_datastore, login_form=IMAPLoginForm.IMAPLoginForm) ##Para cuando se haga IMAPLoginForm
 
     # Initialisation of the app and the system
-    db_init.db.init_app(app)
+    db.init_app(app)
     init_system()
 
     # Function of Flask-Login. User loader
@@ -56,6 +60,15 @@ def create_app(config_name):
     login_manager.init_app(app)
     login_manager.login_message = 'You must be logged in to access this page'
 
+    # Before request Function
+    @app.before_request
+    def before_request_func():
+        init_db()
+
+    #Close session after each request
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        db_session.remove()
 
     # Routes
     @app.route('/')
@@ -80,7 +93,6 @@ def create_app(config_name):
                 # Charging the email in an User object
                 user = models.User()
                 user.email = request.form['email']
-                login_user(user)
 
                 # Changing param of logged_in in session
                 session['logged_in'] = True
@@ -108,11 +120,11 @@ def create_app(config_name):
 
         # Querying database for taking the subjects that each user has access
         subjects = []
-        user_id=db_init.db_session.query(models.User.id).filter_by(email=session["email"]).all()
+        user_id=db_session.query(models.User.id).filter_by(email=session["email"]).all()
         for item in user_id:
-            subjects_id=db_init.db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==item.id).all()
+            subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==item.id).all()
             for id in subjects_id:
-                subjects.extend(db_init.db_session.query(models.Subject).filter_by(id=id,year=current_year).all())
+                subjects.extend(db_session.query(models.Subject).filter_by(id=id,year=current_year).all())
 
         return render_template('home.html', user=(session["email"].split('@'))[0], subjects= subjects)
 
@@ -121,9 +133,9 @@ def create_app(config_name):
     @decorators.roles_required('user')
     def subject(id):
         error = None
-        subject=db_init.db_session.query(models.Subject).filter_by(id=id).first()
+        subject=db_session.query(models.Subject).filter_by(id=id).first()
         if (subject == None):
-            flash('Subject does not exists')
+            flash('Error! Subject does not exists', 'danger')
             return redirect('/home')
 
         user=(session["email"].split('@'))[0]
@@ -146,7 +158,7 @@ def create_app(config_name):
 
             return redirect('/subject/'+ id)
         else:
-            flash ("Error: It is not a valid input")
+            flash ("Error! It is not a valid input", 'danger')
             return redirect('/subject/'+ id)
 
     @app.route('/uploadUser', methods=['POST'])
@@ -161,35 +173,46 @@ def create_app(config_name):
             # Taking email, name and id
             email=request.form['email']
             name = (email.split('@'))[0]
-            user_id = db_init.db_session.query(models.User.id).filter_by(email=request.form['email']).first()
-            role_id = db_init.db_session.query(models.Role.id).filter_by(name='user').first()
-
+            user_id = db_session.query(models.User.id).filter_by(email=email).first()
+            role_id = db_session.query(models.Role.id).filter_by(name='user').first()
 
             # If the user isn't in the DB, we add it
             if (user_id == None):
-                user = user_datastore.create_user(
-                    first_name=name,
-                    email= email,
-                    roles=[models.Role(name='user')]
-                )
-                db_init.db.session.commit()
+                user=models.User(first_name=name,email= email)
+                db_session.add(user)
+                db_session.commit()
+                # Taking id again in case the user didn't exist
+                user_id = db_session.query(models.User.id).filter_by(email=email).first()
 
-            # Taking id again in case the user didn't exist
-            user_id = db_init.db_session.query(models.User.id).filter_by(email=email).first()
-            # Creating relations with subjects
-            user_subject= ins = models.users_subjects.insert().values(
-            subject_id= id,
-            user_id = user_id,
-            role_id=role_id
-            )
+            try:
+                con = engine.connect()
+                trans = con.begin()
 
-            conn = db_init.engine.connect()
-            conn.execute(ins)
-            # Redirecting to same page
+                # Creating relations
+                con.execute(models.roles_users.insert().values(
+                    user_id=user_id,
+                    role_id= role_id
+                    ))
+                con.execute(models.users_subjects.insert().values(
+                subject_id= id,
+                user_id = user_id,
+                role_id=role_id
+                ))
+
+                trans.commit()
+
+            except:
+                trans.rollback()
+                raise
+
+            con.close()
+
+            # Redirecting to same page with a success message
+            flash ("Success! User added to subject",'success')
             return redirect('/subject/'+ id)
         else:
             # If there is not email, flash error
-            flash ("Empty input")
+            flash ("Error! Empty input",'danger')
             return redirect('/subject/'+ id)
 
 
@@ -223,7 +246,7 @@ def create_app(config_name):
         #         get_url=url_for
         #     )
 
-    migrate = Migrate(app,db_init.db)
+    migrate = Migrate(app,db)
 
     return app
 
@@ -233,7 +256,7 @@ def init_system():
     with app.app_context():
 
         # Checking if table role exists, if not, return
-        if not db_init.engine.dialect.has_table(db_init.engine, 'role'):
+        if not engine.dialect.has_table(engine, 'role'):
           return
         else:
             # Adding different core roles
@@ -242,11 +265,11 @@ def init_system():
             admin_role = models.Role(name='admin')
 
             if (models.Role.query.filter_by(name='user').first()==None):
-                db_init.db.session.add(user_role)
+                db_session.add(user_role)
             if (models.Role.query.filter_by(name='professor').first()==None):
-                db_init.db.session.add(professor_role)
+                db_session.add(professor_role)
             if (models.Role.query.filter_by(name='admin').first()==None):
-                db_init.db.session.add(admin_role)
+                db_session.add(admin_role)
 
             # Adding first user admin
             # IMPORTANT: delete after transferring admin role for security reasons
@@ -271,4 +294,4 @@ def init_system():
                 #         roles=[user_role, super_user_role]
                 #     )
 
-                db_init.db.session.commit()
+                db_session.commit()

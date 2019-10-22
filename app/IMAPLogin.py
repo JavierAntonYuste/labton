@@ -23,8 +23,6 @@ def IMAPLogin(email, password):
     if not '@' in email:
         return response
 
-    # if len(email.split('@'))==2:
-    #     user,server=(email.split('@')
     user=email.split('@')[0]
     server=email.split('@')[1]
 

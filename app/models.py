@@ -7,46 +7,51 @@ from flask_security import Security, SQLAlchemyUserDatastore, \
 
 from flask_security.utils import encrypt_password
 
-from app import db_init
+from sqlalchemy import *
+from app.db_init import Base
+from sqlalchemy.orm import relationship, backref
 
-users_subjects= roles_users = db_init.db.Table(
+
+users_subjects= roles_users = Table(
     'users_subjects',
-    db_init.db.Column('subject_id', db_init.db.Integer(), db_init.db.ForeignKey('subjects.id')),
-    db_init.db.Column('user_id', db_init.db.Integer(), db_init.db.ForeignKey('user.id')),
-    db_init.db.Column('role_id', db_init.db.Integer(), db_init.db.ForeignKey('role.id'))
+     Base.metadata,
+    Column('subject_id', Integer(), ForeignKey('subjects.id')),
+    Column('user_id', Integer(), ForeignKey('user.id')),
+    Column('role_id', Integer(), ForeignKey('role.id'))
 )
 
-roles_users = db_init.db.Table(
+roles_users = Table(
     'roles_users',
-    db_init.db.Column('user_id', db_init.db.Integer(), db_init.db.ForeignKey('user.id')),
-    db_init.db.Column('role_id', db_init.db.Integer(), db_init.db.ForeignKey('role.id'))
+     Base.metadata,
+    Column('user_id', Integer(), ForeignKey('user.id')),
+    Column('role_id', Integer(), ForeignKey('role.id'))
 )
 
-class Role(db_init.db.Model, RoleMixin):
+class Role(Base):
 
-    # __tablename__= 'roles'
+    __tablename__= 'role'
 
-    id = db_init.db.Column(db_init.db.Integer(), primary_key=True)
-    name = db_init.db.Column(db_init.db.String(80), unique=True)
-    description = db_init.db.Column(db_init.db.String(255))
+    id = Column(Integer(), primary_key=True)
+    name = Column(String(80), unique=True)
+    description = Column(String(255))
 
     def __str__(self):
         return self.name
 
 
-class User(db_init.db.Model, UserMixin):
+class User(Base):
 
-    # __tablename__= 'users'
+    __tablename__= 'user'
 
-    id = db_init.db.Column(db_init.db.Integer, primary_key=True)
-    first_name = db_init.db.Column(db_init.db.String(255))
-    last_name = db_init.db.Column(db_init.db.String(255))
-    email = db_init.db.Column(db_init.db.String(255), unique=True)
-    password = db_init.db.Column(db_init.db.String(255))
-    active = db_init.db.Column(db_init.db.Boolean())
-    confirmed_at = db_init.db.Column(db_init.db.DateTime())
-    roles = db_init.db.relationship('Role', secondary=roles_users,
-                            backref=db_init.db.backref('users', lazy='dynamic'))
+    id = Column(Integer, primary_key=True)
+    first_name = Column(String(255))
+    last_name = Column(String(255))
+    email = Column(String(255), unique=True)
+    password = Column(String(255))
+    active = Column(Boolean())
+    confirmed_at = Column(DateTime())
+    roles = relationship('Role', secondary=roles_users,
+                            backref=backref('users', lazy='dynamic'))
 
     def __str__(self):
         return self.email
@@ -55,20 +60,20 @@ class User(db_init.db.Model, UserMixin):
         return User.query.filter_by(id=user_id).first()
 
 
-class Subject(db_init.db.Model):
+class Subject(Base):
     """
     Create a table for subjects
     """
     __tablename__= 'subjects'
 
-    id = db_init.db.Column(db_init.db.Integer, primary_key=True, autoincrement=True)
-    acronym = db_init.db.Column(db_init.db.String(10), nullable=False)
-    name = db_init.db.Column(db_init.db.String (100), nullable = False)
-    year = db_init.db.Column(db_init.db.Integer, nullable = False)
-    description = db_init.db.Column(db_init.db.String(1000))
-    degree = db_init.db.Column(db_init.db.String(100), nullable=False)
-    users = db_init.db.relationship('User', secondary=users_subjects,
-                            backref=db_init.db.backref('subjects', lazy='dynamic'))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    acronym = Column(String(10), nullable=False)
+    name = Column(String (100), nullable = False)
+    year = Column(Integer, nullable = False)
+    description = Column(String(1000))
+    degree = Column(String(100), nullable=False)
+    users = relationship('User', secondary=users_subjects,
+                            backref=backref('subjects', lazy='dynamic'))
 
     def __init__(self, id, name):
         self.id=id
