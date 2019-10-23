@@ -17,9 +17,10 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from instance import config
 
- """ Initialisation of the database and its session.
- Created apart for not making interdependencies among several scripts.
- """
+"""
+ Initialisation of the database and its session.
+    Created apart for not making interdependencies among several scripts.
+"""
 
 db = SQLAlchemy()
 engine = create_engine(config.SQLALCHEMY_DATABASE_URI)

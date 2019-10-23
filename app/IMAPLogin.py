@@ -1,6 +1,8 @@
 import imaplib, sys
-from flask_security import SQLAlchemyUserDatastore
-from app import models, appconfig, db_init
+# from flask_security import SQLAlchemyUserDatastore
+from app import models, appconfig
+from app.db_interactions import create_user
+
 
 
 ## IMAP server selection
@@ -8,7 +10,7 @@ def mail_server(server):
     return appconfig.IMAP_servers.get(server)
 
 ## IMAP Login Procedur
-def IMAPLogin(email, password):
+def IMAPLogin(db_session, engine, email, password):
     response= False
 
     ## If there is an admin user, returns True
@@ -40,14 +42,15 @@ def IMAPLogin(email, password):
             user_role = models.Role(name='user')
 
             if (models.User.query.filter_by(email=email).first()==None):
-                user_datastore = SQLAlchemyUserDatastore(db_init.db, models.User, models.Role)
-                new_user = user_datastore.create_user(
-                    first_name=user,
-                    email=email,
-                    roles=[user_role]
-                )
-
-                db_init.db.session.commit()
+                create_user(db_session,engine, user,email)
+                # user_datastore = SQLAlchemyUserDatastore(db_init.db, models.User, models.Role)
+                # new_user = user_datastore.create_user(
+                #     first_name=user,
+                #     email=email,
+                #     roles=[user_role]
+                # )
+                #
+                # db_init.db.session.commit()
 
             response=True
 

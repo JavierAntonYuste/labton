@@ -1,17 +1,9 @@
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-
 from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, \
-    UserMixin, RoleMixin, login_required, current_user
-
-from flask_security.utils import encrypt_password
-
 from sqlalchemy import *
 from app.db_init import Base
 from sqlalchemy.orm import relationship, backref
 
-
+#TODO in this table, there must be only one entre per user and subject!! PRIMARY KEY= user_id+subject_id?
 users_subjects= roles_users = Table(
     'users_subjects',
      Base.metadata,

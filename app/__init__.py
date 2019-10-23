@@ -1,7 +1,7 @@
 from flask import Flask, url_for, redirect,  \
 render_template, request, abort, session, flash
 
-import csv, codecs
+import csv, codecs, os, datetime
 
 # from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user
@@ -15,11 +15,9 @@ from functools import wraps
 
 from flask_sslify import SSLify
 import datetime
-
 from app import decorators
-import os
-
 from app.db_init import init_db, db, db_session, engine
+from app.db_interactions import create_user, create_admin_user
 
 
 ## IMAPLogin depende de la base de datos, por eso se importa despues de crearla
@@ -49,7 +47,7 @@ def create_app(config_name):
 
     # Initialisation of the app and the system
     db.init_app(app)
-    init_system()
+
 
     # Function of Flask-Login. User loader
     @login_manager.user_loader
@@ -64,6 +62,7 @@ def create_app(config_name):
     @app.before_request
     def before_request_func():
         init_db()
+        init_system()
 
     #Close session after each request
     @app.teardown_appcontext
@@ -81,7 +80,7 @@ def create_app(config_name):
         if request.method == 'POST':
 
             #  IMAP Login attempt
-            response=IMAPLogin.IMAPLogin(request.form['email'], request.form['password'])
+            response=IMAPLogin.IMAPLogin(db_session, engine, request.form['email'], request.form['password'])
 
             # Charging the username (first part of the email) in the session
             session["email"]=request.form['email']
@@ -91,8 +90,8 @@ def create_app(config_name):
                 error = 'Invalid Credentials. Please try again.'
             else:
                 # Charging the email in an User object
-                user = models.User()
-                user.email = request.form['email']
+                # user = models.User()
+                # user.email = request.form['email']
 
                 # Changing param of logged_in in session
                 session['logged_in'] = True
@@ -166,7 +165,7 @@ def create_app(config_name):
     @decorators.roles_required('professor')
     def uploadUser():
         # Getting subject_id from form
-        id = request.form['subject_id']
+        subject_id = request.form['subject_id']
 
         # Checking if we have email in form
         if request.form['email']:
@@ -178,23 +177,22 @@ def create_app(config_name):
 
             # If the user isn't in the DB, we add it
             if (user_id == None):
-                user=models.User(first_name=name,email= email)
-                db_session.add(user)
-                db_session.commit()
-                # Taking id again in case the user didn't exist
-                user_id = db_session.query(models.User.id).filter_by(email=email).first()
+                create_user(db_session, engine, name, email)
+
+            # Taking id again in case the user didn't exist
+            user_id = db_session.query(models.User.id).filter_by(email=email).first()
+
+            #If the user is already added, return
+            if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id).filter_by(user_id=user_id).filter_by(role_id=role_id).first()==None):
+                flash ("Error! User is already added in subject",'danger')
+                return redirect('/subject/'+ subject_id)
 
             try:
                 con = engine.connect()
                 trans = con.begin()
-
-                # Creating relations
-                con.execute(models.roles_users.insert().values(
-                    user_id=user_id,
-                    role_id= role_id
-                    ))
+                #Creating subject relations
                 con.execute(models.users_subjects.insert().values(
-                subject_id= id,
+                subject_id= subject_id,
                 user_id = user_id,
                 role_id=role_id
                 ))
@@ -209,11 +207,11 @@ def create_app(config_name):
 
             # Redirecting to same page with a success message
             flash ("Success! User added to subject",'success')
-            return redirect('/subject/'+ id)
+            return redirect('/subject/'+ subject_id)
         else:
             # If there is not email, flash error
             flash ("Error! Empty input",'danger')
-            return redirect('/subject/'+ id)
+            return redirect('/subject/'+ subject_id)
 
 
     @app.route('/users')
@@ -274,13 +272,7 @@ def init_system():
             # Adding first user admin
             # IMPORTANT: delete after transferring admin role for security reasons
             if (models.User.query.filter_by(email='admin').first()==None):
-                global user_datastore
-                test_user = user_datastore.create_user(
-                    first_name='Admin',
-                    email='admin',
-                    password='admin',
-                    roles=[user_role, admin_role]
-                )
+                create_admin_user(db_session, engine, 'admin', 'admin')
 
                 # superuser_id=models.Role.query.filter_by(name="superuser").all()
                 # id=(o.id for o in superuser_id)
@@ -294,4 +286,4 @@ def init_system():
                 #         roles=[user_role, super_user_role]
                 #     )
 
-                db_session.commit()
+                # db_session.commit()
