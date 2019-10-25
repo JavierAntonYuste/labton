@@ -17,7 +17,7 @@ from flask_sslify import SSLify
 import datetime
 from app import decorators
 from app.db_init import init_db, db, db_session, engine
-from app.db_interactions import create_user, create_admin_user
+from app.db_interactions import create_user, create_admin_user, get_role_subject
 
 
 ## IMAPLogin depende de la base de datos, por eso se importa despues de crearla
@@ -47,6 +47,8 @@ def create_app(config_name):
 
     # Initialisation of the app and the system
     db.init_app(app)
+    init_db()
+    init_system()
 
 
     # Function of Flask-Login. User loader
@@ -59,10 +61,10 @@ def create_app(config_name):
     login_manager.login_message = 'You must be logged in to access this page'
 
     # Before request Function
-    @app.before_request
-    def before_request_func():
-        init_db()
-        init_system()
+    # @app.before_request
+    # def before_request_func():
+    #     init_db()
+    #     init_system()
 
     #Close session after each request
     @app.teardown_appcontext
@@ -89,13 +91,10 @@ def create_app(config_name):
             if (response==False):
                 error = 'Invalid Credentials. Please try again.'
             else:
-                # Charging the email in an User object
-                # user = models.User()
-                # user.email = request.form['email']
-
                 # Changing param of logged_in in session
                 session['logged_in'] = True
                 return redirect('/home')
+
 
         return render_template('login.html', error=error)
 
@@ -137,9 +136,13 @@ def create_app(config_name):
             flash('Error! Subject does not exists', 'danger')
             return redirect('/home')
 
-        user=(session["email"].split('@'))[0]
 
-        return render_template('subject.html', error=error,user=user, subject= subject)
+        user=(session["email"].split('@'))[0]
+        role=get_role_subject(db_session, session["email"], id)
+        print (role)
+        print("")
+
+        return render_template('subject.html', error=error,user=user, role=role, subject= subject)
 
     @app.route('/uploadUsers', methods=['POST'])
     @decorators.login_required

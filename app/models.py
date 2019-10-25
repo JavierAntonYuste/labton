@@ -7,9 +7,9 @@ from sqlalchemy.orm import relationship, backref
 users_subjects= roles_users = Table(
     'users_subjects',
      Base.metadata,
-    Column('subject_id', Integer(), ForeignKey('subjects.id')),
-    Column('user_id', Integer(), ForeignKey('user.id')),
-    Column('role_id', Integer(), ForeignKey('role.id'))
+    Column('subject_id', Integer(), ForeignKey('subjects.id'),primary_key=True),
+    Column('user_id', Integer(), ForeignKey('user.id'),primary_key=True),
+    Column('role_id', Integer(), ForeignKey('role.id')),
 )
 
 roles_users = Table(

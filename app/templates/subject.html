@@ -81,6 +81,8 @@
       <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">{{subject.acronym}} {{subject.year}}-{{subject.year+1}}</h1>
 
+      
+      {% if role=='professor'%}
       <div class="col-4"
         <!-- Button trigger modal -->
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadUserModal">
@@ -90,6 +92,7 @@
           Import users from CSV
         </button>
       </div>
+      {% endif %}
         <!-- CSV Modal -->
         <div class="modal fade" id="uploadUsersCSVModal" tabindex="-1" role="dialog" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered" role="document">
