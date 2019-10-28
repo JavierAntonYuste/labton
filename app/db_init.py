@@ -1,15 +1,3 @@
-# from sqlalchemy import *
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-# from instance import config
-#
-#
-#
-#
-# engine= create_engine(config.SQLALCHEMY_DATABASE_URI)
-# DB_Session = sessionmaker(bind=engine)
-# db_session = DB_Session()
-
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -34,5 +22,8 @@ def init_db():
     # import all modules here that might define models so that
     # they will be registered properly on the metadata.  Otherwise
     # you will have to import them first before calling init_db()
+    ## TODO session for creating base
     import app.models
     Base.metadata.create_all(bind=engine)
+
+## # TODO: def init_db_session(): that will be called for doing a session in @app.before_request

@@ -17,7 +17,7 @@ from flask_sslify import SSLify
 import datetime
 from app import decorators
 from app.db_init import init_db, db, db_session, engine
-from app.db_interactions import create_user, create_admin_user, get_role_subject
+from app.db_interactions import *
 
 
 ## IMAPLogin depende de la base de datos, por eso se importa despues de crearla
@@ -40,8 +40,8 @@ def create_app(config_name):
     from app import models
 
     # Setup Flask-Security
-    global user_datastore
-    user_datastore = SQLAlchemyUserDatastore(db, models.User, models.Role)
+    # global user_datastore
+    # user_datastore = SQLAlchemyUserDatastore(db, models.User, models.Role)
     # security = Security(app, user_datastore)
     # security = Security(app, user_datastore, login_form=IMAPLoginForm.IMAPLoginForm) ##Para cuando se haga IMAPLoginForm
 
@@ -143,6 +143,24 @@ def create_app(config_name):
         print("")
 
         return render_template('subject.html', error=error,user=user, role=role, subject= subject)
+
+    @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
+    @decorators.login_required
+    @decorators.roles_required('professor')
+    def configSubject(id):
+        error = None
+        subject=db_session.query(models.Subject).filter_by(id=id).first()
+        if (subject == None):
+            flash('Error! Subject does not exists', 'danger')
+            return redirect('/home')
+
+        user=(session["email"].split('@'))[0]
+        role=get_role_subject(db_session, session["email"], id)
+
+        users_in_subject = get_users_in_subject(db_session,id)
+
+        return render_template('manageSubject.html', error=error,user=user, role=role, subject= subject, users_in_subject=users_in_subject)
+
 
     @app.route('/uploadUsers', methods=['POST'])
     @decorators.login_required
@@ -276,17 +294,3 @@ def init_system():
             # IMPORTANT: delete after transferring admin role for security reasons
             if (models.User.query.filter_by(email='admin').first()==None):
                 create_admin_user(db_session, engine, 'admin', 'admin')
-
-                # superuser_id=models.Role.query.filter_by(name="superuser").all()
-                # id=(o.id for o in superuser_id)
-                #
-                # if (session.query(models.roles_users).filter(models.roles_users.c.role_id==next(id)).first()==None):
-                #     global user_datastore
-                #     test_user = user_datastore.create_user(
-                #         first_name='Admin',
-                #         email='admin',
-                #         password=encrypt_password('admin'),
-                #         roles=[user_role, super_user_role]
-                #     )
-
-                # db_session.commit()

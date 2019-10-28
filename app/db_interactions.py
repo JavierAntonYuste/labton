@@ -1,6 +1,5 @@
 from app.models import *
 
-
 def create_user(db_session, engine, name, email):
     user=User(first_name=name,email= email)
     db_session.add(user)
@@ -62,9 +61,15 @@ def create_admin_user(db_session, engine, name, email):
     return
 
 def get_role_subject(db_session, email, id):
-    # user_id=db_session.query(User.id).filter_by(email=email).first()
-    # role_id=db_session.query(users_subjects.c.role_id).filter(users_subjects.c.user_id==user_id).filter(users_subjects.c.subject_id==id).first()
-    # role=(db_session.query(Role.name).filter_by(id=role_id).first())[0]
+    role=(db_session.query(Role.name).\
+    join(users_subjects, Role.id==users_subjects.c.role_id).join(User, users_subjects.c.user_id==User.id).\
+    filter(User.email==email).filter(users_subjects.c.subject_id==id).first())[0]
 
-    role=(db_session.query(Role.name).join(users_subjects, Role.id==users_subjects.c.role_id).join(User, users_subjects.c.user_id==User.id).filter(User.email==email).first())[0]
     return role
+
+def get_users_in_subject (db_session, subject_id ):
+    users=db_session.query(User)\
+    .join(users_subjects,User.id==users_subjects.c.user_id).join(Subject, users_subjects.c.subject_id==Subject.id)\
+    .filter(Subject.id==subject_id)
+
+    return users
