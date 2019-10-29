@@ -139,8 +139,6 @@ def create_app(config_name):
 
         user=(session["email"].split('@'))[0]
         role=get_role_subject(db_session, session["email"], id)
-        print (role)
-        print("")
 
         return render_template('subject.html', error=error,user=user, role=role, subject= subject)
 
@@ -166,20 +164,59 @@ def create_app(config_name):
     @decorators.login_required
     @decorators.roles_required('professor')
     def uploadUsers():
-        ## TODO this method and also hide buttons from normal users in HTML
-        id = request.form['subject_id']
+        subject_id = request.form['subject_id']
         if request.files['file']:
             flask_file = request.files['file']
             data = []
             stream = codecs.iterdecode(flask_file.stream, 'utf-8')
-            for row in csv.reader(stream, dialect=csv.excel):
-                if row:
-                    data.append(row)
+            read_file=list(csv.reader(stream, dialect=csv.excel))
+            if 'EMAIL' in read_file[0]:
+                email_index=read_file[0].index('EMAIL')
 
-            return redirect('/subject/'+ id)
+            for row in read_file:
+                if row:
+                    if row[email_index]=='EMAIL':
+                        continue
+                    data.append(row[email_index])
+            for email in data:
+                name = (email.split('@'))[0]
+                user_id = db_session.query(models.User.id).filter_by(email=email).first()
+                role_id = db_session.query(models.Role.id).filter_by(name='user').first()
+                # If the user isn't in the DB, we add it
+                if (user_id == None):
+                    create_user(db_session, engine, name, email)
+
+                # Taking id again in case the user didn't exist
+                user_id = db_session.query(models.User.id).filter_by(email=email).first()
+
+                #If the user is already added, continue
+                if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id).filter_by(user_id=user_id).filter_by(role_id=role_id).first()==None):
+                    flash ("Error! User is already added in subject",'danger')
+                    continue
+
+                try:
+                    con = engine.connect()
+                    trans = con.begin()
+                    #Creating subject relations
+                    con.execute(models.users_subjects.insert().values(
+                    subject_id= subject_id,
+                    user_id = user_id,
+                    role_id=role_id
+                    ))
+
+                    trans.commit()
+
+                except:
+                    trans.rollback()
+                    raise
+
+                con.close()
+
+
+            return redirect('/manageSubject/'+ subject_id)
         else:
             flash ("Error! It is not a valid input", 'danger')
-            return redirect('/subject/'+ id)
+            return redirect('/manageSubject/'+ subject_id)
 
     @app.route('/uploadUser', methods=['POST'])
     @decorators.login_required
@@ -228,12 +265,21 @@ def create_app(config_name):
 
             # Redirecting to same page with a success message
             flash ("Success! User added to subject",'success')
-            return redirect('/subject/'+ subject_id)
+            return redirect('/manageSubject/'+ subject_id)
         else:
             # If there is not email, flash error
             flash ("Error! Empty input",'danger')
-            return redirect('/subject/'+ subject_id)
+            return redirect('/manageSubject/'+ subject_id)
 
+    @app.route('/deleteUserSubject',  methods=['GET', 'POST'])
+    @decorators.login_required
+    @decorators.roles_required('professor')
+    def deleteUser():
+        user_id=request.form['user_id']
+        subject_id=request.form['subject_id']
+        delete_user_in_subject(db_session, user_id, subject_id)
+        flash ("Success! User deleted from subject",'success')
+        return redirect('/manageSubject/'+ subject_id)
 
     @app.route('/users')
     @decorators.login_required

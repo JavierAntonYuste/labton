@@ -71,5 +71,11 @@ def get_users_in_subject (db_session, subject_id ):
     users=db_session.query(User)\
     .join(users_subjects,User.id==users_subjects.c.user_id).join(Subject, users_subjects.c.subject_id==Subject.id)\
     .filter(Subject.id==subject_id)
-
     return users
+
+def delete_user_in_subject(db_session, user_id, subject_id):
+    db_session.query(users_subjects)\
+    .filter(users_subjects.c.user_id==user_id)\
+    .filter(users_subjects.c.subject_id==subject_id)\
+    .delete()
+    return
