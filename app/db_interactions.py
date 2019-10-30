@@ -1,7 +1,7 @@
 from app.models import *
 
 def create_user(db_session, engine, name, email):
-    user=User(first_name=name,email= email)
+    user=User(username=name,email= email)
     db_session.add(user)
     db_session.commit()
 
@@ -9,12 +9,12 @@ def create_user(db_session, engine, name, email):
         con = engine.connect()
         trans = con.begin()
         user_id = db_session.query(User.id).filter_by(email=email).first()
-        role_id = db_session.query(Role.id).filter_by(name='user').first()
+        privilege_id = db_session.query(Privilege.id).filter_by(name='user').first()
 
         # Creating relations
-        con.execute(roles_users.insert().values(
+        con.execute(privileges_users.insert().values(
             user_id=user_id,
-            role_id= role_id
+            privilege_id= privilege_id
             ))
 
         trans.commit()
@@ -28,7 +28,7 @@ def create_user(db_session, engine, name, email):
     return
 
 def create_admin_user(db_session, engine, name, email):
-    user=User(first_name=name,email= email)
+    user=User(username=name,email= email)
     db_session.add(user)
     db_session.commit()
 
@@ -36,18 +36,18 @@ def create_admin_user(db_session, engine, name, email):
         con = engine.connect()
         trans = con.begin()
         user_id = db_session.query(User.id).filter_by(email=email).first()
-        role_id = db_session.query(Role.id).filter_by(name='user').first()
-        admin_role_id = db_session.query(Role.id).filter_by(name='admin').first()
+        privilege_id = db_session.query(Privilege.id).filter_by(name='user').first()
+        admin_privilege_id = db_session.query(Privilege.id).filter_by(name='admin').first()
 
         # Creating relations
-        con.execute(roles_users.insert().values(
+        con.execute(privileges_users.insert().values(
             user_id=user_id,
-            role_id= role_id
+            privilege_id= privilege_id
             ))
 
-        con.execute(roles_users.insert().values(
+        con.execute(privileges_users.insert().values(
             user_id=user_id,
-            role_id= admin_role_id
+            privilege_id= admin_privilege_id
             ))
 
         trans.commit()
@@ -74,8 +74,9 @@ def get_users_in_subject (db_session, subject_id ):
     return users
 
 def delete_user_in_subject(db_session, user_id, subject_id):
-    db_session.query(users_subjects)\
-    .filter(users_subjects.c.user_id==user_id)\
-    .filter(users_subjects.c.subject_id==subject_id)\
-    .delete()
+    db_session.execute('DELETE FROM users_subjects \
+    WHERE subject_id = :subject_id AND user_id = :user_id'  , {'subject_id': subject_id, 'user_id': user_id})
+
+    db_session.commit()
+
     return

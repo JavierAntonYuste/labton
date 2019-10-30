@@ -4,24 +4,35 @@ from app.db_init import Base
 from sqlalchemy.orm import relationship, backref
 
 #TODO in this table, there must be only one entre per user and subject!! PRIMARY KEY= user_id+subject_id?
-users_subjects= roles_users = Table(
+users_subjects = Table(
     'users_subjects',
      Base.metadata,
     Column('subject_id', Integer(), ForeignKey('subjects.id'),primary_key=True),
     Column('user_id', Integer(), ForeignKey('user.id'),primary_key=True),
-    Column('role_id', Integer(), ForeignKey('role.id')),
+    Column('role_id', ForeignKey('role.id'))
 )
 
-roles_users = Table(
-    'roles_users',
+privileges_users = Table(
+    'privileges_users',
      Base.metadata,
     Column('user_id', Integer(), ForeignKey('user.id')),
-    Column('role_id', Integer(), ForeignKey('role.id'))
+    Column('privilege_id', Integer(), ForeignKey('privilege.id'))
 )
 
 class Role(Base):
 
     __tablename__= 'role'
+
+    id = Column(Integer(), primary_key=True)
+    name = Column(String(80), unique=True)
+    description = Column(String(255))
+
+    def __str__(self):
+        return self.name
+
+class Privilege(Base):
+
+    __tablename__= 'privilege'
 
     id = Column(Integer(), primary_key=True)
     name = Column(String(80), unique=True)
@@ -36,13 +47,9 @@ class User(Base):
     __tablename__= 'user'
 
     id = Column(Integer, primary_key=True)
-    first_name = Column(String(255))
-    last_name = Column(String(255))
+    username = Column(String(255))
     email = Column(String(255), unique=True)
-    password = Column(String(255))
-    active = Column(Boolean())
-    confirmed_at = Column(DateTime())
-    roles = relationship('Role', secondary=roles_users,
+    privileges = relationship('Privilege', secondary=privileges_users,
                             backref=backref('users', lazy='dynamic'))
 
     def __str__(self):

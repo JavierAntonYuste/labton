@@ -39,18 +39,9 @@ def IMAPLogin(db_session, engine, email, password):
         status, summary = imap.login(user, password)
         if status == "OK":
             ## Si el usuario no esta, una vez que se comprueba que esta bien, lo mete en la BBDD
-            user_role = models.Role(name='user')
 
             if (models.User.query.filter_by(email=email).first()==None):
                 create_user(db_session,engine, user,email)
-                # user_datastore = SQLAlchemyUserDatastore(db_init.db, models.User, models.Role)
-                # new_user = user_datastore.create_user(
-                #     first_name=user,
-                #     email=email,
-                #     roles=[user_role]
-                # )
-                #
-                # db_init.db.session.commit()
 
             response=True
 

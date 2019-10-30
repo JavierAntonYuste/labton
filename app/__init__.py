@@ -39,12 +39,6 @@ def create_app(config_name):
 
     from app import models
 
-    # Setup Flask-Security
-    # global user_datastore
-    # user_datastore = SQLAlchemyUserDatastore(db, models.User, models.Role)
-    # security = Security(app, user_datastore)
-    # security = Security(app, user_datastore, login_form=IMAPLoginForm.IMAPLoginForm) ##Para cuando se haga IMAPLoginForm
-
     # Initialisation of the app and the system
     db.init_app(app)
     init_db()
@@ -128,7 +122,7 @@ def create_app(config_name):
 
     @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
-    @decorators.roles_required('user')
+    @decorators.privileges_required('user')
     def subject(id):
         error = None
         subject=db_session.query(models.Subject).filter_by(id=id).first()
@@ -144,7 +138,7 @@ def create_app(config_name):
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
-    @decorators.roles_required('professor')
+    # @decorators.privileges_required('professor')
     def configSubject(id):
         error = None
         subject=db_session.query(models.Subject).filter_by(id=id).first()
@@ -162,7 +156,7 @@ def create_app(config_name):
 
     @app.route('/uploadUsers', methods=['POST'])
     @decorators.login_required
-    @decorators.roles_required('professor')
+    # @decorators.privileges_required('professor')
     def uploadUsers():
         subject_id = request.form['subject_id']
         if request.files['file']:
@@ -181,7 +175,7 @@ def create_app(config_name):
             for email in data:
                 name = (email.split('@'))[0]
                 user_id = db_session.query(models.User.id).filter_by(email=email).first()
-                role_id = db_session.query(models.Role.id).filter_by(name='user').first()
+                role_id = db_session.query(models.Role.id).filter_by(name='student').first()
                 # If the user isn't in the DB, we add it
                 if (user_id == None):
                     create_user(db_session, engine, name, email)
@@ -190,7 +184,9 @@ def create_app(config_name):
                 user_id = db_session.query(models.User.id).filter_by(email=email).first()
 
                 #If the user is already added, continue
-                if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id).filter_by(user_id=user_id).filter_by(role_id=role_id).first()==None):
+                if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id)\
+                .filter_by(user_id=user_id).filter_by(role_id=role_id).first()==None):
+
                     flash ("Error! User is already added in subject",'danger')
                     continue
 
@@ -220,7 +216,7 @@ def create_app(config_name):
 
     @app.route('/uploadUser', methods=['POST'])
     @decorators.login_required
-    @decorators.roles_required('professor')
+    # @decorators.privileges_required('professor')
     def uploadUser():
         # Getting subject_id from form
         subject_id = request.form['subject_id']
@@ -231,7 +227,7 @@ def create_app(config_name):
             email=request.form['email']
             name = (email.split('@'))[0]
             user_id = db_session.query(models.User.id).filter_by(email=email).first()
-            role_id = db_session.query(models.Role.id).filter_by(name='user').first()
+            role_id = db_session.query(models.Role.id).filter_by(name='student').first()
 
             # If the user isn't in the DB, we add it
             if (user_id == None):
@@ -273,17 +269,18 @@ def create_app(config_name):
 
     @app.route('/deleteUserSubject',  methods=['GET', 'POST'])
     @decorators.login_required
-    @decorators.roles_required('professor')
+    # @decorators.privileges_required('professor')
     def deleteUser():
         user_id=request.form['user_id']
         subject_id=request.form['subject_id']
         delete_user_in_subject(db_session, user_id, subject_id)
+
         flash ("Success! User deleted from subject",'success')
         return redirect('/manageSubject/'+ subject_id)
 
     @app.route('/users')
     @decorators.login_required
-    @decorators.roles_required('admin')
+    @decorators.privileges_required('admin')
     def users():
         error = None
         return render_template('users.html', error=error,user=(session["email"].split('@'))[0])
@@ -298,19 +295,6 @@ def create_app(config_name):
 
         return render_template('index.html')
 
-
-
-    # define a context processor for merging flask-admin's template context into the
-    # flask-security views.
-        # @security.context_processor
-        # def security_context_processor():
-        #     return dict(
-        #         admin_base_template=admin.base_template,
-        #         admin_view=admin.index_view,
-        #         h=admin_helpers,
-        #         get_url=url_for
-        #     )
-
     migrate = Migrate(app,db)
 
     return app
@@ -321,11 +305,26 @@ def init_system():
     with app.app_context():
 
         # Checking if table role exists, if not, return
+        if not engine.dialect.has_table(engine, 'privilege'):
+          return
+        else:
+            # Adding different core privileges
+            user_privilege = models.Privilege(name='user')
+            professor_privilege = models.Privilege(name='professor')
+            admin_privilege = models.Privilege(name='admin')
+
+            if (models.Privilege.query.filter_by(name='user').first()==None):
+                db_session.add(user_privilege)
+            if (models.Privilege.query.filter_by(name='professor').first()==None):
+                db_session.add(professor_privilege)
+            if (models.Privilege.query.filter_by(name='admin').first()==None):
+                db_session.add(admin_privilege)
+
         if not engine.dialect.has_table(engine, 'role'):
           return
         else:
-            # Adding different core roles
-            user_role = models.Role(name='user')
+            # Adding roles for functions in subjects
+            user_role = models.Role(name='student')
             professor_role = models.Role(name='professor')
             admin_role = models.Role(name='admin')
 
@@ -337,6 +336,6 @@ def init_system():
                 db_session.add(admin_role)
 
             # Adding first user admin
-            # IMPORTANT: delete after transferring admin role for security reasons
+            # IMPORTANT: delete after transferring admin privilege for security reasons
             if (models.User.query.filter_by(email='admin').first()==None):
                 create_admin_user(db_session, engine, 'admin', 'admin')
