@@ -120,6 +120,22 @@ def create_app(config_name):
 
         return render_template('home.html', user=(session["email"].split('@'))[0], subjects= subjects)
 
+    @app.route('/allSubjects')
+    @decorators.login_required
+    def allSubjects():
+        # Querying database for taking the subjects that each user has access
+        subjects = []
+        user_id=db_session.query(models.User.id).filter_by(email=session["email"]).all()
+        for item in user_id:
+            subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==item.id).all()
+            for id in subjects_id:
+                subjects.extend(db_session.query(models.Subject).filter_by(id=id).all())
+
+
+        print (subjects)
+        print(" ")
+        return render_template('allSubjects.html', user=(session["email"].split('@'))[0], subjects= subjects)
+
     @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
     @decorators.privileges_required('user')

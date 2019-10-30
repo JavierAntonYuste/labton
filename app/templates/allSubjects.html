@@ -33,6 +33,7 @@
   </li>
 </ul>
 
+
 <!-- Logout Modal-->
 <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -51,86 +52,64 @@
     </div>
   </div>
 </div>
+
 {% endblock nav_content%}
 
+{% block body %}
+  <!-- Content Wrapper -->
+  <div id="content-wrapper" class="d-flex flex-column">
+  <br>
+    <!-- Main Content -->
+    <div id="content">
 
+      <!-- Begin Page Content -->
+      <div class="container-fluid">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class=flashes>
+            {% for category, message in messages %}
+              <!-- <div class="alert alert-danger text-center">
+                <strong>Error!</strong> {{message}}
+              </div> -->
+              <div class="alert alert-{{ category }} text-center"> {{ message}} </div>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+          <h1 class="h3 mb-0 text-gray-800">Your Subjects</h1>
+        </div>
 
-{% block body%}
+        <!-- Content Row -->
+        <div class="row">
 
-<!-- Content Wrapper -->
-<div id="content-wrapper" class="d-flex flex-column">
-<br>
-  <!-- Main Content -->
-  <div id="content">
-
-    <!-- Begin Page Content -->
-    <div class="container-fluid">
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <ul class=flashes>
-          {% for category, message in messages %}
-            <!-- <div class="alert alert-danger text-center">
-              <strong>Error!</strong> {{message}}
-            </div> -->
-            <div class="alert alert-{{ category }} text-center"> {{ message}} </div>
+          {% for element in subjects%}
+            <div class="col-xl-3 col-sm-6 mb-5">
+              <div class="card">
+                <a href="subject/{{element.id}}" class="btn btn-primary" >
+                    <span class="icon text-white-50">
+                      <i class="pr-2 fas fa-clipboard"></i>
+                      <b class="icon text-white">{{element.acronym}} {{element.year}}-{{element.year+1}}</b>
+                    </span>
+                </a>
+              </div>
+            </div>
           {% endfor %}
-          </ul>
-        {% endif %}
-      {% endwith %}
-      <!-- Page Heading -->
-      <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">{{subject.acronym}} ({{subject.year}}-{{subject.year+1}})</h1>
-
-
-      {% if role=='professor'%}
-      <div class="col-4"
-        <!-- Button trigger modal -->
-        <a href="/manageSubject/{{subject.id}}" class="btn btn-primary" >
-            <span class="icon">
-              Manage Users
-            </span>
-        </a>
-      </div>
-      {% endif %}
+        </div>
 
       </div>
-
-
-
-      <!-- Content Row -->
-
-
-      <!-- Content Row -->
-      <div class="row">
-
-      </div>
+      <!-- /.container-fluid -->
 
     </div>
-    <!-- /.container-fluid -->
+    <!-- End of Main Content -->
+
 
   </div>
-  <!-- End of Main Content -->
-
-  <!-- Footer -->
-  <footer class="sticky-footer bg-white">
-    <div class="container my-auto">
-      <div class="copyright text-center my-auto">
-        <span>Copyright &copy; Your Website 2019</span>
-      </div>
-    </div>
-  </footer>
-  <!-- End of Footer -->
+  <!-- End of Content Wrapper -->
 
 </div>
-<!-- End of Content Wrapper -->
-
-</div>
-<!-- End of Page Wrapper -->
-
-<!-- Scroll to Top Button-->
-<a class="scroll-to-top rounded" href="#page-top">
-<i class="fas fa-angle-up"></i>
-</a>
 
 
-{% endblock body%}
+
+{% endblock body %}
