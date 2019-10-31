@@ -60,6 +60,36 @@ def create_admin_user(db_session, engine, name, email):
 
     return
 
+def create_subject(db_session, acronym, name, degree, year, description):
+    subject=Subject(acronym=acronym, name=name, year=year, degree=degree, description=description)
+    db_session.add(subject)
+    db_session.commit()
+    return
+
+def add_user_to_subject(db_session, engine, email, subject_id, role_name ):
+        try:
+            con = engine.connect()
+            trans = con.begin()
+            user_id = db_session.query(User.id).filter_by(email=email).first()
+            role_id = db_session.query(Role.id).filter_by(name=role_name).first()
+
+            # Creating relations
+            con.execute(users_subjects.insert().values(
+                user_id=user_id,
+                role_id=role_id,
+                subject_id=subject_id
+                ))
+
+            trans.commit()
+
+        except:
+            trans.rollback()
+            raise
+
+        con.close()
+
+        return
+
 def get_role_subject(db_session, email, id):
     role=(db_session.query(Role.name).\
     join(users_subjects, Role.id==users_subjects.c.role_id).join(User, users_subjects.c.user_id==User.id).\
@@ -72,6 +102,18 @@ def get_users_in_subject (db_session, subject_id ):
     .join(users_subjects,User.id==users_subjects.c.user_id).join(Subject, users_subjects.c.subject_id==Subject.id)\
     .filter(Subject.id==subject_id)
     return users
+
+def get_privileges(db_session, email):
+    privileges=db_session.query(Privilege)\
+    .join(privileges_users, Privilege.id==privileges_users.c.privilege_id)\
+    .join(User, privileges_users.c.user_id==User.id)\
+    .filter(User.email==email).all()
+
+    return privileges
+
+def get_user_id(db_session, email):
+    user_id= db_session.query(User.id).filter_by(email=email).first()
+    return user_id
 
 def delete_user_in_subject(db_session, user_id, subject_id):
     db_session.execute('DELETE FROM users_subjects \

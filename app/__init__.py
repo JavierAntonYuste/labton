@@ -83,14 +83,15 @@ def create_app(config_name):
 
             # If failed attempt, error
             if (response==False):
-                error = 'Invalid Credentials. Please try again.'
+                flash('Invalid credentials', 'danger')
+                return redirect('/login')
+
             else:
                 # Changing param of logged_in in session
                 session['logged_in'] = True
                 return redirect('/home')
 
-
-        return render_template('login.html', error=error)
+        return render_template('login.html')
 
     @app.route('/logout', methods=['GET', 'POST'])
     def logout():
@@ -112,13 +113,19 @@ def create_app(config_name):
 
         # Querying database for taking the subjects that each user has access
         subjects = []
-        user_id=db_session.query(models.User.id).filter_by(email=session["email"]).all()
-        for item in user_id:
-            subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==item.id).all()
-            for id in subjects_id:
-                subjects.extend(db_session.query(models.Subject).filter_by(id=id,year=current_year).all())
+        user_id=get_user_id(db_session,session["email"])
+        privileges=get_privileges(db_session, session["email"] )
+        print (privileges)
+        print ("")
 
-        return render_template('home.html', user=(session["email"].split('@'))[0], subjects= subjects)
+        subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==user_id).all()
+        for id in subjects_id:
+            subjects.extend(db_session.query(models.Subject).filter_by(id=id,year=current_year).all())
+
+        user=(session["email"].split('@'))[0]
+
+        return render_template('home.html', \
+        user=user, privileges=privileges, subjects= subjects)
 
     @app.route('/allSubjects')
     @decorators.login_required
@@ -135,6 +142,29 @@ def create_app(config_name):
         print (subjects)
         print(" ")
         return render_template('allSubjects.html', user=(session["email"].split('@'))[0], subjects= subjects)
+    @app.route('/createSubject', methods=['GET', 'POST'])
+    @decorators.login_required
+    @decorators.privileges_required('professor')
+    def createSubject():
+        acronym=request.form["acronym"]
+        name=request.form["name"]
+        degree=request.form["degree"]
+        year= request.form["year"]
+        description=request.form["description"]
+
+        if (acronym=="" or name=="" or degree=="" or year==""):
+            flash('Error! Incompleted fields', 'danger')
+            return redirect('/home')
+
+        create_subject(db_session, acronym, name, degree, year, description)
+        
+        subject_id=db_session.query(models.Subject.id).\
+        filter(models.Subject.acronym==acronym).filter(models.Subject.year==year).\
+        filter(models.Subject.degree==degree).first()
+
+        add_user_to_subject(db_session, engine, session["email"], subject_id, "professor")
+
+        return redirect('/home')
 
     @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -191,7 +221,7 @@ def create_app(config_name):
             for email in data:
                 name = (email.split('@'))[0]
                 user_id = db_session.query(models.User.id).filter_by(email=email).first()
-                role_id = db_session.query(models.Role.id).filter_by(name='student').first()
+
                 # If the user isn't in the DB, we add it
                 if (user_id == None):
                     create_user(db_session, engine, name, email)
@@ -201,28 +231,12 @@ def create_app(config_name):
 
                 #If the user is already added, continue
                 if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id)\
-                .filter_by(user_id=user_id).filter_by(role_id=role_id).first()==None):
+                .filter_by(user_id=user_id).first()==None):
 
                     flash ("Error! User is already added in subject",'danger')
                     continue
 
-                try:
-                    con = engine.connect()
-                    trans = con.begin()
-                    #Creating subject relations
-                    con.execute(models.users_subjects.insert().values(
-                    subject_id= subject_id,
-                    user_id = user_id,
-                    role_id=role_id
-                    ))
-
-                    trans.commit()
-
-                except:
-                    trans.rollback()
-                    raise
-
-                con.close()
+                add_user_to_subject(db_session, engine, email, subject_id, "student")
 
 
             return redirect('/manageSubject/'+ subject_id)
@@ -243,7 +257,6 @@ def create_app(config_name):
             email=request.form['email']
             name = (email.split('@'))[0]
             user_id = db_session.query(models.User.id).filter_by(email=email).first()
-            role_id = db_session.query(models.Role.id).filter_by(name='student').first()
 
             # If the user isn't in the DB, we add it
             if (user_id == None):
@@ -253,27 +266,11 @@ def create_app(config_name):
             user_id = db_session.query(models.User.id).filter_by(email=email).first()
 
             #If the user is already added, return
-            if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id).filter_by(user_id=user_id).filter_by(role_id=role_id).first()==None):
+            if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id).filter_by(user_id=user_id).first()==None):
                 flash ("Error! User is already added in subject",'danger')
                 return redirect('/subject/'+ subject_id)
 
-            try:
-                con = engine.connect()
-                trans = con.begin()
-                #Creating subject relations
-                con.execute(models.users_subjects.insert().values(
-                subject_id= subject_id,
-                user_id = user_id,
-                role_id=role_id
-                ))
-
-                trans.commit()
-
-            except:
-                trans.rollback()
-                raise
-
-            con.close()
+            add_user_to_subject(db_session, engine, email, subject_id, "student")
 
             # Redirecting to same page with a success message
             flash ("Success! User added to subject",'success')
@@ -293,6 +290,8 @@ def create_app(config_name):
 
         flash ("Success! User deleted from subject",'success')
         return redirect('/manageSubject/'+ subject_id)
+
+
 
     @app.route('/users')
     @decorators.login_required

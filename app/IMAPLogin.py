@@ -44,10 +44,11 @@ def IMAPLogin(db_session, engine, email, password):
                 create_user(db_session,engine, user,email)
 
             response=True
-
+        else:
+            return response
     except imaplib.IMAP4.error:
         print("Error logging into Mail")
-        sys.exit(0)  # Fail termination
+        return response  # Fail termination
 
     # Logout of the IMAP server
     imap.logout()
