@@ -72,7 +72,6 @@ def create_app(config_name):
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
-        error = None
         if request.method == 'POST':
 
             #  IMAP Login attempt
@@ -95,10 +94,9 @@ def create_app(config_name):
 
     @app.route('/logout', methods=['GET', 'POST'])
     def logout():
-        error = None
         # Clearing everything charged in session (id, username, logged_in, etc)
         session.clear()
-        return render_template('index.html', error=error)
+        return render_template('index.html')
 
     @app.route('/home')
     @decorators.login_required
@@ -132,16 +130,26 @@ def create_app(config_name):
     def allSubjects():
         # Querying database for taking the subjects that each user has access
         subjects = []
-        user_id=db_session.query(models.User.id).filter_by(email=session["email"]).all()
-        for item in user_id:
-            subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==item.id).all()
-            for id in subjects_id:
-                subjects.extend(db_session.query(models.Subject).filter_by(id=id).all())
+        user_id=db_session.query(models.User.id).filter_by(email=session["email"]).first()
 
+        # If user is admin, render all subjects
 
-        print (subjects)
-        print(" ")
+        privilege_name = db_session.query(models.Privilege.name).join(models.privileges_users, Privilege.id==privileges_users.c.privilege_id)\
+        .filter(privileges_users.c.user_id==user_id).all()
+
+        for name in privilege_name:
+            if name[0]=='admin':
+                subjects_id=db_session.query(models.users_subjects.c.subject_id).all()
+                for id in subjects_id:
+                    subjects.extend(db_session.query(models.Subject).filter_by(id=id).all())
+                return render_template('allSubjects.html', user=(session["email"].split('@'))[0], subjects= subjects)
+
+        subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==user_id).all()
+        for id in subjects_id:
+            subjects.extend(db_session.query(models.Subject).filter_by(id=id).all())
+
         return render_template('allSubjects.html', user=(session["email"].split('@'))[0], subjects= subjects)
+
     @app.route('/createSubject', methods=['GET', 'POST'])
     @decorators.login_required
     @decorators.privileges_required('professor')
@@ -157,7 +165,7 @@ def create_app(config_name):
             return redirect('/home')
 
         create_subject(db_session, acronym, name, degree, year, description)
-        
+
         subject_id=db_session.query(models.Subject.id).\
         filter(models.Subject.acronym==acronym).filter(models.Subject.year==year).\
         filter(models.Subject.degree==degree).first()
@@ -170,7 +178,6 @@ def create_app(config_name):
     @decorators.login_required
     @decorators.privileges_required('user')
     def subject(id):
-        error = None
         subject=db_session.query(models.Subject).filter_by(id=id).first()
         if (subject == None):
             flash('Error! Subject does not exists', 'danger')
@@ -180,13 +187,12 @@ def create_app(config_name):
         user=(session["email"].split('@'))[0]
         role=get_role_subject(db_session, session["email"], id)
 
-        return render_template('subject.html', error=error,user=user, role=role, subject= subject)
+        return render_template('subject.html',user=user, role=role, subject= subject)
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
     # @decorators.privileges_required('professor')
     def configSubject(id):
-        error = None
         subject=db_session.query(models.Subject).filter_by(id=id).first()
         if (subject == None):
             flash('Error! Subject does not exists', 'danger')
@@ -197,7 +203,7 @@ def create_app(config_name):
 
         users_in_subject = get_users_in_subject(db_session,id)
 
-        return render_template('manageSubject.html', error=error,user=user, role=role, subject= subject, users_in_subject=users_in_subject)
+        return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject)
 
 
     @app.route('/uploadUsers', methods=['POST'])

@@ -61,8 +61,11 @@ def create_admin_user(db_session, engine, name, email):
     return
 
 def create_subject(db_session, acronym, name, degree, year, description):
-    subject=Subject(acronym=acronym, name=name, year=year, degree=degree, description=description)
-    db_session.add(subject)
+    # subject=Subjects(acronym="hola", name=name, year=2019, degree='GITST', description="")
+    # db_session.add(subject)
+    db_session.execute('INSERT INTO subjects(acronym,name,year,degree,description) VALUES (:acronym,:name,:year,:degree,:description)',\
+    {'acronym': acronym, 'name':name, 'year':year, 'degree':degree, 'description':description})
+
     db_session.commit()
     return
 
@@ -99,8 +102,9 @@ def get_role_subject(db_session, email, id):
 
 def get_users_in_subject (db_session, subject_id ):
     users=db_session.query(User)\
-    .join(users_subjects,User.id==users_subjects.c.user_id).join(Subject, users_subjects.c.subject_id==Subject.id)\
-    .filter(Subject.id==subject_id)
+    .join(users_subjects,User.id==users_subjects.c.user_id)\
+    .filter(users_subjects.c.subject_id==subject_id)
+
     return users
 
 def get_privileges(db_session, email):
