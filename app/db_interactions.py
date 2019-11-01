@@ -101,9 +101,8 @@ def get_role_subject(db_session, email, id):
     return role
 
 def get_users_in_subject (db_session, subject_id ):
-    users=db_session.query(User)\
-    .join(users_subjects,User.id==users_subjects.c.user_id)\
-    .filter(users_subjects.c.subject_id==subject_id)
+    users=db_session.query(users_subjects.c.user_id, users_subjects.c.role_id)\
+    .filter(users_subjects.c.subject_id==subject_id).all()
 
     return users
 

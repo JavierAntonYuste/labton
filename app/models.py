@@ -3,7 +3,6 @@ from sqlalchemy import *
 from app.db_init import Base
 from sqlalchemy.orm import relationship, backref
 
-#TODO in this table, there must be only one entre per user and subject!! PRIMARY KEY= user_id+subject_id?
 users_subjects = Table(
     'users_subjects',
      Base.metadata,

@@ -82,7 +82,7 @@
         <h1 class="h3 mb-0 text-gray-800">{{subject.acronym}} ({{subject.year}}-{{subject.year+1}})</h1>
 
 
-      {% if role=='professor'%}
+      {% if role=='professor' or role=='admin'%}
       <div class="col-4"
         <!-- Button trigger modal -->
         <a href="/manageSubject/{{subject.id}}" class="btn btn-primary" >

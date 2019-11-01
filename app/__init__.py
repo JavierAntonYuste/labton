@@ -183,9 +183,17 @@ def create_app(config_name):
             flash('Error! Subject does not exists', 'danger')
             return redirect('/home')
 
-
         user=(session["email"].split('@'))[0]
+        privileges=get_privileges(db_session, session["email"])
+
+        for privilege in privileges:
+            if privilege.name== 'admin':
+                role='admin'
+                return render_template('subject.html',user=user, role=role, subject= subject)
+
         role=get_role_subject(db_session, session["email"], id)
+
+
 
         return render_template('subject.html',user=user, role=role, subject= subject)
 
@@ -199,11 +207,25 @@ def create_app(config_name):
             return redirect('/home')
 
         user=(session["email"].split('@'))[0]
+        users = get_users_in_subject(db_session,id)
+
+        users_in_subject=[]
+        for i in range(len(users)):
+            row = [db_session.query(User).filter(User.id==users[i][0]).first(), db_session.query(Role).filter(Role.id==users[i][1]).first()]
+            users_in_subject.append(row)
+
+        privileges=get_privileges(db_session, session["email"])
+
+        for privilege in privileges:
+            if privilege.name== 'admin':
+                role='admin'
+                return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject)
+
         role=get_role_subject(db_session, session["email"], id)
 
-        users_in_subject = get_users_in_subject(db_session,id)
+        roles_db=db_session.query(models.Role).all()
 
-        return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject)
+        return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
 
 
     @app.route('/uploadUsers', methods=['POST'])
@@ -239,10 +261,10 @@ def create_app(config_name):
                 if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id)\
                 .filter_by(user_id=user_id).first()==None):
 
-                    flash ("Error! User is already added in subject",'danger')
+                    flash ("Warning! User was already added",'warning')
                     continue
 
-                add_user_to_subject(db_session, engine, email, subject_id, "student")
+                add_user_to_subject(db_session, engine, email, subject_id, request.form["role"])
 
 
             return redirect('/manageSubject/'+ subject_id)

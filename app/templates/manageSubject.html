@@ -114,8 +114,26 @@
                           <input type="file" class="custom-file-input"name="file" id="js-upload-input">
 
                         </div> -->
-                        <input type="file" name="file" id="js-upload-files" >
+                        <label> CSV File </label>
+                        <div class="row">
+                          <div class="col">
+
+                            <input type="file" name="file" id="js-upload-files" >
+                          </div>
+                        </div>
+
                         <input type="hidden" name="subject_id" value={{subject.id}}>
+
+                        <div class="row pt-2 pb-2">
+                          <div class="col">
+                            <label> Role </label>
+                            <select class="custom-select" name="role" id="role">
+                              {% for role in roles_db%}
+                              <option value={{role.name}}>{{role.name}}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
 
                   </div>
 
@@ -149,8 +167,25 @@
                   <div class="col">
                     <div class="form-group">
                     <form action="/uploadUser" method="post" id="upload-form">
-                        <input class= "form-control" type="email" name="email" id="js-upload-files" placeholder="User email" enctype="multipart/form-data" >
-                        <input type="hidden" name="subject_id" value={{subject.id}}>
+                      <div class="row pt-2 pb-2">
+                        <div class="col">
+                          <input class= "form-control" type="email" name="email" id="js-upload-files" placeholder="User email" enctype="multipart/form-data" >
+
+                          <input type="hidden" name="subject_id" value={{subject.id}}>
+                        </div>
+                      </div>
+
+                      <div class="row pt-2 pb-2">
+                        <div class="col">
+                          <label> Role </label>
+                          <select class="custom-select" name="role" id="role">
+                            {% for role in roles_db%}
+                            <option value={{role.name}}>{{role.name}}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
                 </div>
@@ -178,27 +213,34 @@
             <tr>
               <th scope="col" class="text-center">Name</th>
               <th scope="col" class="text-center">Email</th>
+              <th scope="col" class="text-center">Role</th>
               <th scope="col" class="text-center">Actions</th>
+
             </tr>
           </thead>
           <tbody>
             {% for user in users_in_subject%}
+
               <tr>
-                <td class="text-center">{{user.username}}</td>
-                <td class="text-center">{{user.email}}</td>
+                <td class="text-center">{{user[0].username}}</td>
+                <td class="text-center">{{user[0].email}}</td>
+                <td class="text-center">{{user[1].name}}</td>
                 <td class="text-center">
-                  <div class="row text-center">
+                  <div class="row">
+                    <div class="col-sm">
                       <a href="#" class="btn btn-secondary" >
                           <span class="icon text-white-50">
                             <b class="icon text-white">Modify</b>
                           </span>
                       </a>
-
+                    </div>
+                    <div class="col-sm">
                       <form action="/deleteUserSubject" method="POST">
-                          <input type="hidden" name="user_id" value={{user.id}} >
+                          <input type="hidden" name="user_id" value={{user[0].id}} >
                           <input type="hidden" name="subject_id" value={{subject.id}}>
                           <button type="submit" class="btn btn-secondary">Delete</button>
                       </form>
+                    </div>
                   </div>
                 </td>
               </tr>
