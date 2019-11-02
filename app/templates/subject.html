@@ -79,31 +79,47 @@
       {% endwith %}
       <!-- Page Heading -->
       <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">{{subject.acronym}} ({{subject.year}}-{{subject.year+1}})</h1>
+        <div class="col-8">
 
+          <h1 class="h3 mb-0 text-gray-800">{{subject.acronym}} ({{subject.year}}-{{subject.year+1}})</h1>
+        </div>
 
+      <div class="col">
       {% if role=='professor' or role=='admin'%}
-      <div class="col-4"
-        <!-- Button trigger modal -->
         <a href="/manageSubject/{{subject.id}}" class="btn btn-primary" >
             <span class="icon">
               Manage Users
             </span>
         </a>
       </div>
+      <div class="col">
+        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#deleteSubjectModal">
+          Delete Subject
+        </button>
+
+        <!-- Logout Modal-->
+        <div class="modal fade" id="deleteSubjectModal" tabindex="-1" role="dialog"  aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Are you sure?</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Cancel">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">Click "Delete" for eliminate this Subject.</div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <a class="btn btn-primary" href="/deleteSubject/{{subject.id}}">Delete</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
       {% endif %}
-
+      </div>
       </div>
 
-
-
-      <!-- Content Row -->
-
-
-      <!-- Content Row -->
-      <div class="row">
-
-      </div>
 
     </div>
     <!-- /.container-fluid -->

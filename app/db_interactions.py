@@ -125,3 +125,15 @@ def delete_user_in_subject(db_session, user_id, subject_id):
     db_session.commit()
 
     return
+
+def delete_subject(db_session, subject_id):
+    # Delete relations
+    db_session.execute('DELETE FROM users_subjects \
+    WHERE subject_id = :subject_id'  , {'subject_id': subject_id})
+    db_session.commit()
+
+    # Delete Subject
+    db_session.execute('DELETE FROM subjects \
+    WHERE id = :subject_id'  , {'subject_id': subject_id})
+
+    db_session.commit()

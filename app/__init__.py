@@ -139,9 +139,7 @@ def create_app(config_name):
 
         for name in privilege_name:
             if name[0]=='admin':
-                subjects_id=db_session.query(models.users_subjects.c.subject_id).all()
-                for id in subjects_id:
-                    subjects.extend(db_session.query(models.Subject).filter_by(id=id).all())
+                subjects.extend(db_session.query(models.Subject).all())
                 return render_template('allSubjects.html', user=(session["email"].split('@'))[0], subjects= subjects)
 
         subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==user_id).all()
@@ -152,7 +150,7 @@ def create_app(config_name):
 
     @app.route('/createSubject', methods=['GET', 'POST'])
     @decorators.login_required
-    @decorators.privileges_required('professor')
+    @decorators.privileges_required('professor','admin')
     def createSubject():
         acronym=request.form["acronym"]
         name=request.form["name"]
@@ -215,15 +213,15 @@ def create_app(config_name):
             users_in_subject.append(row)
 
         privileges=get_privileges(db_session, session["email"])
+        roles_db=db_session.query(models.Role).all()
 
         for privilege in privileges:
             if privilege.name== 'admin':
                 role='admin'
-                return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject)
+                return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
 
         role=get_role_subject(db_session, session["email"], id)
 
-        roles_db=db_session.query(models.Role).all()
 
         return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
 
@@ -298,7 +296,7 @@ def create_app(config_name):
                 flash ("Error! User is already added in subject",'danger')
                 return redirect('/subject/'+ subject_id)
 
-            add_user_to_subject(db_session, engine, email, subject_id, "student")
+            add_user_to_subject(db_session, engine, email, subject_id,  request.form["role"])
 
             # Redirecting to same page with a success message
             flash ("Success! User added to subject",'success')
@@ -311,7 +309,7 @@ def create_app(config_name):
     @app.route('/deleteUserSubject',  methods=['GET', 'POST'])
     @decorators.login_required
     # @decorators.privileges_required('professor')
-    def deleteUser():
+    def deleteUserSubject():
         user_id=request.form['user_id']
         subject_id=request.form['subject_id']
         delete_user_in_subject(db_session, user_id, subject_id)
@@ -319,6 +317,14 @@ def create_app(config_name):
         flash ("Success! User deleted from subject",'success')
         return redirect('/manageSubject/'+ subject_id)
 
+    @app.route('/deleteSubject/<id>', methods=['GET','POST'])
+    @decorators.login_required
+    # @decorators.privileges_required('professor', 'admin')
+    def deleteSubject(id):
+
+        delete_subject(db_session, id)
+
+        return redirect('/home')
 
 
     @app.route('/users')

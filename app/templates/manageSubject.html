@@ -79,20 +79,24 @@
       {% endwith %}
       <!-- Page Heading -->
       <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Users from {{subject.acronym}} ({{subject.year}}-{{subject.year+1}})</h1>
+        <div class="col-8">
+          <h1 class="h3 mb-0 text-gray-800">Users from {{subject.acronym}} ({{subject.year}}-{{subject.year+1}})</h1>
+        </div>
 
-
-      {% if role=='professor'%}
-      <div class="col-4"
+      <div class="col-5 float-right">
+      {% if role=='professor' or role=='admin'%}
         <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadUserModal">
-          Import user
-        </button>
+
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadUserModal">
+            Import user
+          </button>
+
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadUsersCSVModal">
           Import users from CSV
         </button>
-      </div>
+
       {% endif %}
+      </div>
         <!-- CSV Modal -->
         <div class="modal fade" id="uploadUsersCSVModal" tabindex="-1" role="dialog" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered" role="document">
@@ -228,11 +232,9 @@
                 <td class="text-center">
                   <div class="row">
                     <div class="col-sm">
-                      <a href="#" class="btn btn-secondary" >
-                          <span class="icon text-white-50">
-                            <b class="icon text-white">Modify</b>
-                          </span>
-                      </a>
+                      <button type="button" class="btn btn-secondary modify-user" data-toggle="modal" data-user-email="{{user[0].email}}" data-target="#modifyUserModal">
+                        Modify Role
+                      </button>
                     </div>
                     <div class="col-sm">
                       <form action="/deleteUserSubject" method="POST">
@@ -249,6 +251,57 @@
         </table>
 
       </div>
+
+      <!-- Subject Modal -->
+      <div class="modal fade" id="modifyUserModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title" id="uploadUsersCSVTitle">Modify Role</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+
+            <div class="modal-body">
+              <h6> Introduce new role </h6>
+            <form action="/changeRole" method="post" id="upload-form" enctype="multipart/form-data">
+              <div class="row pt-2 pb-2">
+                <div class="col">
+                  <label> NOT WORKING: PASS USER EMAIL TO MODAL </label>
+                  <select class="custom-select" name="role" id="role">
+                    {% for role in roles_db%}
+                    <option value={{role.name}}>{{role.name}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+              </div>
+
+              </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn  btn-primary">Create</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- end modal modify User Subject-->
+      <script>
+          $(document).ready(function () {
+          $(‘body’).on(‘click’, ‘.modify-user’,function(){
+
+            var userEmailId = $(this).data('user-email');
+            $(".modal-body #user_subject_id").val( userEmailId );
+            $('#modifyUserModal').modal('show');
+
+          });
+          });
+      </script>
 
     </div>
     <!-- /.container-fluid -->

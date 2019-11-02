@@ -70,6 +70,7 @@ class Subject(Base):
     year = Column(Integer, nullable = False)
     description = Column(String(1000))
     degree = Column(String(100), nullable=False)
+
     users = relationship('User', secondary=users_subjects,
                             backref=backref('subjects', lazy='dynamic'))
 
