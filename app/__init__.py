@@ -250,7 +250,7 @@ def create_app(config_name):
 
                 # If the user isn't in the DB, we add it
                 if (user_id == None):
-                    create_user(db_session, engine, name, email)
+                    create_user(db_session, engine, name, email, "user")
 
                 # Taking id again in case the user didn't exist
                 user_id = db_session.query(models.User.id).filter_by(email=email).first()
@@ -286,7 +286,7 @@ def create_app(config_name):
 
             # If the user isn't in the DB, we add it
             if (user_id == None):
-                create_user(db_session, engine, name, email)
+                create_user(db_session, engine, name, email, "user")
 
             # Taking id again in case the user didn't exist
             user_id = db_session.query(models.User.id).filter_by(email=email).first()
@@ -331,18 +331,42 @@ def create_app(config_name):
     @decorators.login_required
     @decorators.privileges_required('admin')
     def users():
-        error = None
-        return render_template('users.html', error=error,user=(session["email"].split('@'))[0])
+        user=(session["email"].split('@'))[0]
+        users = get_users(db_session)
+        privileges=db_session.query(Privilege).all()
 
-    @app.route('/test')
+        users_in_system=[]
+
+        for i in range(len(users)):
+            row = [db_session.query(User).filter(User.id==users[i][0]).first(), db_session.query(Privilege).filter(Privilege.id==users[i][1]).first()]
+            users_in_system.append(row)
+
+        return render_template('users.html', users=users_in_system, privileges=privileges)
+
+    @app.route('/createUser', methods=['GET', 'POST'])
     @decorators.login_required
-    def test():
-        with app.app_context():
-            roles=models.Role.query.filter_by(name="superuser").all()
-            id=(o.id for o in roles)
-            print (next(id))
+    @decorators.privileges_required('admin')
+    def createUser():
+        email=request.form["email"]
+        privilege=request.form["privilege"]
 
-        return render_template('index.html')
+        if (db_session.query(User).filter(User.email==email)!=None):
+            flash('Error: User already exists', 'danger')
+            return redirect('/users')
+
+        name=email.split('@')[0]
+        create_user(db_session,engine,name,email,privilege)
+
+        return redirect('/users')
+
+    @app.route('/deleteUser', methods=['GET', 'POST'])
+    @decorators.login_required
+    @decorators.privileges_required('admin')
+    def deleteUser():
+        user_id=request.form['user_id']
+        delete_user(db_session,user_id)
+
+        return redirect('/users')
 
     migrate = Migrate(app,db)
 

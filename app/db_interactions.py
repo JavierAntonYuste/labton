@@ -1,6 +1,7 @@
 from app.models import *
 
-def create_user(db_session, engine, name, email):
+# INSERT queries __________________________________________________________________-
+def create_user(db_session, engine, name, email, privilege_name):
     user=User(username=name,email= email)
     db_session.add(user)
     db_session.commit()
@@ -9,7 +10,7 @@ def create_user(db_session, engine, name, email):
         con = engine.connect()
         trans = con.begin()
         user_id = db_session.query(User.id).filter_by(email=email).first()
-        privilege_id = db_session.query(Privilege.id).filter_by(name='user').first()
+        privilege_id = db_session.query(Privilege.id).filter_by(name=privilege_name).first()
 
         # Creating relations
         con.execute(privileges_users.insert().values(
@@ -93,6 +94,12 @@ def add_user_to_subject(db_session, engine, email, subject_id, role_name ):
 
         return
 
+# SELECT queries _______________________________________________________________
+
+def get_users(db_session):
+    users= db_session.query(privileges_users.c.user_id,privileges_users.c.privilege_id).all()
+    return users
+
 def get_role_subject(db_session, email, id):
     role=(db_session.query(Role.name).\
     join(users_subjects, Role.id==users_subjects.c.role_id).join(User, users_subjects.c.user_id==User.id).\
@@ -118,6 +125,8 @@ def get_user_id(db_session, email):
     user_id= db_session.query(User.id).filter_by(email=email).first()
     return user_id
 
+
+# DELETE queries ___________________________________________________________________
 def delete_user_in_subject(db_session, user_id, subject_id):
     db_session.execute('DELETE FROM users_subjects \
     WHERE subject_id = :subject_id AND user_id = :user_id'  , {'subject_id': subject_id, 'user_id': user_id})
@@ -135,5 +144,21 @@ def delete_subject(db_session, subject_id):
     # Delete Subject
     db_session.execute('DELETE FROM subjects \
     WHERE id = :subject_id'  , {'subject_id': subject_id})
+
+    db_session.commit()
+
+def delete_user(db_session, user_id):
+    # Delete relations
+    db_session.execute('DELETE FROM users_subjects \
+    WHERE user_id= :user_id'  , {'user_id': user_id})
+
+    db_session.execute('DELETE FROM privileges_users \
+    WHERE user_id= :user_id'  , {'user_id': user_id})
+
+    db_session.commit()
+
+    # Delete Subject
+    db_session.execute('DELETE FROM user \
+    WHERE id = :user_id'  , {'user_id': user_id})
 
     db_session.commit()
