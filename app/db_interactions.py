@@ -127,15 +127,31 @@ def get_user_id(db_session, email):
 
 # UPDATE queries____________________________________________________________________
 
-def change_role(db_session,engine, email, role, subject_id):
-    user_id= db_session.query(User.id).filter(User.email==email)
-    role_id= db_session.query(Role.id).filter(Role.name==role)
+def change_role(db_session, email, role, subject_id):
+    user_id= db_session.query(User.id).filter(User.email==email).first()
+    role_id= db_session.query(Role.id).filter(Role.name==role).first()
 
-    db_session.query(users_subjects).filter(users_subjects.c.user_id==user_id).filter(users_subjects.c.subject_id==subject_id).first()\
-    .update(users_subjects.c.role_id==role_id)
+    db_session.execute('UPDATE users_subjects\
+    SET role_id = :role_id WHERE user_id = :user_id AND subject_id= :subject_id',\
+    {'role_id': role_id,\
+     'user_id': user_id, \
+     'subject_id':  subject_id})
+
     db_session.commit()
+    return
 
 
+def change_privilege(db_session, email, privilege):
+    user_id= db_session.query(User.id).filter(User.email==email).first()
+    privilege_id= db_session.query(Privilege.id).filter(Privilege.name==privilege).first()
+
+    db_session.execute('UPDATE privileges_users\
+    SET privilege_id = :privilege_id WHERE user_id = :user_id',\
+    {'privilege_id': privilege_id,\
+     'user_id': user_id, \
+     })
+
+    db_session.commit()
     return
 
 # DELETE queries ___________________________________________________________________

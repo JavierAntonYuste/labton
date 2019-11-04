@@ -307,7 +307,7 @@ def create_app(config_name):
         email=request.form['email']
         subject_id=request.form['subject_id']
 
-        change_role(db_session, engine, email, role, subject_id)
+        change_role(db_session, email, role, subject_id)
 
         return redirect('/manageSubject/'+ subject_id)
 
@@ -348,6 +348,7 @@ def create_app(config_name):
 
         return render_template('users.html', user=user, users=users_in_system, privileges=privileges)
 
+
     @app.route('/createUser', methods=['GET', 'POST'])
     @decorators.login_required
     @decorators.privileges_required('admin')
@@ -361,6 +362,17 @@ def create_app(config_name):
 
         name=email.split('@')[0]
         create_user(db_session,engine,name,email,privilege)
+
+        return redirect('/users')
+
+    @app.route('/changePrivilege', methods=['GET', 'POST'])
+    @decorators.login_required
+    @decorators.privileges_required('admin')
+    def changePrivilege():
+        privilege=request.form['privilege']
+        email=request.form['email']
+
+        change_privilege(db_session, email, privilege)
 
         return redirect('/users')
 
