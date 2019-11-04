@@ -309,6 +309,8 @@ def create_app(config_name):
 
         change_role(db_session, email, role, subject_id)
 
+        flash ("Success! You changed the role of " + email + " to " + role ,'success')
+
         return redirect('/manageSubject/'+ subject_id)
 
     @app.route('/deleteUserSubject',  methods=['GET', 'POST'])
@@ -317,6 +319,7 @@ def create_app(config_name):
     def deleteUserSubject():
         user_id=request.form['user_id']
         subject_id=request.form['subject_id']
+
         delete_user_in_subject(db_session, user_id, subject_id)
 
         flash ("Success! User deleted from subject",'success')
@@ -330,7 +333,6 @@ def create_app(config_name):
         delete_subject(db_session, id)
 
         return redirect('/home')
-
 
     @app.route('/users')
     @decorators.login_required
@@ -374,6 +376,7 @@ def create_app(config_name):
 
         change_privilege(db_session, email, privilege)
 
+        flash ("Success! You changed the privilege of " + email + " to " + privilege ,'success')
         return redirect('/users')
 
     @app.route('/deleteUser', methods=['GET', 'POST'])
@@ -381,8 +384,10 @@ def create_app(config_name):
     @decorators.privileges_required('admin')
     def deleteUser():
         user_id=request.form['user_id']
+
         delete_user(db_session,user_id)
 
+        flash ("Success! User deleted from system",'success')
         return redirect('/users')
 
     migrate = Migrate(app,db)
