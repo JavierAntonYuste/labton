@@ -69,9 +69,7 @@
         {% if messages %}
           <ul class=flashes>
           {% for category, message in messages %}
-            <!-- <div class="alert alert-danger text-center">
-              <strong>Error!</strong> {{message}}
-            </div> -->
+
             <div class="alert alert-{{ category }} text-center"> {{ message}} </div>
           {% endfor %}
           </ul>
@@ -223,36 +221,38 @@
             </tr>
           </thead>
           <tbody>
-            {% for user in users_in_subject%}
-
+            {% for users in users_in_subject%}
               <tr>
-                <td class="text-center">{{user[0].username}}</td>
-                <td class="text-center">{{user[0].email}}</td>
-                <td class="text-center">{{user[1].name}}</td>
+                <td class="text-center">{{users[0].username}}</td>
+                <td class="text-center">{{users[0].email}}</td>
+                <td class="text-center">{{users[1].name}}</td>
+
                 <td class="text-center">
+                  {% if not user==(users[0].email.split('@'))[0]%}
                   <div class="row">
                     <div class="col-sm">
-                      <button type="button" class="btn btn-secondary modify-user" data-toggle="modal" data-user-email="{{user[0].email}}" data-target="#modifyUserModal">
+                      <button type="button" class="btn btn-secondary float-right modify-user" data-toggle="modal" data-user-email="{{users[0].email}}" data-target="#modifyUserModal">
                         Modify Role
                       </button>
                     </div>
-                    <div class="col-sm">
+                    <div class="col-sm ">
                       <form action="/deleteUserSubject" method="POST">
-                          <input type="hidden" name="user_id" value={{user[0].id}} >
+                          <input type="hidden" name="user_id" value={{users[0].id}} >
                           <input type="hidden" name="subject_id" value={{subject.id}}>
-                          <button type="submit" class="btn btn-secondary">Delete</button>
+                          <button type="submit" class="btn btn-secondary float-left">Delete</button>
                       </form>
                     </div>
                   </div>
+                  {% endif %}
                 </td>
               </tr>
             {% endfor%}
           </tbody>
         </table>
-
       </div>
 
-      <!-- Subject Modal -->
+
+      <!-- modify User Modal -->
       <div class="modal fade" id="modifyUserModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">

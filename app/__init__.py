@@ -113,8 +113,6 @@ def create_app(config_name):
         subjects = []
         user_id=get_user_id(db_session,session["email"])
         privileges=get_privileges(db_session, session["email"] )
-        print (privileges)
-        print ("")
 
         subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==user_id).all()
         for id in subjects_id:
@@ -190,9 +188,7 @@ def create_app(config_name):
                 return render_template('subject.html',user=user, role=role, subject= subject)
 
         role=get_role_subject(db_session, session["email"], id)
-
-
-
+        
         return render_template('subject.html',user=user, role=role, subject= subject)
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
@@ -221,8 +217,6 @@ def create_app(config_name):
                 return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
 
         role=get_role_subject(db_session, session["email"], id)
-
-
         return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
 
 
@@ -244,6 +238,7 @@ def create_app(config_name):
                     if row[email_index]=='EMAIL':
                         continue
                     data.append(row[email_index])
+
             for email in data:
                 name = (email.split('@'))[0]
                 user_id = db_session.query(models.User.id).filter_by(email=email).first()
@@ -263,7 +258,6 @@ def create_app(config_name):
                     continue
 
                 add_user_to_subject(db_session, engine, email, subject_id, request.form["role"])
-
 
             return redirect('/manageSubject/'+ subject_id)
         else:
@@ -293,8 +287,8 @@ def create_app(config_name):
 
             #If the user is already added, return
             if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id).filter_by(user_id=user_id).first()==None):
-                flash ("Error! User is already added in subject",'danger')
-                return redirect('/subject/'+ subject_id)
+                flash ("Warning! User was already added",'warning')
+                return redirect('/manageSubject/'+ subject_id)
 
             add_user_to_subject(db_session, engine, email, subject_id,  request.form["role"])
 
@@ -341,7 +335,7 @@ def create_app(config_name):
             row = [db_session.query(User).filter(User.id==users[i][0]).first(), db_session.query(Privilege).filter(Privilege.id==users[i][1]).first()]
             users_in_system.append(row)
 
-        return render_template('users.html', users=users_in_system, privileges=privileges)
+        return render_template('users.html', user=user, users=users_in_system, privileges=privileges)
 
     @app.route('/createUser', methods=['GET', 'POST'])
     @decorators.login_required
