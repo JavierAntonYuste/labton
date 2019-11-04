@@ -188,7 +188,7 @@ def create_app(config_name):
                 return render_template('subject.html',user=user, role=role, subject= subject)
 
         role=get_role_subject(db_session, session["email"], id)
-        
+
         return render_template('subject.html',user=user, role=role, subject= subject)
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
@@ -299,6 +299,17 @@ def create_app(config_name):
             # If there is not email, flash error
             flash ("Error! Empty input",'danger')
             return redirect('/manageSubject/'+ subject_id)
+
+    @app.route('/changeRole', methods=['GET', 'POST'])
+    @decorators.login_required
+    def changeRole():
+        role=request.form['role']
+        email=request.form['email']
+        subject_id=request.form['subject_id']
+
+        change_role(db_session, engine, email, role, subject_id)
+
+        return redirect('/manageSubject/'+ subject_id)
 
     @app.route('/deleteUserSubject',  methods=['GET', 'POST'])
     @decorators.login_required

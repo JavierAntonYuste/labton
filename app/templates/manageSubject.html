@@ -231,10 +231,19 @@
                   {% if not user==(users[0].email.split('@'))[0]%}
                   <div class="row">
                     <div class="col-sm">
-                      <button type="button" class="btn btn-secondary float-right modify-user" data-toggle="modal" data-user-email="{{users[0].email}}" data-target="#modifyUserModal">
-                        Modify Role
-                      </button>
+                      <a data-toggle="modal" data-id="{{users[0].email}}" title="Add this item" class="modifyUserModal btn btn-secondary float-right" href="#modifyUserModal">Modify Role</a>
                     </div>
+
+                    <script>
+                    $(document).ready(function () {
+                      $(document).on("click", ".modifyUserModal", function () {
+                           var userEmail = $(this).data('id');
+                           $(".modal-body #email").val( userEmail );
+                      });
+                    });
+
+                    </script>
+
                     <div class="col-sm ">
                       <form action="/deleteUserSubject" method="POST">
                           <input type="hidden" name="user_id" value={{users[0].id}} >
@@ -250,6 +259,8 @@
           </tbody>
         </table>
       </div>
+
+
 
 
       <!-- modify User Modal -->
@@ -268,12 +279,15 @@
             <form action="/changeRole" method="post" id="upload-form" enctype="multipart/form-data">
               <div class="row pt-2 pb-2">
                 <div class="col">
-                  <label> NOT WORKING: PASS USER EMAIL TO MODAL </label>
+                  <label> New Role </label>
                   <select class="custom-select" name="role" id="role">
                     {% for role in roles_db%}
                     <option value={{role.name}}>{{role.name}}</option>
                     {% endfor %}
                   </select>
+                  <input type="hidden" name="email" id="email" value=""/>
+                  <input type="hidden" name="subject_id" value={{subject.id}}>
+
                 </div>
 
               </div>
@@ -291,17 +305,6 @@
 
 
       <!-- end modal modify User Subject-->
-      <script>
-          $(document).ready(function () {
-          $(‘body’).on(‘click’, ‘.modify-user’,function(){
-
-            var userEmailId = $(this).data('user-email');
-            $(".modal-body #user_subject_id").val( userEmailId );
-            $('#modifyUserModal').modal('show');
-
-          });
-          });
-      </script>
 
     </div>
     <!-- /.container-fluid -->
@@ -320,6 +323,7 @@
 <a class="scroll-to-top rounded" href="#page-top">
 <i class="fas fa-angle-up"></i>
 </a>
+
 
 
 {% endblock body%}
