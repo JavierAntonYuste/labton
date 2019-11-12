@@ -84,6 +84,8 @@
               Manage Users
             </span>
         </a>
+        {% endif%}
+        {% if role=='admin'%}
         <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#deleteSubjectModal">
           Delete Subject
         </button>

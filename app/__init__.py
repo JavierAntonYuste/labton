@@ -15,7 +15,7 @@ from functools import wraps
 
 from flask_sslify import SSLify
 import datetime
-from app import decorators
+from app import decorators, appconfig
 from app.db_init import init_db, db, db_session, engine
 from app.db_interactions import *
 
@@ -121,7 +121,7 @@ def create_app(config_name):
         user=(session["email"].split('@'))[0]
 
         return render_template('home.html', \
-        user=user, privileges=privileges, subjects= subjects)
+        user=user, privileges=privileges, subjects= subjects, degrees=appconfig.degrees)
 
     @app.route('/allSubjects')
     @decorators.login_required
@@ -148,7 +148,7 @@ def create_app(config_name):
 
     @app.route('/createSubject', methods=['GET', 'POST'])
     @decorators.login_required
-    @decorators.privileges_required('professor','admin')
+    @decorators.privileges_required('admin', 'professor')
     def createSubject():
         acronym=request.form["acronym"]
         name=request.form["name"]
@@ -166,13 +166,12 @@ def create_app(config_name):
         filter(models.Subject.acronym==acronym).filter(models.Subject.year==year).\
         filter(models.Subject.degree==degree).first()
 
-        add_user_to_subject(db_session, engine, session["email"], subject_id, "professor")
+        add_user_to_subject(db_session, engine, session["email"], subject_id, "admin")
 
         return redirect('/home')
 
     @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
-    @decorators.privileges_required('user')
     def subject(id):
         subject=db_session.query(models.Subject).filter_by(id=id).first()
         if (subject == None):
@@ -358,7 +357,7 @@ def create_app(config_name):
         email=request.form["email"]
         privilege=request.form["privilege"]
 
-        if (db_session.query(User).filter(User.email==email)!=None):
+        if (db_session.query(User).filter(User.email==email)==None):
             flash('Error: User already exists', 'danger')
             return redirect('/users')
 

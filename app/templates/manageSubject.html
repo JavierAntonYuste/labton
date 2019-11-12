@@ -222,9 +222,13 @@
                 <td class="text-center">
                   {% if not user==(users[0].email.split('@'))[0]%}
                   <div class="row">
+                    {% if role=='admin'%}
                     <div class="col-sm">
-                      <a data-toggle="modal" data-id="{{users[0].email}}" title="Add this item" class="modifyUserModal btn btn-secondary float-right" href="#modifyUserModal">Modify Role</a>
+
+                      <a data-toggle="modal" data-id="{{users[0].email}}" title="Add this item" class="modifyUserModal btn btn-secondary" href="#modifyUserModal">Modify Role</a>
+
                     </div>
+                    {% endif %}
 
                     <script>
                     $(document).ready(function () {
@@ -236,11 +240,11 @@
 
                     </script>
 
-                    <div class="col-sm ">
+                    <div class="col-sm text-center">
                       <form action="/deleteUserSubject" method="POST">
                           <input type="hidden" name="user_id" value={{users[0].id}} >
                           <input type="hidden" name="subject_id" value={{subject.id}}>
-                          <button type="submit" class="btn btn-secondary float-left">Delete</button>
+                          <button type="submit" class="btn btn-secondary ">Delete</button>
                       </form>
                     </div>
                   </div>
@@ -271,7 +275,6 @@
             <form action="/changeRole" method="post" id="upload-form" enctype="multipart/form-data">
               <div class="row pt-2 pb-2">
                 <div class="col">
-                  <label> New Role </label>
                   <select class="custom-select" name="role" id="role">
                     {% for role in roles_db%}
                     <option value={{role.name}}>{{role.name}}</option>

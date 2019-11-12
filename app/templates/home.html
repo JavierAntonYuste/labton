@@ -219,7 +219,11 @@
                 <div class="row pt-2 pb-2">
                   <div class="col">
                       <label> Degree </label>
-                        <input class= "form-control" name="degree" placeholder="Degree" >
+                      <select class="custom-select" name="degree" id="degree">
+                        {% for degree in degrees%}
+                        <option value={{degree}}>{{degree}}</option>
+                        {% endfor%}
+                      </select>
                   </div>
                 </div>
 
@@ -237,7 +241,7 @@
 
                         for (var year = currentYear +1 ; year >= min; year--) {
                             nextYear=year+1
-                            options += "<option value='"+year+"' year>" + year+" - "+ nextYear + "</option>";
+                            options += "<option value='"+year+"'>" + year+" - "+ nextYear + "</option>";
                         }
                         document.getElementById("year").innerHTML = options;
                     </script>

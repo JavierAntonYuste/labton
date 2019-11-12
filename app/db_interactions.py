@@ -62,8 +62,6 @@ def create_admin_user(db_session, engine, name, email):
     return
 
 def create_subject(db_session, acronym, name, degree, year, description):
-    # subject=Subjects(acronym="hola", name=name, year=2019, degree='GITST', description="")
-    # db_session.add(subject)
     db_session.execute('INSERT INTO subjects(acronym,name,year,degree,description) VALUES (:acronym,:name,:year,:degree,:description)',\
     {'acronym': acronym, 'name':name, 'year':year, 'degree':degree, 'description':description})
 
