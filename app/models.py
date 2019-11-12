@@ -8,54 +8,43 @@ users_subjects = Table(
      Base.metadata,
     Column('subject_id', Integer(), ForeignKey('subjects.id'),primary_key=True),
     Column('user_id', Integer(), ForeignKey('user.id'),primary_key=True),
-    Column('role_id', ForeignKey('role.id'))
+    Column('role_id', ForeignKey('role.id'), nullable=False)
 )
 
 privileges_users = Table(
     'privileges_users',
      Base.metadata,
-    Column('user_id', Integer(), ForeignKey('user.id')),
-    Column('privilege_id', Integer(), ForeignKey('privilege.id'))
+    Column('user_id', Integer(), ForeignKey('user.id'), primary_key=True),
+    Column('privilege_id', Integer(), ForeignKey('privilege.id'), primary_key=True)
 )
 
 class Role(Base):
 
     __tablename__= 'role'
 
-    id = Column(Integer(), primary_key=True)
-    name = Column(String(80), unique=True)
+    id = Column(Integer(), primary_key=True, autoincrement=True)
+    name = Column(String(80), unique=True, nullable=False)
     description = Column(String(255))
 
-    def __str__(self):
-        return self.name
 
 class Privilege(Base):
 
     __tablename__= 'privilege'
 
-    id = Column(Integer(), primary_key=True)
-    name = Column(String(80), unique=True)
+    id = Column(Integer(), primary_key=True, autoincrement=True)
+    name = Column(String(80), unique=True, nullable=False)
     description = Column(String(255))
-
-    def __str__(self):
-        return self.name
 
 
 class User(Base):
 
     __tablename__= 'user'
 
-    id = Column(Integer, primary_key=True)
-    username = Column(String(255))
-    email = Column(String(255), unique=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
     privileges = relationship('Privilege', secondary=privileges_users,
                             backref=backref('users', lazy='dynamic'))
-
-    def __str__(self):
-        return self.email
-
-    def get (user_id):
-        return User.query.filter_by(id=user_id).first()
 
 
 class Subject(Base):
@@ -74,6 +63,14 @@ class Subject(Base):
     users = relationship('User', secondary=users_subjects,
                             backref=backref('subjects', lazy='dynamic'))
 
-    def __init__(self, id, name):
-        self.id=id
-        self.name=name
+
+class Practice(Base):
+
+    __tablename__= 'practices'
+
+    id = Column(Integer(), primary_key=True, autoincrement=True)
+    name = Column(String(80))
+    milestones= Column(Integer())
+    rating_way= Column(String(80))
+    subject_id=Column(Integer(), ForeignKey("subjects.id"))
+    description = Column(String(255))
