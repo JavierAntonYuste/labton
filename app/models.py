@@ -15,7 +15,7 @@ privileges_users = Table(
     'privileges_users',
      Base.metadata,
     Column('user_id', Integer(), ForeignKey('user.id'), primary_key=True),
-    Column('privilege_id', Integer(), ForeignKey('privilege.id'), primary_key=True)
+    Column('privilege_id', Integer(), ForeignKey('privilege.id'))
 )
 
 class Role(Base):

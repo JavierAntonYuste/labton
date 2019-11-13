@@ -85,7 +85,11 @@ def create_app(config_name):
             else:
                 # Changing param of logged_in in session
                 session['logged_in'] = True
+                privilege=get_privileges(db_session, request.form["email"])
+                session["privilege"]=privilege.name
+
                 return redirect('/home')
+
 
         return render_template('login.html')
 
@@ -109,7 +113,6 @@ def create_app(config_name):
         # Querying database for taking the subjects that each user has access
         subjects = []
         user_id=get_user_id(db_session,session["email"])
-        privileges=get_privileges(db_session, session["email"] )
 
         subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==user_id).all()
         for id in subjects_id:
@@ -118,7 +121,7 @@ def create_app(config_name):
         user=(session["email"].split('@'))[0]
 
         return render_template('home.html', \
-        user=user, privileges=privileges, subjects= subjects, degrees=appconfig.degrees)
+        user=user, privilege=session["privilege"], subjects= subjects, degrees=appconfig.degrees)
 
     @app.route('/allSubjects')
     @decorators.login_required
@@ -135,13 +138,15 @@ def create_app(config_name):
         for name in privilege_name:
             if name[0]=='admin':
                 subjects.extend(db_session.query(models.Subject).all())
-                return render_template('allSubjects.html', user=(session["email"].split('@'))[0], subjects= subjects)
+                return render_template('allSubjects.html', privilege=session["privilege"], user=(session["email"].split('@'))[0], subjects= subjects)
 
         subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==user_id).all()
         for id in subjects_id:
             subjects.extend(db_session.query(models.Subject).filter_by(id=id).all())
 
-        return render_template('allSubjects.html', user=(session["email"].split('@'))[0], subjects= subjects)
+
+        print(session["privilege"])
+        return render_template('allSubjects.html', privilege=session["privilege"], user=(session["email"].split('@'))[0], subjects= subjects)
 
     @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -153,22 +158,22 @@ def create_app(config_name):
 
         user=(session["email"].split('@'))[0]
         practices=get_practices(db_session, id)
-        privileges=get_privileges(db_session, session["email"])
+        privilege=get_privileges(db_session, session["email"])
 
 
-        for privilege in privileges:
-            if privilege.name== 'admin':
-                role='admin'
-                session["role"]=role
 
-                return render_template('subject.html',user=user, role=role, subject= subject,practices=practices, rating_ways=appconfig.rating_ways)
+        if privilege.name== 'admin':
+            role='admin'
+            session["role"]=role
+
+            return render_template('subject.html',privilege=session["privilege"], user=user, role=role, subject= subject,practices=practices, rating_ways=appconfig.rating_ways)
 
         role=get_role_subject(db_session, session["email"], id)
         session["role"]=role
         session["subject_id"]=id
 
 
-        return render_template('subject.html',user=user, role=role, subject= subject, practices=practices, rating_ways=appconfig.rating_ways)
+        return render_template('subject.html',user=user, privilege=session["privilege"], role=role, subject= subject, practices=practices, rating_ways=appconfig.rating_ways)
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -191,16 +196,14 @@ def create_app(config_name):
             row = [db_session.query(User).filter(User.id==users[i][0]).first(), db_session.query(Role).filter(Role.id==users[i][1]).first()]
             users_in_subject.append(row)
 
-        privileges=get_privileges(db_session, session["email"])
         roles_db=db_session.query(models.Role).all()
 
-        for privilege in privileges:
-            if privilege.name== 'admin':
-                role='admin'
-                return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
+        if session["privilege"]== 'admin':
+            role='admin'
+            return render_template('manageSubject.html', privilege=session["privilege"], user=user, role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
 
         role=get_role_subject(db_session, session["email"], id)
-        return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
+        return render_template('manageSubject.html',user=user, privilege=session["privilege"], role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
 
     @app.route('/practice/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -211,7 +214,7 @@ def create_app(config_name):
             return redirect('/home')
 
         user=(session["email"].split('@'))[0]
-        return render_template('practice.html',user=user, practice=practice, role=session["role"])
+        return render_template('practice.html',user=user, privilege=session["privilege"], practice=practice, role=session["role"])
 
 
     @app.route('/users')
@@ -228,7 +231,7 @@ def create_app(config_name):
             row = [db_session.query(User).filter(User.id==users[i][0]).first(), db_session.query(Privilege).filter(Privilege.id==users[i][1]).first()]
             users_in_system.append(row)
 
-        return render_template('users.html', user=user, users=users_in_system, privileges=privileges)
+        return render_template('users.html', user=user, users=users_in_system, privilege=session["privilege"], privileges=privileges)
 
 # DB Interaction Routes _____________________________________________________________________________________________________________
     @app.route('/createUser', methods=['GET', 'POST'])
@@ -420,8 +423,9 @@ def create_app(config_name):
     @decorators.privileges_required('admin')
     def deleteUser():
         user_id=request.form['user_id']
-        privilege= get_privileges(db_session,db_session.query(models.User.email).filter_by(id=user_id).first())
-        if not (privilege=="admin"):
+
+
+        if not (session["privilege"]=="admin"):
             flash('Error! You cannot do that!', 'danger')
             return redirect('/home')
 

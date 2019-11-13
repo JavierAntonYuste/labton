@@ -37,14 +37,7 @@ def create_admin_user(db_session, engine, name, email):
         con = engine.connect()
         trans = con.begin()
         user_id = db_session.query(User.id).filter_by(email=email).first()
-        privilege_id = db_session.query(Privilege.id).filter_by(name='user').first()
         admin_privilege_id = db_session.query(Privilege.id).filter_by(name='admin').first()
-
-        # Creating relations
-        con.execute(privileges_users.insert().values(
-            user_id=user_id,
-            privilege_id= privilege_id
-            ))
 
         con.execute(privileges_users.insert().values(
             user_id=user_id,
@@ -122,7 +115,7 @@ def get_privileges(db_session, email):
     privileges=db_session.query(Privilege)\
     .join(privileges_users, Privilege.id==privileges_users.c.privilege_id)\
     .join(User, privileges_users.c.user_id==User.id)\
-    .filter(User.email==email).all()
+    .filter(User.email==email).first()
 
     return privileges
 

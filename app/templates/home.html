@@ -55,8 +55,7 @@
     <span>Home</span></a>
 </li>
 
-{% for privilege in privileges%}
-{% if privilege.name == 'admin'%}
+{% if privilege == 'admin'%}
 <!-- Divider -->
 <hr class="sidebar-divider">
 
@@ -71,7 +70,7 @@
     <span>Users</span></a>
 </li>
 {% endif %}
-{% endfor%}
+
 
 
 <!-- Divider -->
