@@ -177,11 +177,12 @@ def create_app(config_name):
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
-    def configSubject(id):
-        role=get_role_subject(db_session, session["email"] , id)
-        if not (role=="admin" or role=="professor"):
-            flash('Error! You cannot do that!', 'danger')
-            return redirect('/home')
+    def manageSubject(id):
+        if not (session["privilege"]=="admin"):
+            role=get_role_subject(db_session, session["email"] , id)
+            if not (role=="admin" or role=="professor"):
+                flash('Error! You cannot do that!', 'danger')
+                return redirect('/home')
 
         subject=db_session.query(models.Subject).filter_by(id=id).first()
         if (subject == None):
@@ -485,7 +486,7 @@ def init_system():
             professor_role = models.Role(name='professor')
             admin_role = models.Role(name='admin')
 
-            if (models.Role.query.filter_by(name='user').first()==None):
+            if (models.Role.query.filter_by(name='student').first()==None):
                 db_session.add(user_role)
             if (models.Role.query.filter_by(name='professor').first()==None):
                 db_session.add(professor_role)
