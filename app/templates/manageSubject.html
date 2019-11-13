@@ -69,24 +69,27 @@
       {% endwith %}
       <!-- Page Heading -->
       <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <div class="col-8">
+        <div class="col-7">
           <h1 class="h3 mb-0 text-gray-800">Users from {{subject.acronym}} ({{subject.year}}-{{subject.year+1}})</h1>
         </div>
 
-      <div class="col-5 float-right">
+
       {% if role=='professor' or role=='admin'%}
         <!-- Button trigger modal -->
-
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadUserModal">
+        <div class="col-2">
+          <button type="button" class="btn btn-primary w-100" data-toggle="modal" data-target="#uploadUserModal">
             Import user
           </button>
+        </div>
+        <div class="col-3">
 
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadUsersCSVModal">
+        <button type="button" class="btn btn-primary w-100" data-toggle="modal" data-target="#uploadUsersCSVModal">
           Import users from CSV
         </button>
+      </div>
 
       {% endif %}
-      </div>
+
         <!-- CSV Modal -->
         <div class="modal fade" id="uploadUsersCSVModal" tabindex="-1" role="dialog" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered" role="document">

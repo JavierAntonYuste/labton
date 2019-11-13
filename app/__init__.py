@@ -66,6 +66,8 @@ def create_app(config_name):
         db_session.remove()
 
     # Routes
+
+# View Routes ______________________________________________________________________________________________
     @app.route('/')
     def root_directory():
         return render_template('index.html')
@@ -146,30 +148,6 @@ def create_app(config_name):
 
         return render_template('allSubjects.html', user=(session["email"].split('@'))[0], subjects= subjects)
 
-    @app.route('/createSubject', methods=['GET', 'POST'])
-    @decorators.login_required
-    @decorators.privileges_required('admin', 'professor')
-    def createSubject():
-        acronym=request.form["acronym"]
-        name=request.form["name"]
-        degree=request.form["degree"]
-        year= request.form["year"]
-        description=request.form["description"]
-
-        if (acronym=="" or name=="" or degree=="" or year==""):
-            flash('Error! Incompleted fields', 'danger')
-            return redirect('/home')
-
-        create_subject(db_session, acronym, name, degree, year, description)
-
-        subject_id=db_session.query(models.Subject.id).\
-        filter(models.Subject.acronym==acronym).filter(models.Subject.year==year).\
-        filter(models.Subject.degree==degree).first()
-
-        add_user_to_subject(db_session, engine, session["email"], subject_id, "admin")
-
-        return redirect('/home')
-
     @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
     def subject(id):
@@ -179,21 +157,32 @@ def create_app(config_name):
             return redirect('/home')
 
         user=(session["email"].split('@'))[0]
+        practices=get_practices(db_session, id)
         privileges=get_privileges(db_session, session["email"])
+
 
         for privilege in privileges:
             if privilege.name== 'admin':
                 role='admin'
-                return render_template('subject.html',user=user, role=role, subject= subject)
+                session["role"]=role
+
+                return render_template('subject.html',user=user, role=role, subject= subject,practices=practices, rating_ways=appconfig.rating_ways)
 
         role=get_role_subject(db_session, session["email"], id)
+        session["role"]=role
+        session["subject_id"]=id
 
-        return render_template('subject.html',user=user, role=role, subject= subject)
+
+        return render_template('subject.html',user=user, role=role, subject= subject, practices=practices, rating_ways=appconfig.rating_ways)
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
-    # @decorators.privileges_required('professor')
     def configSubject(id):
+        role=get_role_subject(db_session, session["email"] , id)
+        if not (role=="admin" or role=="professor"):
+            flash('Error! You cannot do that!', 'danger')
+            return redirect('/home')
+
         subject=db_session.query(models.Subject).filter_by(id=id).first()
         if (subject == None):
             flash('Error! Subject does not exists', 'danger')
@@ -218,10 +207,90 @@ def create_app(config_name):
         role=get_role_subject(db_session, session["email"], id)
         return render_template('manageSubject.html',user=user, role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
 
+    @app.route('/practice/<id>', methods=['GET', 'POST'])
+    @decorators.login_required
+    def practice(id):
+        practice=db_session.query(models.Practice).filter_by(id=id).first()
+        if (practice == None):
+            flash('Error! Practice does not exists', 'danger')
+            return redirect('/home')
+
+        user=(session["email"].split('@'))[0]
+        return render_template('practice.html',user=user, practice=practice, role=session["role"])
+
+
+    @app.route('/users')
+    @decorators.login_required
+    @decorators.privileges_required('admin')
+    def users():
+        user=(session["email"].split('@'))[0]
+        users = get_users(db_session)
+        privileges=db_session.query(Privilege).all()
+
+        users_in_system=[]
+
+        for i in range(len(users)):
+            row = [db_session.query(User).filter(User.id==users[i][0]).first(), db_session.query(Privilege).filter(Privilege.id==users[i][1]).first()]
+            users_in_system.append(row)
+
+        return render_template('users.html', user=user, users=users_in_system, privileges=privileges)
+
+# DB Interaction Routes _____________________________________________________________________________________________________________
+    @app.route('/createUser', methods=['GET', 'POST'])
+    @decorators.login_required
+    @decorators.privileges_required('admin')
+    def createUser():
+        email=request.form["email"]
+        privilege=request.form["privilege"]
+
+        if (db_session.query(User).filter(User.email==email)==None):
+            flash('Error: User already exists', 'danger')
+            return redirect('/users')
+
+        name=email.split('@')[0]
+        create_user(db_session,engine,name,email,privilege)
+
+        return redirect('/users')
+
+    @app.route('/createSubject', methods=['GET', 'POST'])
+    @decorators.login_required
+    @decorators.privileges_required('admin', 'professor')
+    def createSubject():
+        acronym=request.form["acronym"]
+        name=request.form["name"]
+        degree=request.form["degree"]
+        year= request.form["year"]
+        description=request.form["description"]
+
+        if (acronym=="" or name=="" or degree=="" or year==""):
+            flash('Error! Incompleted fields', 'danger')
+            return redirect('/home')
+
+        create_subject(db_session, acronym, name, degree, year, description)
+
+        subject_id=db_session.query(models.Subject.id).\
+        filter(models.Subject.acronym==acronym).filter(models.Subject.year==year).\
+        filter(models.Subject.degree==degree).first()
+
+        add_user_to_subject(db_session, engine, session["email"], subject_id, "admin")
+
+        return redirect('/home')
+
+    @app.route('/createPractice', methods=['GET', 'POST'])
+    @decorators.login_required
+    def createPractice():
+        name=request.form["name"]
+        milestones=request.form["milestones"]
+        rating_way=request.form["rating_way"]
+        subject_id=request.form["subject_id"]
+        description=request.form["description"]
+
+        create_practice(db_session,name,milestones,rating_way,subject_id, description)
+
+        return redirect('/subject/'+subject_id)
 
     @app.route('/uploadUsers', methods=['POST'])
     @decorators.login_required
-    # @decorators.privileges_required('professor')
     def uploadUsers():
         subject_id = request.form['subject_id']
         if request.files['file']:
@@ -265,7 +334,6 @@ def create_app(config_name):
 
     @app.route('/uploadUser', methods=['POST'])
     @decorators.login_required
-    # @decorators.privileges_required('professor')
     def uploadUser():
         # Getting subject_id from form
         subject_id = request.form['subject_id']
@@ -299,6 +367,18 @@ def create_app(config_name):
             flash ("Error! Empty input",'danger')
             return redirect('/manageSubject/'+ subject_id)
 
+    @app.route('/changePrivilege', methods=['GET', 'POST'])
+    @decorators.login_required
+    @decorators.privileges_required('admin')
+    def changePrivilege():
+        privilege=request.form['privilege']
+        email=request.form['email']
+
+        change_privilege(db_session, email, privilege)
+
+        flash ("Success! You changed the privilege of " + email + " to " + privilege ,'success')
+        return redirect('/users')
+
     @app.route('/changeRole', methods=['GET', 'POST'])
     @decorators.login_required
     def changeRole():
@@ -314,8 +394,12 @@ def create_app(config_name):
 
     @app.route('/deleteUserSubject',  methods=['GET', 'POST'])
     @decorators.login_required
-    # @decorators.privileges_required('professor')
     def deleteUserSubject():
+
+        if not (session["role"]=="admin" or session["role"]=="professor"):
+            flash('Error! You cannot do that!', 'danger')
+            return redirect('/home')
+
         user_id=request.form['user_id']
         subject_id=request.form['subject_id']
 
@@ -326,68 +410,48 @@ def create_app(config_name):
 
     @app.route('/deleteSubject/<id>', methods=['GET','POST'])
     @decorators.login_required
-    # @decorators.privileges_required('professor', 'admin')
     def deleteSubject(id):
+        role=get_role_subject(db_session, session["email"] , id)
+        if not (role=="admin"):
+            flash('Error! You cannot do that!', 'danger')
+            return redirect('/home')
 
         delete_subject(db_session, id)
 
         return redirect('/home')
-
-    @app.route('/users')
-    @decorators.login_required
-    @decorators.privileges_required('admin')
-    def users():
-        user=(session["email"].split('@'))[0]
-        users = get_users(db_session)
-        privileges=db_session.query(Privilege).all()
-
-        users_in_system=[]
-
-        for i in range(len(users)):
-            row = [db_session.query(User).filter(User.id==users[i][0]).first(), db_session.query(Privilege).filter(Privilege.id==users[i][1]).first()]
-            users_in_system.append(row)
-
-        return render_template('users.html', user=user, users=users_in_system, privileges=privileges)
-
-
-    @app.route('/createUser', methods=['GET', 'POST'])
-    @decorators.login_required
-    @decorators.privileges_required('admin')
-    def createUser():
-        email=request.form["email"]
-        privilege=request.form["privilege"]
-
-        if (db_session.query(User).filter(User.email==email)==None):
-            flash('Error: User already exists', 'danger')
-            return redirect('/users')
-
-        name=email.split('@')[0]
-        create_user(db_session,engine,name,email,privilege)
-
-        return redirect('/users')
-
-    @app.route('/changePrivilege', methods=['GET', 'POST'])
-    @decorators.login_required
-    @decorators.privileges_required('admin')
-    def changePrivilege():
-        privilege=request.form['privilege']
-        email=request.form['email']
-
-        change_privilege(db_session, email, privilege)
-
-        flash ("Success! You changed the privilege of " + email + " to " + privilege ,'success')
-        return redirect('/users')
 
     @app.route('/deleteUser', methods=['GET', 'POST'])
     @decorators.login_required
     @decorators.privileges_required('admin')
     def deleteUser():
         user_id=request.form['user_id']
+        privilege= get_privileges(db_session,db_session.query(models.User.email).filter_by(id=user_id).first())
+        if not (privilege=="admin"):
+            flash('Error! You cannot do that!', 'danger')
+            return redirect('/home')
 
         delete_user(db_session,user_id)
 
         flash ("Success! User deleted from system",'success')
         return redirect('/users')
+
+
+    @app.route('/deletePractice/<id>', methods=['GET','POST'])
+    @decorators.login_required
+    def deletePractice(id):
+        subject_id= db_session.query(models.Practice.subject_id).filter_by(id=id).first()
+        role=get_role_subject(db_session, session["email"] , subject_id)
+
+        if not (role=="admin"):
+            flash('Error! You cannot do that!', 'danger')
+            return redirect('/home')
+
+        delete_practice(db_session, id)
+
+        return redirect('/subject/'+session["subject_id"])
+
+# End of routes ______________________________________________________________________________
+
 
     migrate = Migrate(app,db)
 

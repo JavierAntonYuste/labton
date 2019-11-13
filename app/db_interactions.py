@@ -92,6 +92,13 @@ def add_user_to_subject(db_session, engine, email, subject_id, role_name ):
 
         return
 
+def create_practice(db_session, name, milestones, rating_way, subject_id, description):
+    practice=Practice(name=name, milestones=milestones, rating_way=rating_way, subject_id=subject_id, description=description)
+    db_session.add(practice)
+    db_session.commit()
+
+    return
+
 # SELECT queries _______________________________________________________________
 
 def get_users(db_session):
@@ -122,6 +129,10 @@ def get_privileges(db_session, email):
 def get_user_id(db_session, email):
     user_id= db_session.query(User.id).filter_by(email=email).first()
     return user_id
+
+def get_practices(db_session, subject_id):
+    list_practices=db_session.query(Practice).filter(Practice.subject_id==subject_id).all()
+    return list_practices
 
 # UPDATE queries____________________________________________________________________
 
@@ -186,5 +197,12 @@ def delete_user(db_session, user_id):
     # Delete Subject
     db_session.execute('DELETE FROM user \
     WHERE id = :user_id'  , {'user_id': user_id})
+
+    db_session.commit()
+
+def delete_practice(db_session, id):
+    # Delete Practice
+    db_session.execute('DELETE FROM practices \
+    WHERE id = :id'  , {'id': id})
 
     db_session.commit()

@@ -14,7 +14,8 @@ degrees = [
     "MUIT"
 ]
 
-punctuation_ways = [
-    "Against time",
-    "Quiz"
+rating_ways = [
+    "Points",
+    "Marks",
+    "None"
 ]

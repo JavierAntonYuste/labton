@@ -72,25 +72,42 @@
       {% endwith %}
       <!-- Page Heading -->
       <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <div class="col-8">
+        <div class="col">
 
           <h1 class="h3 mb-0 text-gray-800">{{subject.acronym}} ({{subject.year}}-{{subject.year+1}})</h1>
         </div>
-
-      <div class="col">
-      {% if role=='professor' or role=='admin'%}
-        <a href="/manageSubject/{{subject.id}}" class="btn btn-primary" >
-            <span class="icon">
-              Manage Users
-            </span>
-        </a>
-        {% endif%}
-        {% if role=='admin'%}
-        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#deleteSubjectModal">
-          Delete Subject
+        {% if role=='professor' or role=='admin'%}
+      <div class="col-2">
+        <button type="button" class="btn btn-primary w-100" data-toggle="modal" data-target="#createPractice">
+          Create practice
         </button>
+      </div>
 
-        <!-- Logout Modal-->
+
+      <div class="col-2">
+      <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <i class="fas fa-cog mr-2"></i>
+          Settings
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a href="/manageSubject/{{subject.id}}" class="dropdown-item" >
+              <span class="icon">
+                Manage Users
+                <i class="fas fa-user-friends ml-2"></i>
+              </span>
+          </a>
+          {% if role=='admin'%}
+          <button type="button" class="dropdown-item" data-toggle="modal" data-target="#deleteSubjectModal">
+            Delete Subject
+            <i class="fas fa-trash ml-2"></i>
+        {% endif%}
+      </button>
+    </div>
+  </div>
+
+
+        <!-- Delete Subject Modal-->
         <div class="modal fade" id="deleteSubjectModal" tabindex="-1" role="dialog"  aria-hidden="true">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -108,11 +125,84 @@
             </div>
           </div>
         </div>
+        <!-- End Delete Subject Modal -->
+        <!-- Practice Modal -->
+        <div class="modal fade" id="createPractice" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="uploadUsersCSVTitle">Create a new Practice</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
 
+              <div class="modal-body">
+                <h6> Introduce data </h6>
+              <form action="/createPractice" method="post" id="upload-form" enctype="multipart/form-data">
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                      <label> Name </label>
+                        <input class= "form-control" name="name" placeholder="Name" >
+                  </div>
+                </div>
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                      <label> Milestones </label>
+                      <input class= "form-control" name="milestones" type="number" min="0" step="1"/>
+                  </div>
+                </div>
+
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                      <label> Rating way </label>
+                      <select class="custom-select" name="rating_way" id="rating_way">
+                        {% for type in rating_ways%}
+                        <option value={{type}}>{{type}}</option>
+                        {% endfor%}
+                      </select>
+                  </div>
+                </div>
+
+                  <div class="row pt-2 pb-2">
+                    <div class="col">
+                        <label> Description <i>(Optional)</i> </label>
+                          <input class= "form-control" name="description" placeholder="Description" >
+                    </div>
+                  </div>
+                  <input type="hidden" name="subject_id" value={{subject.id}}>
+                </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn  btn-primary">Create</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end modal Practice-->
+
+      </div>
       {% endif %}
-      </div>
+
       </div>
 
+      <div class="row">
+
+        {% for element in practices%}
+          <div class="col-xl-3 col-sm-6 mb-5">
+            <div class="card">
+              <a href="/practice/{{element.id}}" class="btn btn-primary" >
+                  <span class="icon text-white-50">
+                    <i class="pr-2 fas fa-book-open"></i>
+                    <b class="icon text-white">{{element.name}}</b>
+                  </span>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
 
     </div>
     <!-- /.container-fluid -->

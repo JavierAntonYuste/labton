@@ -69,8 +69,8 @@ class Practice(Base):
     __tablename__= 'practices'
 
     id = Column(Integer(), primary_key=True, autoincrement=True)
-    name = Column(String(80))
-    milestones= Column(Integer())
-    rating_way= Column(String(80))
-    subject_id=Column(Integer(), ForeignKey("subjects.id"))
+    name = Column(String(80), nullable=False)
+    milestones= Column(Integer(), nullable=False)
+    rating_way= Column(String(80), nullable=False)
+    subject_id=Column(Integer(), ForeignKey("subjects.id"), nullable=False)
     description = Column(String(255))
