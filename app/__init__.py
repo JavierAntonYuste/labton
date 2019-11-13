@@ -41,8 +41,8 @@ def create_app(config_name):
 
     # Initialisation of the app and the system
     db.init_app(app)
-    init_db()
-    init_system()
+    # init_db()
+    # init_system()
 
 
     # Function of Flask-Login. User loader
@@ -54,11 +54,6 @@ def create_app(config_name):
     login_manager.init_app(app)
     login_manager.login_message = 'You must be logged in to access this page'
 
-    # Before request Function
-    # @app.before_request
-    # def before_request_func():
-    #     init_db()
-    #     init_system()
 
     #Close session after each request
     @app.teardown_appcontext
@@ -254,7 +249,7 @@ def create_app(config_name):
 
     @app.route('/createSubject', methods=['GET', 'POST'])
     @decorators.login_required
-    @decorators.privileges_required('admin', 'professor')
+    # @decorators.privileges_required('admin', 'professor')
     def createSubject():
         acronym=request.form["acronym"]
         name=request.form["name"]

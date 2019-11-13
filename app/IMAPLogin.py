@@ -41,7 +41,7 @@ def IMAPLogin(db_session, engine, email, password):
             ## Si el usuario no esta, una vez que se comprueba que esta bien, lo mete en la BBDD
 
             if (models.User.query.filter_by(email=email).first()==None):
-                create_user(db_session,engine, user,email)
+                create_user(db_session,engine, user,email, "user")
 
             response=True
         else:
