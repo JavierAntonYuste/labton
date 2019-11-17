@@ -11,6 +11,9 @@ MAINTAINER Kartik <kartik@gmail.com>
 RUN apt update && \
     apt install -y netcat-openbsd
 
+# update pip
+RUN pip install --upgrade pip
+
 # set the env variable to tell where the app will be installed inside the docker
 
 ENV INSTALL_PATH /home/App

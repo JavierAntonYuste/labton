@@ -1,69 +1,76 @@
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-
 from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, \
-    UserMixin, RoleMixin, login_required, current_user
+from sqlalchemy import *
+from app.db_init import Base
+from sqlalchemy.orm import relationship, backref
 
-from flask_security.utils import encrypt_password
-
-from app import db
-
-class Profesor (db.Model):
-    """
-    Crear una tabla de profesores
-    """
-    __tablename__= 'profesores'
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email = db.Column(db.String(100), nullable=False, unique=True)
-    password_hash = db.Column(db.String(128))
-    name = db.Column(db.String(100), nullable=False)
-
-    def __init__(self, name, email):
-        self.email=email
-        self.name=name
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-roles_users = db.Table(
-    'roles_users',
-    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+users_subjects = Table(
+    'users_subjects',
+     Base.metadata,
+    Column('subject_id', Integer(), ForeignKey('subjects.id'),primary_key=True),
+    Column('user_id', Integer(), ForeignKey('user.id'),primary_key=True),
+    Column('role_id', ForeignKey('role.id'), nullable=False)
 )
 
-class Role(db.Model, RoleMixin):
+privileges_users = Table(
+    'privileges_users',
+     Base.metadata,
+    Column('user_id', Integer(), ForeignKey('user.id'), primary_key=True),
+    Column('privilege_id', Integer(), ForeignKey('privilege.id'))
+)
 
-    # __tablename__= 'roles'
+class Role(Base):
 
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
+    __tablename__= 'role'
 
-    def __str__(self):
-        return self.name
+    id = Column(Integer(), primary_key=True, autoincrement=True)
+    name = Column(String(80), unique=True, nullable=False)
+    description = Column(String(255))
 
 
-class User(db.Model, UserMixin):
+class Privilege(Base):
 
-    # __tablename__= 'users'
+    __tablename__= 'privilege'
 
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(255))
-    last_name = db.Column(db.String(255))
-    email = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
-    active = db.Column(db.Boolean())
-    confirmed_at = db.Column(db.DateTime())
-    roles = db.relationship('Role', secondary=roles_users,
-                            backref=db.backref('users', lazy='dynamic'))
+    id = Column(Integer(), primary_key=True, autoincrement=True)
+    name = Column(String(80), unique=True, nullable=False)
+    description = Column(String(255))
 
-    def __str__(self):
-        return self.email
 
-    def get (user_id):
-        return User.query.filter_by(id=user_id).first()
+class User(Base):
+
+    __tablename__= 'user'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
+    privileges = relationship('Privilege', secondary=privileges_users,
+                            backref=backref('users', lazy='dynamic'))
+
+
+class Subject(Base):
+    """
+    Create a table for subjects
+    """
+    __tablename__= 'subjects'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    acronym = Column(String(10), nullable=False)
+    name = Column(String (100), nullable = False)
+    year = Column(Integer, nullable = False)
+    description = Column(String(1000))
+    degree = Column(String(100), nullable=False)
+
+    users = relationship('User', secondary=users_subjects,
+                            backref=backref('subjects', lazy='dynamic'))
+
+
+class Practice(Base):
+
+    __tablename__= 'practices'
+
+    id = Column(Integer(), primary_key=True, autoincrement=True)
+    name = Column(String(80), nullable=False, unique=True)
+    milestones= Column(Integer(), nullable=False)
+    rating_way= Column(String(80), nullable=False)
+    subject_id=Column(Integer(), ForeignKey("subjects.id"), nullable=False)
+    description = Column(String(255))

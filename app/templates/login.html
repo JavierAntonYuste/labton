@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block sidebar%}
+{% endblock sidebar%}
+
+{% block body %}
+
+		<div class="container-login100" style="background-image: url('static/img/bg-01.jpg');">
+			<div class="wrap-login100 p-l-55 p-r-55 p-t-80 p-b-30">
+				{% with messages = get_flashed_messages(with_categories=true) %}
+	        {% if messages %}
+	          <ul class=flashes>
+	          {% for category, message in messages %}
+	            <!-- <div class="alert alert-danger text-center">
+	              <strong>Error!</strong> {{message}}
+	            </div> -->
+	            <div class="alert alert-{{ category }} text-center"> {{ message}} </div>
+	          {% endfor %}
+	          </ul>
+	        {% endif %}
+	      {% endwith %}
+
+		      <form class="login100-form validate-form" action="" method="POST">
+						<span class="login100-form-title p-b-37">
+							Sign In
+						</span>
+						<div class="wrap-input100 validate-input m-b-20" data-validate="Enter email">
+			        <input class="input100" type="text" placeholder="Email" name="email" value="{{request.form.username }}">
+							<span class="focus-input100"></span>
+						</div>
+						<div class="wrap-input100 validate-input m-b-25" data-validate = "Enter password">
+		         <input class="input100" type="password" placeholder="Password" name="password" value="{{request.form.password }}">
+						 <span class="focus-input100"></span>
+					 </div>
+					 	<div class="container-login100-form-btn">
+		        <input class="login100-form-btn" type="submit" value="Login">
+					  </div>
+          <br>
+		      </form>
+				</div>
+			</div>
+
+
+
+
+	{% endblock body %}
