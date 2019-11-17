@@ -45,14 +45,14 @@ def create_app(config_name):
     # init_system()
 
 
-    # Function of Flask-Login. User loader
-    @login_manager.user_loader
-    def load_user(email):
-        return models.User.get(email)
-
-    # Initialisation of Flask-Login
-    login_manager.init_app(app)
-    login_manager.login_message = 'You must be logged in to access this page'
+    # # Function of Flask-Login. User loader
+    # @login_manager.user_loader
+    # def load_user(email):
+    #     return models.User.get(email)
+    #
+    # # Initialisation of Flask-Login
+    # login_manager.init_app(app)
+    # login_manager.login_message = 'You must be logged in to access this page'
 
 
     #Close session after each request
@@ -85,7 +85,7 @@ def create_app(config_name):
             else:
                 # Changing param of logged_in in session
                 session['logged_in'] = True
-                privilege=get_privileges(db_session, request.form["email"])
+                privilege=get_user_privileges(db_session, request.form["email"])
                 session["privilege"]=privilege.name
 
                 return redirect('/home')
@@ -113,10 +113,10 @@ def create_app(config_name):
         # Querying database for taking the subjects that each user has access
         subjects = []
         user_id=get_user_id(db_session,session["email"])
+        subjects_id=get_subjects_from_user(db_session, user_id)
 
-        subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==user_id).all()
         for id in subjects_id:
-            subjects.extend(db_session.query(models.Subject).filter_by(id=id,year=current_year).all())
+            subjects.extend(get_subject_by_year(db_session, id, current_year))
 
         user=(session["email"].split('@'))[0]
 
@@ -128,24 +128,21 @@ def create_app(config_name):
     def allSubjects():
         # Querying database for taking the subjects that each user has access
         subjects = []
-        user_id=db_session.query(models.User.id).filter_by(email=session["email"]).first()
 
         # If user is admin, render all subjects
 
-        privilege_name = db_session.query(models.Privilege.name).join(models.privileges_users, Privilege.id==privileges_users.c.privilege_id)\
-        .filter(privileges_users.c.user_id==user_id).all()
+        privilege= get_user_privileges(db_session, session["email"])
 
-        for name in privilege_name:
-            if name[0]=='admin':
-                subjects.extend(db_session.query(models.Subject).all())
-                return render_template('allSubjects.html', privilege=session["privilege"], user=(session["email"].split('@'))[0], subjects= subjects)
+        if privilege.name == 'admin':
+            subjects.extend(get_all_subjects(db_session))
+            return render_template('allSubjects.html', privilege=session["privilege"], user=(session["email"].split('@'))[0], subjects= subjects)
 
-        subjects_id=db_session.query(models.users_subjects.c.subject_id).filter(models.users_subjects.c.user_id==user_id).all()
+        user_id= get_user_id(db_session, session["email"])
+        subjects_id= get_subjects_from_user(db_session, user_id)
+
         for id in subjects_id:
-            subjects.extend(db_session.query(models.Subject).filter_by(id=id).all())
+            subjects.append(get_subject(db_session, id))
 
-
-        print(session["privilege"])
         return render_template('allSubjects.html', privilege=session["privilege"], user=(session["email"].split('@'))[0], subjects= subjects)
 
     @app.route('/subject/<id>', methods=['GET', 'POST'])
@@ -158,9 +155,7 @@ def create_app(config_name):
 
         user=(session["email"].split('@'))[0]
         practices=get_practices(db_session, id)
-        privilege=get_privileges(db_session, session["email"])
-
-
+        privilege=get_user_privileges(db_session, session["email"])
 
         if privilege.name== 'admin':
             role='admin'
@@ -171,7 +166,6 @@ def create_app(config_name):
         role=get_role_subject(db_session, session["email"], id)
         session["role"]=role
         session["subject_id"]=id
-
 
         return render_template('subject.html',user=user, privilege=session["privilege"], role=role, subject= subject, practices=practices, rating_ways=appconfig.rating_ways)
 
@@ -184,7 +178,8 @@ def create_app(config_name):
                 flash('Error! You cannot do that!', 'danger')
                 return redirect('/home')
 
-        subject=db_session.query(models.Subject).filter_by(id=id).first()
+        subject= get_subject(db_session, id)
+
         if (subject == None):
             flash('Error! Subject does not exists', 'danger')
             return redirect('/home')
@@ -193,11 +188,12 @@ def create_app(config_name):
         users = get_users_in_subject(db_session,id)
 
         users_in_subject=[]
+
         for i in range(len(users)):
-            row = [db_session.query(User).filter(User.id==users[i][0]).first(), db_session.query(Role).filter(Role.id==users[i][1]).first()]
+            row = [get_user_by_id(db_session,users[i][0]),get_role(db_session,users[i][1] ) ]
             users_in_subject.append(row)
 
-        roles_db=db_session.query(models.Role).all()
+        roles_db=get_roles(db_session)
 
         if session["privilege"]== 'admin':
             role='admin'
@@ -209,7 +205,7 @@ def create_app(config_name):
     @app.route('/practice/<id>', methods=['GET', 'POST'])
     @decorators.login_required
     def practice(id):
-        practice=db_session.query(models.Practice).filter_by(id=id).first()
+        practice=get_practice(db_session, id)
         if (practice == None):
             flash('Error! Practice does not exists', 'danger')
             return redirect('/home')
@@ -223,13 +219,13 @@ def create_app(config_name):
     @decorators.privileges_required('admin')
     def users():
         user=(session["email"].split('@'))[0]
-        users = get_users(db_session)
-        privileges=db_session.query(Privilege).all()
+        users = get_users_privileges(db_session)
+        privileges=get_privileges(db_session)
 
         users_in_system=[]
 
         for i in range(len(users)):
-            row = [db_session.query(User).filter(User.id==users[i][0]).first(), db_session.query(Privilege).filter(Privilege.id==users[i][1]).first()]
+            row = [get_user_by_id(db_session, users[i][0]), get_privilege(db_session,users[i][1])]
             users_in_system.append(row)
 
         return render_template('users.html', user=user, users=users_in_system, privilege=session["privilege"], privileges=privileges)
@@ -242,7 +238,7 @@ def create_app(config_name):
         email=request.form["email"]
         privilege=request.form["privilege"]
 
-        if (db_session.query(User).filter(User.email==email)==None):
+        if (get_user(db_session, email)==None):
             flash('Error: User already exists', 'danger')
             return redirect('/users')
 
@@ -267,9 +263,7 @@ def create_app(config_name):
 
         create_subject(db_session, acronym, name, degree, year, description)
 
-        subject_id=db_session.query(models.Subject.id).\
-        filter(models.Subject.acronym==acronym).filter(models.Subject.year==year).\
-        filter(models.Subject.degree==degree).first()
+        subject_id=get_subject_id(acronym,year,degree)
 
         add_user_to_subject(db_session, engine, session["email"], subject_id, "admin")
 
@@ -283,6 +277,10 @@ def create_app(config_name):
         rating_way=request.form["rating_way"]
         subject_id=request.form["subject_id"]
         description=request.form["description"]
+
+        if (name=="" or milestones=="" or rating_way==""):
+            flash('Error! Incompleted fields', 'danger')
+            return redirect('/subject/'+subject_id)
 
         create_practice(db_session,name,milestones,rating_way,subject_id, description)
 
@@ -308,20 +306,18 @@ def create_app(config_name):
 
             for email in data:
                 name = (email.split('@'))[0]
-                user_id = db_session.query(models.User.id).filter_by(email=email).first()
+                user_id = get_user_id(db_session, email)
 
                 # If the user isn't in the DB, we add it
                 if (user_id == None):
                     create_user(db_session, engine, name, email, "user")
 
                 # Taking id again in case the user didn't exist
-                user_id = db_session.query(models.User.id).filter_by(email=email).first()
+                user_id = get_user_id(db_session, email)
 
                 #If the user is already added, continue
-                if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id)\
-                .filter_by(user_id=user_id).first()==None):
-
-                    flash ("Warning! User was already added",'warning')
+                if (check_user_in_subject(db_session,subject_id,user_id)==True):
+                    flash ("Warning! User "+ email + " was already added",'warning')
                     continue
 
                 add_user_to_subject(db_session, engine, email, subject_id, request.form["role"])
@@ -342,24 +338,24 @@ def create_app(config_name):
             # Taking email, name and id
             email=request.form['email']
             name = (email.split('@'))[0]
-            user_id = db_session.query(models.User.id).filter_by(email=email).first()
+            user_id = get_user_id(db_session, email)
 
             # If the user isn't in the DB, we add it
             if (user_id == None):
                 create_user(db_session, engine, name, email, "user")
 
             # Taking id again in case the user didn't exist
-            user_id = db_session.query(models.User.id).filter_by(email=email).first()
+            user_id = get_user_id(db_session, email)
 
             #If the user is already added, return
-            if not (db_session.query(models.users_subjects).filter_by(subject_id=subject_id).filter_by(user_id=user_id).first()==None):
+            if (check_user_in_subject(db_session,subject_id,user_id)==True):
                 flash ("Warning! User was already added",'warning')
                 return redirect('/manageSubject/'+ subject_id)
 
             add_user_to_subject(db_session, engine, email, subject_id,  request.form["role"])
 
             # Redirecting to same page with a success message
-            flash ("Success! User added to subject",'success')
+            flash ("Success! User " + email +" added to subject",'success')
             return redirect('/manageSubject/'+ subject_id)
         else:
             # If there is not email, flash error
@@ -373,7 +369,7 @@ def create_app(config_name):
         privilege=request.form['privilege']
         email=request.form['email']
 
-        change_privilege(db_session, email, privilege)
+        update_privilege(db_session, email, privilege)
 
         flash ("Success! You changed the privilege of " + email + " to " + privilege ,'success')
         return redirect('/users')
@@ -385,7 +381,7 @@ def create_app(config_name):
         email=request.form['email']
         subject_id=request.form['subject_id']
 
-        change_role(db_session, email, role, subject_id)
+        update_role(db_session, email, role, subject_id)
 
         flash ("Success! You changed the role of " + email + " to " + role ,'success')
 
@@ -439,7 +435,7 @@ def create_app(config_name):
     @app.route('/deletePractice/<id>', methods=['GET','POST'])
     @decorators.login_required
     def deletePractice(id):
-        subject_id= db_session.query(models.Practice.subject_id).filter_by(id=id).first()
+        subject_id= get_subject_id_practice(db_session, id)
         role=get_role_subject(db_session, session["email"] , subject_id)
 
         if not (role=="admin"):
@@ -496,4 +492,4 @@ def init_system():
             # Adding first user admin
             # IMPORTANT: delete after transferring admin privilege for security reasons
             if (models.User.query.filter_by(email='admin').first()==None):
-                create_admin_user(db_session, engine, 'admin', 'admin')
+                create_user(db_session, engine, 'admin', 'admin', 'admin')
