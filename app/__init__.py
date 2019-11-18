@@ -283,9 +283,8 @@ def create_app(config_name):
             flash('Error! Incompleted fields', 'danger')
             return redirect('/subject/'+subject_id)
 
-        print(get_practice_id(db_session,name))
 
-        if (get_practice_id(db_session, name)!=None):
+        if (get_practice_id(db_session, name, subject_id)!=None):
             flash('Error! Name already taken', 'danger')
             return redirect('/subject/'+subject_id)
 
@@ -304,10 +303,14 @@ def create_app(config_name):
             read_file=list(csv.reader(stream, dialect=csv.excel))
             if 'EMAIL' in read_file[0]:
                 email_index=read_file[0].index('EMAIL')
+            if 'email' in read_file[0]:
+                email_index=read_file[0].index('email')
+            if 'Email' in read_file[0]:
+                email_index=read_file[0].index('Email')
 
             for row in read_file:
                 if row:
-                    if row[email_index]=='EMAIL':
+                    if (row[email_index]=='EMAIL' or row[email_index]=='email' or row[email_index]=='Email'):
                         continue
                     data.append(row[email_index])
 

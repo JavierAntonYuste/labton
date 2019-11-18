@@ -132,8 +132,8 @@ def create_practice(db_session, name, milestones, rating_way, subject_id, descri
 
 # READ
 
-def get_practice_id(db_session, name):
-    id=db_session.query(Practice.id).filter(Practice.name==name).first()
+def get_practice_id(db_session, name, subject_id):
+    id=db_session.query(Practice.id).filter(Practice.name==name).filter(Practice.subject_id==subject_id).first()
     return id
 
 def get_practice(db_session, id):
@@ -145,7 +145,7 @@ def get_practices(db_session, subject_id):
     return list_practices
 
 def get_subject_id_practice(db_session, id):
-    subject_id=db_session.query(models.Practice.subject_id).filter_by(id=id).first()
+    subject_id=db_session.query(Practice.subject_id).filter_by(id=id).first()
     return subject_id
 
 # UPDATE
@@ -156,7 +156,7 @@ def update_practice(db_session,id, name, milestones, rating_way, subject_id, des
     {'name': name,\
      'milestones': milestones, \
      'rating_way': rating_way, \
-     'subject_id': subject_idt,\
+     'subject_id': subject_id,\
      'description': description,
      'id': id})
 
@@ -171,6 +171,59 @@ def delete_practice(db_session, id):
     WHERE id = :id'  , {'id': id})
 
     db_session.commit()
+
+# Milestones CRUD methods ______________________________________________________________
+
+# INSERT
+
+def create_milestone(db_session, name, rating_way, practice_id, description):
+    milestone=Milestone(name=name, rating_way=rating_way, practice_id=practice_id, description=description)
+    db_session.add(milestone)
+    db_session.commit()
+
+    return
+
+# READ
+
+def get_milestone_id(db_session, name, practice_id):
+    id=db_session.query(Milestone.id).filter(Milestone.name==name).filter(Milestone.practice_id==practice_id).first()
+    return id
+
+def get_milestone(db_session, id):
+    milestone=db_session.query(Milestone).filter(Milestone.id==id).first()
+    return milestone
+
+def get_practices(db_session, practice_id):
+    list_milestones=db_session.query(Milestone).filter(Milestone.practice_id==practice_id).all()
+    return list_milestones
+
+def get_practice_id_milestone(db_session, id):
+    practice_id=db_session.query(Milestone.practice_id).filter_by(id=id).first()
+    return practices_id
+
+# UPDATE
+
+def update_milestone(db_session,id, name, rating_way, practice_id, description):
+    db_session.execute('UPDATE milestones\
+    SET name = :name, rating_way=:rating_way, practice_id=:practice_id, description=:description WHERE id = :id',\
+    {'name': name,\
+     'rating_way': rating_way, \
+     'practice_id': practice_id,\
+     'description': description,
+     'id': id})
+
+    db_session.commit()
+    return
+
+# DELETE
+
+
+def delete_milestone(db_session, id):
+    db_session.execute('DELETE FROM milestone \
+    WHERE id = :id'  , {'id': id})
+
+    db_session.commit()
+
 
 # Role CRUD methods _____________________________________________________________
 
