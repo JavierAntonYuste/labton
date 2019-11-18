@@ -82,11 +82,13 @@ hr {
 h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
   margin-bottom: 0.5rem;
+  overflow-wrap:break-word;
 }
 
 p {
   margin-top: 0;
   margin-bottom: 1rem;
+  overflow-wrap:break-word;
 }
 
 abbr[title],
@@ -2225,6 +2227,7 @@ textarea.form-control {
   font-size: 1rem;
   line-height: 1.5;
   border-radius: 0.35rem;
+  overflow-wrap:break-word;
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 

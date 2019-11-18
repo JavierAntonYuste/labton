@@ -263,7 +263,7 @@ def create_app(config_name):
 
         create_subject(db_session, acronym, name, degree, year, description)
 
-        subject_id=get_subject_id(acronym,year,degree)
+        subject_id=get_subject_id(db_session, acronym,year,degree)
 
         add_user_to_subject(db_session, engine, session["email"], subject_id, "admin")
 
@@ -280,6 +280,12 @@ def create_app(config_name):
 
         if (name=="" or milestones=="" or rating_way==""):
             flash('Error! Incompleted fields', 'danger')
+            return redirect('/subject/'+subject_id)
+
+        print(get_practice_id(db_session,name))
+
+        if (get_practice_id(db_session, name)!=None):
+            flash('Error! Name already taken', 'danger')
             return redirect('/subject/'+subject_id)
 
         create_practice(db_session,name,milestones,rating_way,subject_id, description)

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {%block nav_content%}
-<ul class="navbar-nav ml-auto">
+<ul class="navbar-nav ml-auto" id="page-top">
 
   <li class="nav-item dropdown no-arrow">
     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -173,15 +173,15 @@
             {% if privilege=='professor' or privilege== 'admin'%}
               <!-- Button trigger modal -->
 
-              <button type="button" class="btn btn-secondary w-100" data-toggle="modal" data-target="#createSubject">
+              <button type="button" class="btn btn-secondary shadow animated--grow-in w-100" data-toggle="modal" data-target="#createSubject">
                 Create subject
               </button>
 
             {% endif %}
-        
+
           </div>
           <div class="col-2">
-            <a href="/allSubjects" class="btn btn-light w-100" >
+            <a href="/allSubjects" class="btn btn-light shadow animated--grow-in w-100" >
                 <span class="icon">
                   See all subjects
                 </span>
@@ -252,7 +252,7 @@
                   <div class="row pt-2 pb-2">
                     <div class="col">
                         <label> Description <i>(Optional)</i> </label>
-                          <input class= "form-control" name="description" placeholder="Description" >
+                          <input class= "form-control" name="description" placeholder="Description" maxlength="1000" >
                     </div>
                   </div>
 
@@ -289,14 +289,16 @@
         <div class="row">
 
           <!-- Area Chart -->
-          <div class="col-xl-8 col-lg-7">
+          <div class="col-12">
             <div class="card shadow mb-4">
               <!-- Card Header - Dropdown -->
               <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
+                <h5 class="m-0 font-weight-bold text-primary">Leaderboard</h5>
                 <div class="dropdown no-arrow">
-                  <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <a class="dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Actions
                     <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                  </p>
                   </a>
                   <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
                     <div class="dropdown-header">Dropdown Header:</div>
@@ -316,44 +318,7 @@
             </div>
           </div>
 
-          <!-- Pie Chart -->
-          <div class="col-xl-4 col-lg-5">
-            <div class="card shadow mb-4">
-              <!-- Card Header - Dropdown -->
-              <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
-                <div class="dropdown no-arrow">
-                  <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                  </a>
-                  <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                    <div class="dropdown-header">Dropdown Header:</div>
-                    <a class="dropdown-item" href="#">Action</a>
-                    <a class="dropdown-item" href="#">Another action</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#">Something else here</a>
-                  </div>
-                </div>
-              </div>
-              <!-- Card Body -->
-              <div class="card-body">
-                <div class="chart-pie pt-4 pb-2">
-                  <canvas id="myPieChart"></canvas>
-                </div>
-                <div class="mt-4 text-center small">
-                  <span class="mr-2">
-                    <i class="fas fa-circle text-primary"></i> Direct
-                  </span>
-                  <span class="mr-2">
-                    <i class="fas fa-circle text-success"></i> Social
-                  </span>
-                  <span class="mr-2">
-                    <i class="fas fa-circle text-info"></i> Referral
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+
         </div>
 
         <!-- Content Row -->
