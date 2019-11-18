@@ -85,8 +85,6 @@ def create_app(config_name):
             else:
                 # Changing param of logged_in in session
                 session['logged_in'] = True
-                privilege=get_user_privileges(db_session, request.form["email"])
-                session["privilege"]=privilege.name
 
                 return redirect('/home')
 
@@ -102,6 +100,9 @@ def create_app(config_name):
     @app.route('/home')
     @decorators.login_required
     def home():
+        privilege=get_user_privileges(db_session, session["email"])
+        print(privilege)
+        session["privilege"]=privilege.name
         # Obtaining current year for showing the active subjects
         # An academic year is being considered (from 1/sep until 31/aug)
         now = datetime.datetime.now()
