@@ -167,7 +167,7 @@
         </div>
         <div class="col">
 
-              <button type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#createUser">
+              <button type="button" class="btn btn-primary shadow animated--grow-in float-right" data-toggle="modal" data-target="#createUser">
                 Create user
               </button>
 
@@ -220,8 +220,8 @@
         </div>
       </div>
 
-      <div class="row">
-        <table class="table table-hover">
+      <div id="tableWrapper" class="row">
+        <table id="users" class="table table-striped">
           <thead>
             <tr>
               <th scope="col" class="text-center">Name</th>
@@ -242,7 +242,7 @@
                   {% if not user==(element[0].email.split('@'))[0] %}
                   <div class="row">
                     <div class="col-sm">
-                      <a data-toggle="modal" data-id="{{element[0].email}}" class="modifyPrivilegeModal btn btn-secondary float-right" href="#modifyPrivilegeModal">Modify Privilege</a>
+                      <a data-toggle="modal" data-id="{{element[0].email}}" class="modifyPrivilegeModal btn btn-light float-right" href="#modifyPrivilegeModal">Modify Privilege</a>
                     </div>
 
                     <script>
@@ -268,6 +268,7 @@
             {% endfor%}
           </tbody>
         </table>
+
 
       </div>
 

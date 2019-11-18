@@ -171,13 +171,13 @@
       {% if role=='professor' or role=='admin'%}
         <!-- Button trigger modal -->
         <div class="col-2">
-          <button type="button" class="btn btn-primary w-100" data-toggle="modal" data-target="#uploadUserModal">
+          <button type="button" class="btn btn-primary shadow animated--grow-in w-100" data-toggle="modal" data-target="#uploadUserModal">
             Import user
           </button>
         </div>
         <div class="col-3">
 
-        <button type="button" class="btn btn-primary w-100" data-toggle="modal" data-target="#uploadUsersCSVModal">
+        <button type="button" class="btn btn-primary shadow animated--grow-in w-100" data-toggle="modal" data-target="#uploadUsersCSVModal">
           Import users from CSV
         </button>
       </div>
@@ -299,7 +299,7 @@
 
       <!-- Content Row -->
       <div class="row">
-        <table class="table table-hover">
+        <table class="table table-striped">
           <thead>
             <tr>
               <th scope="col" class="text-center">Name</th>
@@ -322,7 +322,7 @@
                     {% if role=='admin'%}
                     <div class="col-sm">
 
-                      <a data-toggle="modal" data-id="{{users[0].email}}" title="Add this item" class="modifyUserModal btn btn-secondary" href="#modifyUserModal">Modify Role</a>
+                      <a data-toggle="modal" data-id="{{users[0].email}}" title="Add this item" class="modifyUserModal btn btn-light" href="#modifyUserModal">Modify Role</a>
 
                     </div>
                     {% endif %}
