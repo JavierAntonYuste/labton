@@ -169,18 +169,25 @@
 
 
       {% if role=='professor' or role=='admin'%}
-        <!-- Button trigger modal -->
-        <div class="col-2">
-          <button type="button" class="btn btn-primary shadow animated--grow-in w-100" data-toggle="modal" data-target="#uploadUserModal">
-            Import user
+    <div class="col-2">
+      <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <i class="fas fa-cloud-upload-alt mr-2"></i>
+          Import users
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <button type="button" class="dropdown-item" data-toggle="modal" data-target="#uploadUserModal">
+            <i class="fas fa-user mr-2"></i>
+            Unique user
+
+          </button>
+          <button type="button" class="dropdown-item" data-toggle="modal" data-target="#uploadUsersCSVModal">
+            <i class="fas fa-file-csv mr-2"></i>
+            Import users from CSV
           </button>
         </div>
-        <div class="col-3">
-
-        <button type="button" class="btn btn-primary shadow animated--grow-in w-100" data-toggle="modal" data-target="#uploadUsersCSVModal">
-          Import users from CSV
-        </button>
       </div>
+    </div>
 
       {% endif %}
 

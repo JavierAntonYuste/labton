@@ -185,14 +185,14 @@
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           <a href="/manageSubject/{{subject.id}}" class="dropdown-item" >
               <span class="icon">
+                <i class="fas fa-user-friends mr-2"></i>
                 Manage Users
-                <i class="fas fa-user-friends ml-2"></i>
               </span>
           </a>
           {% if role=='admin'%}
           <button type="button" class="dropdown-item" data-toggle="modal" data-target="#deleteSubjectModal">
+            <i class="fas fa-trash mr-2"></i>
             Delete Subject
-            <i class="fas fa-trash ml-2"></i>
         {% endif%}
       </button>
     </div>
