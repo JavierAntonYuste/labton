@@ -109,8 +109,13 @@ def update_subject(db_session, id, acronym, name, year, description, degree):
 
 def delete_subject(db_session, subject_id):
     # Delete relations
+    practices=get_practices(db_session, subject_id)
+    for practice in practices:
+        delete_practice(db_session,practice.id)
+
     db_session.execute('DELETE FROM users_subjects \
     WHERE subject_id = :subject_id'  , {'subject_id': subject_id})
+
     db_session.commit()
 
     # Delete Subject
@@ -168,6 +173,10 @@ def update_practice(db_session,id, name, milestones, rating_way, subject_id, des
 
 
 def delete_practice(db_session, id):
+    db_session.execute('DELETE FROM milestones \
+    WHERE practice_id = :practice_id'  , {'practice_id': id})
+    db_session.commit()
+
     db_session.execute('DELETE FROM practices \
     WHERE id = :id'  , {'id': id})
 
@@ -178,7 +187,7 @@ def delete_practice(db_session, id):
 # INSERT
 
 def create_milestone(db_session, name, mode, practice_id, description):
-    milestone=Milestone(name=name, rating_way=mode, practice_id=practice_id, description=description)
+    milestone=Milestone(name=name, mode=mode, practice_id=practice_id, description=description)
     db_session.add(milestone)
     db_session.commit()
 
@@ -200,7 +209,11 @@ def get_practice_milestones(db_session, practice_id):
 
 def get_practice_id_milestone(db_session, id):
     practice_id=db_session.query(Milestone.practice_id).filter_by(id=id).first()
-    return practices_id
+    return practice_id
+
+def get_milestones(db_session):
+    milestones=db_session.query(Milestone).all()
+    return milestones
 
 # UPDATE
 

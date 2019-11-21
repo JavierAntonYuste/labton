@@ -168,9 +168,31 @@
         </div>
         {% if role=="professor" or role=="admin"%}
         <div class="col-2">
-          <button type="button" class="btn btn-primary shadow animated--grow-in w-100" data-toggle="modal" data-target="#createMilestone">
-            Create milestone
-          </button>
+          <div class="dropdown">
+
+            <button class="btn btn-primary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fas fa-plus mr-2"></i>
+              Create
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              {% if role=="admin"%}
+              <button type="button" class="dropdown-item" data-toggle="modal" data-target="#createMilestone">
+                <i class="fas fa-map-marker mr-2"></i>
+                Create milestone
+
+
+              </button>
+              <button type="button" class="dropdown-item" data-toggle="modal" data-target="#createSession">
+                <i class="fas fa-clipboard-list mr-2"></i>
+                Create session
+
+
+              </button>
+
+              {% endif %}
+            </div>
+          </div>
+
         </div>
 
         <!-- Milestone Modal -->
@@ -227,11 +249,6 @@
         <!-- end modal Milestone -->
 
         <div class="col-2">
-          <button type="button" class="btn btn-primary shadow animated--grow-in w-100" data-toggle="modal" data-target="#createSession">
-            Create session
-          </button>
-        </div>
-        <div class="col-2">
         <div class="dropdown">
           <button class="btn btn-secondary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="fas fa-cog mr-2"></i>
@@ -273,6 +290,12 @@
         {% endif %}
 
 
+      </div>
+
+      <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div class="col">
+          <h6 class="w-wrap">{{practice.description}}</h6>
+        </div>
       </div>
 
       <h4> Milestones </h4>

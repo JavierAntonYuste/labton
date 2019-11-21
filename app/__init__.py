@@ -204,6 +204,7 @@ def create_app(config_name):
     @decorators.login_required
     def practice(id):
         practice=get_practice(db_session, id)
+
         if (practice == None):
             flash('Error! Practice does not exists', 'danger')
             return redirect('/home')
@@ -298,6 +299,15 @@ def create_app(config_name):
         mode=request.form["mode"]
         practice_id=request.form["practice_id"]
         description=request.form["description"]
+
+        practice=get_practice(db_session, practice_id)
+        milestones=get_practice_milestones(db_session,id)
+        print( milestones)
+        print(practice.milestones )
+
+        if (len(milestones)==practice.milestones):
+            flash("Error! Practice has " + str(practice.milestones) +" and they already exist.", 'danger')
+            return redirect('/practice/'+practice_id)
 
         if (name=="" or mode==""):
             flash('Error! Incompleted fields', 'danger')
