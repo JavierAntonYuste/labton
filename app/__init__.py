@@ -133,7 +133,8 @@ def create_app(config_name):
 
         if privilege.name == 'admin':
             subjects.extend(get_all_subjects(db_session))
-            return render_template('allSubjects.html', privilege=session["privilege"], user=(session["email"].split('@'))[0], subjects= subjects)
+            return render_template('allSubjects.html', privilege=session["privilege"],\
+            user=(session["email"].split('@'))[0], subjects= subjects)
 
         user_id= get_user_id(db_session, session["email"])
         subjects_id= get_subjects_from_user(db_session, user_id)
@@ -141,7 +142,8 @@ def create_app(config_name):
         for id in subjects_id:
             subjects.append(get_subject(db_session, id))
 
-        return render_template('allSubjects.html', privilege=session["privilege"], user=(session["email"].split('@'))[0], subjects= subjects)
+        return render_template('allSubjects.html', privilege=session["privilege"], \
+        user=(session["email"].split('@'))[0], subjects= subjects)
 
     @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -159,13 +161,16 @@ def create_app(config_name):
             role='admin'
             session["role"]=role
 
-            return render_template('subject.html',privilege=session["privilege"], user=user, role=role, subject= subject,practices=practices, rating_ways=appconfig.rating_ways)
+            return render_template('subject.html',privilege=session["privilege"], \
+            user=user, role=role, subject= subject,practices=practices, \
+            rating_ways=appconfig.rating_ways,degrees=appconfig.degrees )
 
         role=get_role_subject(db_session, session["email"], id)
         session["role"]=role
         session["subject_id"]=id
 
-        return render_template('subject.html',user=user, privilege=session["privilege"], role=role, subject= subject, practices=practices, rating_ways=appconfig.rating_ways)
+        return render_template('subject.html',user=user, privilege=session["privilege"], \
+        role=role, subject= subject, practices=practices, rating_ways=appconfig.rating_ways, degrees=appconfig.degrees)
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -195,10 +200,14 @@ def create_app(config_name):
 
         if session["privilege"]== 'admin':
             role='admin'
-            return render_template('manageSubject.html', privilege=session["privilege"], user=user, role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
+
+            return render_template('manageSubject.html', privilege=session["privilege"], user=user,\
+             role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
 
         role=get_role_subject(db_session, session["email"], id)
-        return render_template('manageSubject.html',user=user, privilege=session["privilege"], role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
+
+        return render_template('manageSubject.html',user=user, privilege=session["privilege"],\
+        role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
 
     @app.route('/practice/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -212,7 +221,9 @@ def create_app(config_name):
         user=(session["email"].split('@'))[0]
 
         milestones=get_practice_milestones(db_session, id)
-        return render_template('practice.html',user=user, privilege=session["privilege"], practice=practice, role=session["role"],milestones=milestones, modes=appconfig.milestone_modes)
+        return render_template('practice.html',user=user, privilege=session["privilege"], \
+        practice=practice, role=session["role"],milestones=milestones, modes=appconfig.milestone_modes,\
+        rating_ways=appconfig.rating_ways)
 
 
     @app.route('/users')
@@ -229,7 +240,8 @@ def create_app(config_name):
             row = [get_user_by_id(db_session, users[i][0]), get_privilege(db_session,users[i][1])]
             users_in_system.append(row)
 
-        return render_template('users.html', user=user, users=users_in_system, privilege=session["privilege"], privileges=privileges)
+        return render_template('users.html', user=user, users=users_in_system, \
+        privilege=session["privilege"], privileges=privileges)
 
 # DB Interaction Routes _____________________________________________________________________________________________________________
     @app.route('/createUser', methods=['GET', 'POST'])
@@ -262,11 +274,9 @@ def create_app(config_name):
             flash('Error! Incompleted fields', 'danger')
             return redirect('/home')
 
-        create_subject(db_session, acronym, name, degree, year, description)
+        subject= create_subject(db_session, acronym, name, degree, year, description)
 
-        subject_id=get_subject_id(db_session, acronym,year,degree)
-
-        add_user_to_subject(db_session, engine, session["email"], subject_id, "admin")
+        add_user_to_subject(db_session, engine, session["email"], subject.id, "admin")
 
         return redirect('/home')
 
@@ -283,11 +293,6 @@ def create_app(config_name):
             flash('Error! Incompleted fields', 'danger')
             return redirect('/subject/'+subject_id)
 
-
-        if (get_practice_id(db_session, name, subject_id)!=None):
-            flash('Error! Name already taken', 'danger')
-            return redirect('/subject/'+subject_id)
-
         create_practice(db_session,name,milestones,rating_way,subject_id, description)
 
         return redirect('/subject/'+subject_id)
@@ -302,8 +307,6 @@ def create_app(config_name):
 
         practice=get_practice(db_session, practice_id)
         milestones=get_practice_milestones(db_session,id)
-        print( milestones)
-        print(practice.milestones )
 
         if (len(milestones)==practice.milestones):
             flash("Error! Practice has " + str(practice.milestones) +" and they already exist.", 'danger')
@@ -401,6 +404,43 @@ def create_app(config_name):
             # If there is not email, flash error
             flash ("Error! Empty input",'danger')
             return redirect('/manageSubject/'+ subject_id)
+
+    @app.route('/updateSubject', methods=['GET', 'POST'])
+    @decorators.login_required
+    # @decorators.privileges_required('admin', 'professor')
+    def updateSubject():
+        id=request.form["id"]
+        acronym=request.form["acronym"]
+        name=request.form["name"]
+        degree=request.form["degree"]
+        year= request.form["year"]
+        description=request.form["description"]
+
+        if (acronym=="" or name=="" or degree=="" or year==""):
+            flash('Error! Incompleted fields', 'danger')
+            return redirect('/subject/'+ id)
+
+        update_subject(db_session,id, acronym, name, degree, year, description)
+
+        return redirect('/subject/'+id)
+
+    @app.route('/updatePractice', methods=['GET', 'POST'])
+    @decorators.login_required
+    def updatePractice():
+        id=request.form["practice_id"]
+        name=request.form["name"]
+        milestones=request.form["milestones"]
+        rating_way=request.form["rating_way"]
+        description=request.form["description"]
+        subject_id=request.form["subject_id"]
+
+        if (name=="" or milestones=="" or rating_way==""):
+            flash('Error! Incompleted fields', 'danger')
+            return redirect('/practice/'+id)
+
+        update_practice(db_session,id,name,milestones,rating_way,subject_id, description)
+
+        return redirect('/practice/'+id)
 
     @app.route('/changePrivilege', methods=['GET', 'POST'])
     @decorators.login_required

@@ -65,17 +65,14 @@ def delete_user(db_session, user_id):
 def create_subject(db_session, acronym, name, degree, year, description):
     subject=Subject(acronym=acronym, name=name, degree= degree, year=year, description=description)
     db_session.add(subject)
-    # db_session.execute('INSERT INTO subjects(acronym,name,year,degree,description) VALUES (:acronym,:name,:year,:degree,:description)',\
-    # {'acronym': acronym, 'name':name, 'year':year, 'degree':degree, 'description':description})
 
     db_session.commit()
-    return
+
+    subject_added=db_session.query(Subject).filter(Subject.acronym==acronym, Subject.name==name,\
+    Subject.degree==degree, Subject.year==year, Subject.description==description)
+    return subject_added
 
 # READ
-
-def get_subject_id(db_session, acronym,year, degree):
-    id=db_session.query(Subject.id).filter(Subject.acronym==acronym).filter(Subject.degree==degree).filter(Subject.year==year).first()
-    return id
 
 def get_subject(db_session,id):
     subject= db_session.query(Subject).filter(Subject.id==id).one()
@@ -91,7 +88,7 @@ def get_subject_by_year(db_session, id, year):
 
 # UPDATE
 
-def update_subject(db_session, id, acronym, name, year, description, degree):
+def update_subject(db_session, id, acronym, name, degree, year, description):
 
     db_session.execute('UPDATE subjects\
     SET acronym = :acronym, name=:name, year=:year, description=:description, degree=:degree WHERE id = :id',\
@@ -137,17 +134,12 @@ def create_practice(db_session, name, milestones, rating_way, subject_id, descri
 
 # READ
 
-def get_practice_id(db_session, name, subject_id):
-    id=db_session.query(Practice.id).filter(Practice.name==name).filter(Practice.subject_id==subject_id).first()
-    return id
-
 def get_practice(db_session, id):
     practice=db_session.query(Practice).filter(Practice.id==id).first()
     return practice
 
 def get_practices(db_session, subject_id):
     list_practices=db_session.query(Practice).filter(Practice.subject_id==subject_id).all()
-    print (list_practices)
     return list_practices
 
 def get_subject_id_practice(db_session, id):
@@ -194,10 +186,6 @@ def create_milestone(db_session, name, mode, practice_id, description):
     return
 
 # READ
-
-def get_milestone_id(db_session, name, practice_id):
-    id=db_session.query(Milestone.id).filter(Milestone.name==name).filter(Milestone.practice_id==practice_id).first()
-    return id
 
 def get_milestone(db_session, id):
     milestone=db_session.query(Milestone).filter(Milestone.id==id).first()
