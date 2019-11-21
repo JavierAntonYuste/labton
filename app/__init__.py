@@ -209,7 +209,9 @@ def create_app(config_name):
             return redirect('/home')
 
         user=(session["email"].split('@'))[0]
-        return render_template('practice.html',user=user, privilege=session["privilege"], practice=practice, role=session["role"], modes=appconfig.milestone_modes)
+
+        milestones=get_practice_milestones(db_session, id)
+        return render_template('practice.html',user=user, privilege=session["privilege"], practice=practice, role=session["role"],milestones=milestones, modes=appconfig.milestone_modes)
 
 
     @app.route('/users')

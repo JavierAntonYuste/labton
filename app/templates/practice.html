@@ -197,7 +197,7 @@
                 <div class="row pt-2 pb-2">
                   <div class="col">
                       <label> Mode </label>
-                      <select class="custom-select" name="rating_way" id="rating_way">
+                      <select class="custom-select" name="mode" id="mode">
                         {% for mode in modes%}
                         <option value={{mode}}>{{mode}}</option>
                         {% endfor%}
@@ -274,16 +274,17 @@
 
 
       </div>
-      </div>
 
+      <h4> Milestones </h4>
       <div class="row">
 
-        {% for element in practices%}
+
+        {% for element in milestones%}
           <div class="col-xl-3 col-sm-6 mb-5">
             <div class="card">
               <a href="#" class="btn btn-primary" >
                   <span class="icon text-white-50">
-                    <i class="pr-2 fas fa-book-open"></i>
+                    <i class="pr-2 fas fa-map-marker"></i>
                     <b class="icon text-white">{{element.name}}</b>
                   </span>
               </a>
@@ -291,6 +292,10 @@
           </div>
         {% endfor %}
       </div>
+      </div>
+
+
+
 
     </div>
     <!-- /.container-fluid -->

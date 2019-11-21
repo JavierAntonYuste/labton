@@ -178,7 +178,7 @@ def delete_practice(db_session, id):
 # INSERT
 
 def create_milestone(db_session, name, mode, practice_id, description):
-    milestone=Milestone(name=name, mode=mode, practice_id=practice_id, description=description)
+    milestone=Milestone(name=name, rating_way=mode, practice_id=practice_id, description=description)
     db_session.add(milestone)
     db_session.commit()
 
@@ -194,7 +194,7 @@ def get_milestone(db_session, id):
     milestone=db_session.query(Milestone).filter(Milestone.id==id).first()
     return milestone
 
-def get_practices_milestones(db_session, practice_id):
+def get_practice_milestones(db_session, practice_id):
     list_milestones=db_session.query(Milestone).filter(Milestone.practice_id==practice_id).all()
     return list_milestones
 
