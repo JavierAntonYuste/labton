@@ -142,6 +142,7 @@ def get_practice(db_session, id):
 
 def get_practices(db_session, subject_id):
     list_practices=db_session.query(Practice).filter(Practice.subject_id==subject_id).all()
+    print (list_practices)
     return list_practices
 
 def get_subject_id_practice(db_session, id):
@@ -176,8 +177,8 @@ def delete_practice(db_session, id):
 
 # INSERT
 
-def create_milestone(db_session, name, rating_way, practice_id, description):
-    milestone=Milestone(name=name, rating_way=rating_way, practice_id=practice_id, description=description)
+def create_milestone(db_session, name, mode, practice_id, description):
+    milestone=Milestone(name=name, mode=mode, practice_id=practice_id, description=description)
     db_session.add(milestone)
     db_session.commit()
 
@@ -193,7 +194,7 @@ def get_milestone(db_session, id):
     milestone=db_session.query(Milestone).filter(Milestone.id==id).first()
     return milestone
 
-def get_practices(db_session, practice_id):
+def get_practices_milestones(db_session, practice_id):
     list_milestones=db_session.query(Milestone).filter(Milestone.practice_id==practice_id).all()
     return list_milestones
 
@@ -203,11 +204,11 @@ def get_practice_id_milestone(db_session, id):
 
 # UPDATE
 
-def update_milestone(db_session,id, name, rating_way, practice_id, description):
+def update_milestone(db_session,id, name, mode, practice_id, description):
     db_session.execute('UPDATE milestones\
-    SET name = :name, rating_way=:rating_way, practice_id=:practice_id, description=:description WHERE id = :id',\
+    SET name = :name, mode=:mode, practice_id=:practice_id, description=:description WHERE id = :id',\
     {'name': name,\
-     'rating_way': rating_way, \
+     'mode': mode, \
      'practice_id': practice_id,\
      'description': description,
      'id': id})

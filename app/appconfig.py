@@ -19,3 +19,9 @@ rating_ways = [
     "Marks",
     "None"
 ]
+
+milestone_modes = [
+    "Quiz",
+    "Against Time",
+    "None"
+]

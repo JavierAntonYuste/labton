@@ -168,7 +168,66 @@
         </div>
         {% if role=="professor" or role=="admin"%}
         <div class="col-2">
-          <button type="button" class="btn btn-primary shadow animated--grow-in w-100" data-toggle="modal" data-target="#createPractice">
+          <button type="button" class="btn btn-primary shadow animated--grow-in w-100" data-toggle="modal" data-target="#createMilestone">
+            Create milestone
+          </button>
+        </div>
+
+        <!-- Milestone Modal -->
+        <div class="modal fade" id="createMilestone" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="uploadUsersCSVTitle">Create a new Milestone</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+
+              <div class="modal-body">
+                <h6> Introduce data </h6>
+              <form action="/createMilestone" method="post" id="upload-form" enctype="multipart/form-data">
+
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                      <label> Name </label>
+                        <input class= "form-control" name="name" placeholder="Name" >
+                  </div>
+                </div>
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                      <label> Mode </label>
+                      <select class="custom-select" name="rating_way" id="rating_way">
+                        {% for mode in modes%}
+                        <option value={{mode}}>{{mode}}</option>
+                        {% endfor%}
+                      </select>
+                  </div>
+                </div>
+
+
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                      <label> Description <i>(Optional)</i> </label>
+                        <input class= "form-control" name="description" placeholder="Description" maxlength="1000" >
+                  </div>
+                </div>
+                <input type= "hidden" name="practice_id" value={{practice.id}}>
+
+                </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn  btn-primary">Create</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end modal Milestone -->
+
+        <div class="col-2">
+          <button type="button" class="btn btn-primary shadow animated--grow-in w-100" data-toggle="modal" data-target="#createSession">
             Create session
           </button>
         </div>

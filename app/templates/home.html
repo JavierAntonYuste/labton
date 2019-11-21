@@ -177,6 +177,84 @@
                 Create subject
               </button>
 
+              <!-- Subject Modal -->
+              <div class="modal fade" id="createSubject" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h4 class="modal-title" id="uploadUsersCSVTitle">Create a new Subject</h4>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+
+                    <div class="modal-body">
+                      <h6> Introduce data </h6>
+                    <form action="/createSubject" method="post" id="upload-form" enctype="multipart/form-data">
+                      <div class="row pt-2 pb-2">
+                        <div class="col">
+                            <label> Acronym </label>
+                              <input class= "form-control" name="acronym" placeholder="Acronym" >
+                        </div>
+                      </div>
+                      <div class="row pt-2 pb-2">
+                        <div class="col">
+                            <label> Name </label>
+                              <input class= "form-control" name="name" placeholder="Name" >
+                        </div>
+                      </div>
+
+                      <div class="row pt-2 pb-2">
+                        <div class="col">
+                            <label> Degree </label>
+                            <select class="custom-select" name="degree" id="degree">
+                              {% for degree in degrees%}
+                              <option value={{degree}}>{{degree}}</option>
+                              {% endfor%}
+                            </select>
+                        </div>
+                      </div>
+
+                      <div class="row pt-2 pb-2">
+                        <div class="col">
+                          <label> Academic Year </label>
+                          <select class="custom-select" name="year" id="year">
+                          </select>
+
+                          <script>
+                              var currentYear = new Date().getFullYear()
+
+                              min = currentYear - 5
+                              var options = "";
+
+                              for (var year = currentYear +1 ; year >= min; year--) {
+                                  nextYear=year+1
+                                  options += "<option value='"+year+"'>" + year+" - "+ nextYear + "</option>";
+                              }
+                              document.getElementById("year").innerHTML = options;
+                          </script>
+
+                        </div>
+                        </div>
+                        <div class="row pt-2 pb-2">
+                          <div class="col">
+                              <label> Description <i>(Optional)</i> </label>
+                                <input class= "form-control" name="description" placeholder="Description" maxlength="1000" >
+                          </div>
+                        </div>
+
+                      </div>
+
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn  btn-primary">Create</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- end modal Subject -->
+
             {% endif %}
 
           </div>
@@ -190,83 +268,7 @@
 
           </div>
 
-        <!-- Subject Modal -->
-        <div class="modal fade" id="createSubject" tabindex="-1" role="dialog" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h4 class="modal-title" id="uploadUsersCSVTitle">Create a new Subject</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
 
-              <div class="modal-body">
-                <h6> Introduce data </h6>
-              <form action="/createSubject" method="post" id="upload-form" enctype="multipart/form-data">
-                <div class="row pt-2 pb-2">
-                  <div class="col">
-                      <label> Acronym </label>
-                        <input class= "form-control" name="acronym" placeholder="Acronym" >
-                  </div>
-                </div>
-                <div class="row pt-2 pb-2">
-                  <div class="col">
-                      <label> Name </label>
-                        <input class= "form-control" name="name" placeholder="Name" >
-                  </div>
-                </div>
-
-                <div class="row pt-2 pb-2">
-                  <div class="col">
-                      <label> Degree </label>
-                      <select class="custom-select" name="degree" id="degree">
-                        {% for degree in degrees%}
-                        <option value={{degree}}>{{degree}}</option>
-                        {% endfor%}
-                      </select>
-                  </div>
-                </div>
-
-                <div class="row pt-2 pb-2">
-                  <div class="col">
-                    <label> Academic Year </label>
-                    <select class="custom-select" name="year" id="year">
-                    </select>
-
-                    <script>
-                        var currentYear = new Date().getFullYear()
-
-                        min = currentYear - 5
-                        var options = "";
-
-                        for (var year = currentYear +1 ; year >= min; year--) {
-                            nextYear=year+1
-                            options += "<option value='"+year+"'>" + year+" - "+ nextYear + "</option>";
-                        }
-                        document.getElementById("year").innerHTML = options;
-                    </script>
-
-                  </div>
-                  </div>
-                  <div class="row pt-2 pb-2">
-                    <div class="col">
-                        <label> Description <i>(Optional)</i> </label>
-                          <input class= "form-control" name="description" placeholder="Description" maxlength="1000" >
-                    </div>
-                  </div>
-
-                </div>
-
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn  btn-primary">Create</button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- end modal Subject -->
         <!-- Content Row -->
         <div class="row">
 

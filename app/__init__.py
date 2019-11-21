@@ -101,7 +101,6 @@ def create_app(config_name):
     @decorators.login_required
     def home():
         privilege=get_user_privileges(db_session, session["email"])
-        print(privilege)
         session["privilege"]=privilege.name
         # Obtaining current year for showing the active subjects
         # An academic year is being considered (from 1/sep until 31/aug)
@@ -129,9 +128,7 @@ def create_app(config_name):
     def allSubjects():
         # Querying database for taking the subjects that each user has access
         subjects = []
-
         # If user is admin, render all subjects
-
         privilege= get_user_privileges(db_session, session["email"])
 
         if privilege.name == 'admin':
@@ -149,7 +146,7 @@ def create_app(config_name):
     @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
     def subject(id):
-        subject=db_session.query(models.Subject).filter_by(id=id).first()
+        subject=get_subject(db_session, id)
         if (subject == None):
             flash('Error! Subject does not exists', 'danger')
             return redirect('/home')
@@ -212,7 +209,7 @@ def create_app(config_name):
             return redirect('/home')
 
         user=(session["email"].split('@'))[0]
-        return render_template('practice.html',user=user, privilege=session["privilege"], practice=practice, role=session["role"])
+        return render_template('practice.html',user=user, privilege=session["privilege"], practice=practice, role=session["role"], modes=appconfig.milestone_modes)
 
 
     @app.route('/users')
@@ -291,6 +288,27 @@ def create_app(config_name):
         create_practice(db_session,name,milestones,rating_way,subject_id, description)
 
         return redirect('/subject/'+subject_id)
+
+    @app.route('/createMilestone', methods=['GET', 'POST'])
+    @decorators.login_required
+    def createMilestone():
+        name=request.form["name"]
+        mode=request.form["mode"]
+        practice_id=request.form["practice_id"]
+        description=request.form["description"]
+
+        if (name=="" or mode==""):
+            flash('Error! Incompleted fields', 'danger')
+            return redirect('/practice/'+practice_id)
+
+
+        if (get_milestone_id(db_session, name, practice_id)!=None):
+            flash('Error! Name already taken', 'danger')
+            return redirect('/subject/'+subject_id)
+
+        create_milestone(db_session, name, mode, practice_id, description)
+
+        return redirect('/practice/'+practice_id)
 
     @app.route('/uploadUsers', methods=['POST'])
     @decorators.login_required
