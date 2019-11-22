@@ -18,6 +18,54 @@ privileges_users = Table(
     Column('privilege_id', Integer(), ForeignKey('privilege.id'))
 )
 
+groupings_subject = Table(
+    'groupings_subject',
+     Base.metadata,
+    Column('grouping_id', Integer(),primary_key=True, autoincrement=True),
+    Column('name', String(80), nullable=False),
+    Column('subject_id', ForeignKey('subjects.id'), nullable=False)
+)
+
+groups_subject = Table(
+    'groups_subject',
+     Base.metadata,
+    Column('group_id', Integer(),primary_key=True, autoincrement=True),
+    Column('name', String(80), nullable=False),
+    Column('grouping_id', ForeignKey('groupings_subject.grouping_id'), nullable=False),
+)
+
+users_group_subject = Table(
+    'users_group_subject',
+     Base.metadata,
+    Column('group_id', ForeignKey('groups_subject.group_id'), nullable=False),
+    Column('user_id', ForeignKey('user.id'), nullable=False)
+    )
+
+# Uncomment when session model is done
+
+# groupings_session = Table(
+#     'groupings_session',
+#      Base.metadata,
+#     Column('grouping_id', Integer(),primary_key=True, autoincrement=True),
+#     Column('name', String(80), nullable=False),
+#     Column('session_id', ForeignKey('session.id'), nullable=False)
+# )
+#
+# groups_session= Table(
+#     'groups_session',
+#      Base.metadata,
+#     Column('group_id', Integer(),primary_key=True, autoincrement=True),
+#     Column('grouping_id', ForeignKey(groupings_subject.grouping_id), nullable=False),
+#     Column('user_id', ForeignKey('user.id'), nullable=False)
+# )
+# users_group_session = Table(
+#     'users_group_session',
+#      Base.metadata,
+#     Column('group_id', ForeignKey(groups_session.group_id), nullable=False),
+#     Column('user_id', ForeignKey(user.id), nullable=False)
+#     )
+
+
 class Role(Base):
 
     __tablename__= 'role'

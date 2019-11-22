@@ -389,3 +389,189 @@ def update_privilege(db_session, email, privilege):
 
 # DELETE
 # Not exists, it doesn't make sense to have a user without privilege relations
+
+# groupings_subject CRUD methods__________________________________________________
+
+# INSERT
+
+def add_grouping_subject(engine, name, subject_id):
+
+    try:
+        con = engine.connect()
+        trans = con.begin()
+
+        # Creating relations
+        con.execute(groupings_subject.insert().values(
+            name=name,
+            subject_id= subject_id
+            ))
+
+        trans.commit()
+
+    except:
+        trans.rollback()
+        raise
+
+    con.close()
+    return
+
+# READ
+def get_grouping(db_session, grouping_id):
+    grouping=db_session.query(groupings_subject).filter(groupings_subject.c.grouping_id==grouping_id).first()
+    return grouping
+
+def get_groupings_subject(db_session, subject_id):
+    groupings= db_session.query(groupings_subject).filter(groupings_subject.c.subject_id==subject_id).all()
+    return groupings
+
+
+# UPDATE
+
+def update_grouping(db_session,grouping_id, name, subject_id):
+
+    db_session.execute('UPDATE groupings_subject\
+    SET name = :name AND subject_id = :subject_id WHERE grouping_id = :grouping_id',\
+    {'name': name,\
+     'subject_id': subject_id, \
+     'grouping_id': grouping_id })
+
+    db_session.commit()
+    return
+
+# DELETE
+def delete_grouping_subject(db_session,grouping_id):
+    db_session.execute('DELETE FROM groupings_subject \
+    WHERE grouping_id = :grouping_id'  , {'grouping_id': grouping_id})
+
+    db_session.commit()
+
+    return
+
+# groups_subject CRUD methods__________________________________________________
+
+# INSERT
+
+def add_group_subject(engine, name, grouping_id):
+
+    try:
+        con = engine.connect()
+        trans = con.begin()
+
+        # Creating relations
+        con.execute(groups_subject.insert().values(
+            name=name,
+            grouping_id= grouping_id
+            ))
+
+        trans.commit()
+
+    except:
+        trans.rollback()
+        raise
+
+    con.close()
+    return
+
+# READ
+def get_group(db_session, group_id):
+    group=db_session.query(groups_subject).filter(groups_subject.c.group_id==group_id).first()
+    return group
+
+def get_groups_grouping(db_session, grouping_id):
+    groups= db_session.query(groups_subject).filter(groups_subject.c.grouping_id==grouping_id).all()
+    return groups
+
+def get_groups_subject(db_session, subject_id):
+    groups=db_session.query(groups_subject).\
+    join(groupings_subject, groups_subject.c.grouping_id==groupings_subject.c.grouping_id).\
+    filter(groupings_subject.c.subject_id==subject_id).all()
+    return groups
+
+def get_group_from_user_in_subject(db_session, user_id, subject_id):
+    group=db_session.query(groups_subject).\
+    join(users_group_subject,groups_subject.c.group_id==users_group_subject.c.group_id).\
+    join(groupings_subject, groups_subject.c.grouping_id==groupings_subject.c.grouping_id).\
+    filter(users_group_subject.c.user_id==user_id).\
+    filter(groupings_subject.c.subject_id==subject_id).first()
+
+    return group
+
+# UPDATE
+
+def update_group(db_session,group_id, name, grouping_id):
+
+    db_session.execute('UPDATE groups_subject\
+    SET name = :name AND grouping_id = :grouping_id WHERE group_id = :group_id',\
+    {'name': name,\
+     'grouping_id': groupings_id, \
+     'group_id': group_id })
+
+    db_session.commit()
+    return
+
+# DELETE
+def delete_group_subject(db_session,group_id):
+    db_session.execute('DELETE FROM groups_subject \
+    WHERE group_id = :group_id'  , {'group_id': group_id})
+
+    db_session.commit()
+
+    return
+
+# users_group_subject CRUD methods__________________________________________________
+
+# INSERT
+
+def add_user_group_subject(db_session, group_id, user):
+
+    try:
+        con = engine.connect()
+        trans = con.begin()
+
+        # Creating relations
+        con.execute(users_group_subject.insert().values(
+            group_id=group_id,
+            user_id=user_id
+            ))
+
+        trans.commit()
+
+    except:
+        trans.rollback()
+        raise
+
+    con.close()
+    return
+
+# READ
+
+def get_user_ids_group(db_session, group_id):
+    users_id= db_session.query(users_group_subject).filter(users_group_subject.c.group_id==group_id).all()
+    return users_id
+
+def get_group_id_user(db_session, user_id):
+    groups= db_session.query(users_group_subject.c.group_id).filter(users_group_subject.c.user_id==user_id).all()
+    return groups
+
+
+# UPDATE
+
+def update_user_group(db_session,group_id, user_id):
+    db_session.execute('UPDATE users_group_subject\
+    SET group_id = :group_id WHERE user_id = :user_id',\
+    {'group_id': group_id, \
+    'user_id': user_id})
+
+    db_session.commit()
+    return
+
+# DELETE
+def delete_user_group_subject(db_session,user_id, group_id):
+    db_session.execute('DELETE FROM groups_subject \
+    WHERE group_id = :group_id AND user_id = :user_id', \
+    {'group_id': group_id,\
+    'user_id': user_id})
+
+    db_session.commit()
+
+    return

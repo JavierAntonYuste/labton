@@ -169,25 +169,46 @@
 
 
       {% if role=='professor' or role=='admin'%}
-    <div class="col-2">
-      <div class="dropdown">
-        <button class="btn btn-primary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <i class="fas fa-cloud-upload-alt mr-2"></i>
-          Import users
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-          <button type="button" class="dropdown-item" data-toggle="modal" data-target="#uploadUserModal">
-            <i class="fas fa-user mr-2"></i>
-            Unique user
+      <div class="col-2">
+        <div class="dropdown">
+          <button class="btn btn-primary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-plus mr-2"></i>
+            New
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#newGroupingModal">
+              <i class="fas fa-user mr-2"></i>
+              New grouping
 
-          </button>
-          <button type="button" class="dropdown-item" data-toggle="modal" data-target="#uploadUsersCSVModal">
-            <i class="fas fa-file-csv mr-2"></i>
-            Import users from CSV
-          </button>
+            </button>
+            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#newGroupModal">
+              <i class="fas fa-file-csv mr-2"></i>
+              New group
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+
+      <div class="col-2">
+        <div class="dropdown">
+          <button class="btn btn-primary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-cloud-upload-alt mr-2"></i>
+            Import users
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#uploadUserModal">
+              <i class="fas fa-user mr-2"></i>
+              Unique user
+
+            </button>
+            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#uploadUsersCSVModal">
+              <i class="fas fa-file-csv mr-2"></i>
+              Import users from CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
 
     <!-- CSV Modal -->
     <div class="modal fade" id="uploadUsersCSVModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -297,6 +318,97 @@
       </div>
     </div>
     <!-- end modal User -->
+
+    <!-- newGrouping Modal -->
+
+      <div class="modal fade" id="newGroupingModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title" id="uploadUsersCSVTitle"> Create new Grouping</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+
+            <div class="modal-body">
+
+              <div class="row">
+                <div class="col">
+                  <div class="form-group">
+                  <form action="/createGrouping" method="post" id="upload-form">
+                    <div class="row pt-2 pb-2">
+                      <div class="col">
+                        <input class= "form-control" type="text" name="name" id="name" placeholder="Name" >
+                        <input type="hidden" name="subject_id" value={{subject.id}}>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn  btn-primary">Create</button>
+                  </form>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end modal newGrouping -->
+
+      <!-- newGrouping Modal -->
+
+        <div class="modal fade" id="newGroupModal" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="uploadUsersCSVTitle"> Create new Group</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+
+              <div class="modal-body">
+
+                <div class="row">
+                  <div class="col">
+                    <div class="form-group">
+                    <form action="/createGroup" method="post" id="upload-form">
+                      <div class="row pt-2 pb-2">
+                        <div class="col">
+                          <label> Name</label>
+                          <input class= "form-control" type="text" name="name" id="name" placeholder="Name" >
+                          <input type="hidden" name="subject_id" value={{subject.id}}>
+                        </div>
+                      </div>
+                      <div class="row pt-2 pb-2">
+                        <div class="col">
+                          <label> Belongs to</label>
+                          <select class="custom-select" name="grouping_id" id="grouping_id">
+                            {% for grouping in groupings%}
+                            <option value={{grouping.grouping_id}}>Grouping {{grouping.name}}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn  btn-primary">Create</button>
+                    </form>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end modal newGrouping -->
       {% endif %}
 
 
@@ -312,6 +424,8 @@
             <tr>
               <th scope="col" class="text-center">Name</th>
               <th scope="col" class="text-center">Email</th>
+              <th scope="col" class="text-center">Grouping</th>
+              <th scope="col" class="text-center">Group</th>
               <th scope="col" class="text-center">Role</th>
               <th scope="col" class="text-center">Actions</th>
 
@@ -322,15 +436,23 @@
               <tr>
                 <td class="text-center">{{users[0].username}}</td>
                 <td class="text-center">{{users[0].email}}</td>
+                <td class="text-center">{{users[2].name}}</td>
+                <td class="text-center">{{users[3].name}}</td>
                 <td class="text-center">{{users[1].name}}</td>
 
                 <td class="text-center">
+                  <div class="col-sm">
+
+                    <a data-toggle="modal" data-id="{{users[0].email}}" data-groupings="groupings" data-groups="groups" class="modifyGroupingGroup btn btn-light" href="#modifyGroupingGroup">Modify Group</a>
+
+                  </div>
+
                   {% if not user==(users[0].email.split('@'))[0]%}
                   <div class="row">
                     {% if role=='admin'%}
                     <div class="col-sm">
 
-                      <a data-toggle="modal" data-id="{{users[0].email}}" title="Add this item" class="modifyUserModal btn btn-light" href="#modifyUserModal">Modify Role</a>
+                      <a data-toggle="modal" data-id="{{users[0].email}}" class="modifyUserModal btn btn-light" href="#modifyUserModal">Modify Role</a>
 
                     </div>
                     {% endif %}
@@ -340,6 +462,20 @@
                       $(document).on("click", ".modifyUserModal", function () {
                            var userEmail = $(this).data('id');
                            $(".modal-body #email").val( userEmail );
+                      });
+                    });
+
+                    $(document).ready(function () {
+                      $(document).on("click", ".modifyGroupingGroup", function () {
+                            var groupings = $(this).data('groupings');
+                            var groups = $(this).data('groups');
+                            optionText = 'Premium';
+                            var userEmail = $(this).data('id');
+
+                            var o = new Option("option text", "value");
+                            /// jquerify the DOM object 'o' so we can use the html method
+                            $(o).html("option text");
+                            $(".modal-body #selectGroupings").append(o);
                       });
                     });
 
@@ -405,6 +541,129 @@
 
 
       <!-- end modal modify User Subject-->
+      <!-- modify User Modal -->
+      <div class="modal fade" id="modifyUserModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title" id="uploadUsersCSVTitle">Modify Role</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+
+            <div class="modal-body">
+              <h6> Introduce new role </h6>
+            <form action="/changeRole" method="post" id="upload-form" enctype="multipart/form-data">
+              <div class="row pt-2 pb-2">
+                <div class="col">
+                  <select class="custom-select" name="role" id="role">
+                    {% for role in roles_db%}
+                    <option value={{role.name}}>{{role.name}}</option>
+                    {% endfor %}
+                  </select>
+                  <input type="hidden" name="email" id="email" value=""/>
+                  <input type="hidden" name="subject_id" value={{subject.id}}>
+
+                </div>
+
+              </div>
+
+              </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn  btn-primary">Update</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- end modal modify User Subject-->
+      <!-- modify User Modal -->
+      <div class="modal fade" id="modifyUserModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title" id="uploadUsersCSVTitle">Modify Role</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+
+            <div class="modal-body">
+              <h6> Introduce new role </h6>
+            <form action="/changeRole" method="post" id="upload-form" enctype="multipart/form-data">
+              <div class="row pt-2 pb-2">
+                <div class="col">
+                  <select class="custom-select" name="role" id="role">
+                    {% for role in roles_db%}
+                    <option value={{role.name}}>{{role.name}}</option>
+                    {% endfor %}
+                  </select>
+                  <input type="hidden" name="email" id="email" value=""/>
+                  <input type="hidden" name="subject_id" value={{subject.id}}>
+
+                </div>
+
+              </div>
+
+              </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn  btn-primary">Update</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- end modal modify User Subject-->
+
+      <!-- modifyGroupingGroupModal -->
+      <div class="modal fade" id="modifyGroupingGroup" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Modify Grouping or Group</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+
+            <div class="modal-body">
+              <h6> Introduce new role </h6>
+            <form action="#" method="post" id="upload-form" enctype="multipart/form-data">
+              <div class="row pt-2 pb-2">
+                <div class="col">
+                  <select class="custom-select" name="selectGroupings" id="selectGroupings">
+
+                  </select>
+                  <input type="hidden" name="email" id="email" value=""/>
+                  <input type="hidden" name="subject_id" value={{subject.id}}>
+
+                </div>
+
+              </div>
+
+              </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn  btn-primary">Update</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- end modal modify User Subject-->
+
 
     </div>
     <!-- /.container-fluid -->

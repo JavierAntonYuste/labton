@@ -193,21 +193,35 @@ def create_app(config_name):
         users_in_subject=[]
 
         for i in range(len(users)):
-            row = [get_user_by_id(db_session,users[i][0]),get_role(db_session,users[i][1] ) ]
+            user_in=get_user_by_id(db_session,users[i][0])
+            role=get_role(db_session,users[i][1])
+
+            group=get_group_from_user_in_subject(db_session, users[i][0], id)
+            print(group )
+            if (group != None):
+                grouping=get_grouping(db_session, group.grouping_id)
+            else:
+                grouping=None
+
+            row = [user_in,role, group, grouping]
             users_in_subject.append(row)
 
         roles_db=get_roles(db_session)
+        groupings=get_groupings_subject(db_session,id)
+        groups=get_groups_subject(db_session,id)
 
         if session["privilege"]== 'admin':
             role='admin'
 
             return render_template('manageSubject.html', privilege=session["privilege"], user=user,\
-             role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
+             role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db, \
+             groupings=groupings, groups=groups)
 
         role=get_role_subject(db_session, session["email"], id)
 
         return render_template('manageSubject.html',user=user, privilege=session["privilege"],\
-        role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db)
+        role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db, \
+        groupings=groupings, groups=groups)
 
     @app.route('/practice/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -305,21 +319,16 @@ def create_app(config_name):
         practice_id=request.form["practice_id"]
         description=request.form["description"]
 
-        practice=get_practice(db_session, practice_id)
-        milestones=get_practice_milestones(db_session,id)
+        practice=get_practice(db_session, practice_id )
+        milestones=get_practice_milestones(db_session,practice_id)
 
-        if (len(milestones)==practice.milestones):
-            flash("Error! Practice has " + str(practice.milestones) +" and they already exist.", 'danger')
+        if (len(milestones)>=practice.milestones):
+            flash("Error! Practice has " + str(practice.milestones) +" milestone(s) and they already exist.", 'danger')
             return redirect('/practice/'+practice_id)
 
         if (name=="" or mode==""):
             flash('Error! Incompleted fields', 'danger')
             return redirect('/practice/'+practice_id)
-
-
-        if (get_milestone_id(db_session, name, practice_id)!=None):
-            flash('Error! Name already taken', 'danger')
-            return redirect('/subject/'+subject_id)
 
         create_milestone(db_session, name, mode, practice_id, description)
 
@@ -423,6 +432,38 @@ def create_app(config_name):
         update_subject(db_session,id, acronym, name, degree, year, description)
 
         return redirect('/subject/'+id)
+
+    @app.route('/createGrouping', methods=['POST'])
+    @decorators.login_required
+    def createGrouping():
+        name=request.form["name"]
+        subject_id = request.form['subject_id']
+
+        if (name==""):
+            flash ("Error! Empty input",'danger')
+            return redirect('/manageSubject/'+ subject_id)
+
+        add_grouping_subject(engine, name, subject_id)
+
+        flash ("Success! Grouping " + name +" added to subject",'success')
+        return redirect('/manageSubject/'+ subject_id)
+
+    @app.route('/createGroup', methods=['POST'])
+    @decorators.login_required
+    def createGroup():
+        name=request.form["name"]
+        grouping_id = request.form['grouping_id']
+        subject_id=request.form['subject_id']
+
+        if (name==""):
+            flash ("Error! Empty input",'danger')
+            return redirect('/manageSubject/'+ subject_id)
+
+        add_group_subject(engine, name, grouping_id)
+
+        flash ("Success! Group " + name +" added to subject",'success')
+        return redirect('/manageSubject/'+ subject_id)
+
 
     @app.route('/updatePractice', methods=['GET', 'POST'])
     @decorators.login_required
