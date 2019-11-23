@@ -473,13 +473,6 @@
                           var userEmail = $(this).data('id');
                           var subjectId = $(this).data('subject-id');
 
-                          // for (i = 0; i < groupings.length; i++) {
-                          //   if (groupings[i][2]==subjectId){
-                          //     var o=new Option(groupings[i][1],groupings[i][0])
-                          //     $(".modal-body #selectGroupings").append(o);
-                          //   }
-                          //
-                          // }
                           for (i = 0; i < groups.length; i++) {
                             for (n = 0; n < groupings.length; n++) {
                               if (groupings[n][2]==subjectId && groups[i][2]==groupings[n][0]){

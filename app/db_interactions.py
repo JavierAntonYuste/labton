@@ -66,7 +66,7 @@ def create_subject(db_session, acronym, name, degree, year, description):
     db_session.commit()
 
     subject_added=db_session.query(Subject).filter(Subject.acronym==acronym, Subject.name==name,\
-    Subject.degree==degree, Subject.year==year, Subject.description==description)
+    Subject.degree==degree, Subject.year==year, Subject.description==description).first()
     return subject_added
 
 # READ
@@ -519,11 +519,10 @@ def delete_group_subject(db_session,group_id):
 
 # INSERT
 
-def add_user_group_subject(db_session, group_id, user):
-
+def add_user_group_subject(engine, group_id, user_id):
+    con = engine.connect()
+    trans = con.begin()
     try:
-        con = engine.connect()
-        trans = con.begin()
 
         # Creating relations
         con.execute(users_group_subject.insert().values(
@@ -553,11 +552,12 @@ def get_group_id_user(db_session, user_id):
 
 # UPDATE
 
-def update_user_group(db_session,group_id, user_id):
+def update_user_group(db_session,old_group_id, group_id, user_id):
     db_session.execute('UPDATE users_group_subject\
-    SET group_id = :group_id WHERE user_id = :user_id',\
+    SET group_id = :group_id WHERE user_id = :user_id AND group_id = :old_group_id',\
     {'group_id': group_id, \
-    'user_id': user_id})
+    'user_id': user_id,
+    'old_group_id':old_group_id})
 
     db_session.commit()
 

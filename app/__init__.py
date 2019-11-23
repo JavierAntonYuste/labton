@@ -202,7 +202,7 @@ def create_app(config_name):
             else:
                 grouping=None
 
-            row = [user_in,role, group, grouping]
+            row = [user_in,role, grouping, group]
             users_in_subject.append(row)
 
         roles_db=get_roles(db_session)
@@ -441,21 +441,29 @@ def create_app(config_name):
         email=request.form["email"]
         subject_id=request.form["subject_id"]
         group_id=request.form["selectGroups"]
-
-        print(group_id )
-        print (email )
-
         user_id=get_user_id(db_session, email)
-
-        print(user_id )
-
-
 
         if (group_id==""):
             flash('Error! Incompleted fields', 'danger')
             return redirect('/manageSubject/'+ subject_id)
 
-        update_user_group(db_session, group_id, user_id[0])
+
+        groups_user=get_group_id_user(db_session,user_id[0])
+        if (groups_user==[]):
+            add_user_group_subject(engine, group_id, user_id)
+        else:
+            changed=False
+            for group_user in groups_user:
+                group=get_group(db_session,group_user[0])
+                grouping= get_grouping(db_session, group.grouping_id)
+
+                if (str(grouping.subject_id)==subject_id):
+                    changed=True
+                    update_user_group(db_session,group[0], group_id, user_id[0])
+
+            if (changed==False):
+                add_user_group_subject(engine, group_id, user_id)
+
 
         return redirect('/manageSubject/'+subject_id)
 
