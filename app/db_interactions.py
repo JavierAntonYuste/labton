@@ -18,9 +18,6 @@ def create_user(db_session, engine, name, email, privilege_name):
 def get_user_id(db_session, email):
     id= db_session.query(User.id).filter(User.email==email).first()
     return id
-    def get_user_id(db_session, email):
-        user_id= db_session.query(User.id).filter_by(email=email).first()
-        return user_id
 
 def get_user_by_id(db_session, id):
     user= db_session.query(User).filter(User.id==id).one()
@@ -563,6 +560,7 @@ def update_user_group(db_session,group_id, user_id):
     'user_id': user_id})
 
     db_session.commit()
+
     return
 
 # DELETE

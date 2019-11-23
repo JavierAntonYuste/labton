@@ -442,8 +442,7 @@
 
                 <td class="text-center">
                   <div class="col-sm">
-
-                    <a data-toggle="modal" data-id="{{users[0].email}}" data-groupings="groupings" data-groups="groups" class="modifyGroupingGroup btn btn-light" href="#modifyGroupingGroup">Modify Group</a>
+                    <a data-toggle="modal" data-id="{{users[0].email}}" data-groupings="{{groupings_json}}" data-groups="{{groups_json}}" data-subject-id="{{subject.id}}" class="modifyGroupingGroup btn btn-light" href="#">Modify Group</a>
 
                   </div>
 
@@ -465,19 +464,35 @@
                       });
                     });
 
-                    $(document).ready(function () {
-                      $(document).on("click", ".modifyGroupingGroup", function () {
-                            var groupings = $(this).data('groupings');
-                            var groups = $(this).data('groups');
-                            optionText = 'Premium';
-                            var userEmail = $(this).data('id');
+                    $('.modifyGroupingGroup').click( function (evt) {
+                          evt.stopImmediatePropagation();
+                          $("#modifyGroupingGroup").modal()
 
-                            var o = new Option("option text", "value");
-                            /// jquerify the DOM object 'o' so we can use the html method
-                            $(o).html("option text");
-                            $(".modal-body #selectGroupings").append(o);
-                      });
+                          var groupings = $(this).data('groupings');
+                          var groups = $(this).data('groups');
+                          var userEmail = $(this).data('id');
+                          var subjectId = $(this).data('subject-id');
+
+                          // for (i = 0; i < groupings.length; i++) {
+                          //   if (groupings[i][2]==subjectId){
+                          //     var o=new Option(groupings[i][1],groupings[i][0])
+                          //     $(".modal-body #selectGroupings").append(o);
+                          //   }
+                          //
+                          // }
+                          for (i = 0; i < groups.length; i++) {
+                            for (n = 0; n < groupings.length; n++) {
+                              if (groupings[n][2]==subjectId && groups[i][2]==groupings[n][0]){
+                                var o=new Option("Grouping " + groupings[n][1] +" - Group "+groups[i][1],groups[i][0]);
+                                $(".modal-body #selectGroups").append(o);
+                              }
+                          }
+                        }
+
+                          $(".modal-body #email").val( userEmail );
+
                     });
+
 
                     </script>
 
@@ -629,25 +644,23 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h4 class="modal-title">Modify Grouping or Group</h4>
+              <h4 class="modal-title">Modify Grouping/Group</h4>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
               </button>
             </div>
 
             <div class="modal-body">
-              <h6> Introduce new role </h6>
-            <form action="#" method="post" id="upload-form" enctype="multipart/form-data">
+              <h6> Introduce new data</h6>
+            <form action="/updateUserGroup" method="post" id="upload-form" enctype="multipart/form-data">
               <div class="row pt-2 pb-2">
                 <div class="col">
-                  <select class="custom-select" name="selectGroupings" id="selectGroupings">
-
+                  <label> Select new group</label>
+                  <select class="custom-select" name="selectGroups" id="selectGroups">
                   </select>
-                  <input type="hidden" name="email" id="email" value=""/>
-                  <input type="hidden" name="subject_id" value={{subject.id}}>
-
                 </div>
-
+                  <input type="hidden" name="email" id="email" value=""/>
+                  <input type="hidden" name="subject_id" id="subject_id" value="{{subject.id}}"/>
               </div>
 
               </div>

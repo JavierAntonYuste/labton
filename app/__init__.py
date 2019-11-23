@@ -1,7 +1,7 @@
 from flask import Flask, url_for, redirect,  \
 render_template, request, abort, session, flash
 
-import csv, codecs, os, datetime
+import csv, codecs, os, datetime, json
 
 # from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user
@@ -197,7 +197,6 @@ def create_app(config_name):
             role=get_role(db_session,users[i][1])
 
             group=get_group_from_user_in_subject(db_session, users[i][0], id)
-            print(group )
             if (group != None):
                 grouping=get_grouping(db_session, group.grouping_id)
             else:
@@ -208,20 +207,22 @@ def create_app(config_name):
 
         roles_db=get_roles(db_session)
         groupings=get_groupings_subject(db_session,id)
+        groupings_json=json.dumps(groupings)
         groups=get_groups_subject(db_session,id)
+        groups_json=json.dumps(groups)
 
         if session["privilege"]== 'admin':
             role='admin'
 
             return render_template('manageSubject.html', privilege=session["privilege"], user=user,\
              role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db, \
-             groupings=groupings, groups=groups)
+             groupings_json=groupings_json, groups_json=groups_json, groupings=groupings, groups=groups)
 
         role=get_role_subject(db_session, session["email"], id)
 
         return render_template('manageSubject.html',user=user, privilege=session["privilege"],\
         role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db, \
-        groupings=groupings, groups=groups)
+        groupings_json=groupings_json, groups_json=groups_json, groupings=groupings, groups=groups)
 
     @app.route('/practice/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -432,6 +433,31 @@ def create_app(config_name):
         update_subject(db_session,id, acronym, name, degree, year, description)
 
         return redirect('/subject/'+id)
+
+    @app.route('/updateUserGroup', methods=['GET', 'POST'])
+    @decorators.login_required
+    # @decorators.privileges_required('admin', 'professor')
+    def updateuserGroup():
+        email=request.form["email"]
+        subject_id=request.form["subject_id"]
+        group_id=request.form["selectGroups"]
+
+        print(group_id )
+        print (email )
+
+        user_id=get_user_id(db_session, email)
+
+        print(user_id )
+
+
+
+        if (group_id==""):
+            flash('Error! Incompleted fields', 'danger')
+            return redirect('/manageSubject/'+ subject_id)
+
+        update_user_group(db_session, group_id, user_id[0])
+
+        return redirect('/manageSubject/'+subject_id)
 
     @app.route('/createGrouping', methods=['POST'])
     @decorators.login_required
