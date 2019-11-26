@@ -23,7 +23,7 @@ groupings_subject = Table(
      Base.metadata,
     Column('grouping_id', Integer(),primary_key=True, autoincrement=True),
     Column('name', String(80), nullable=False),
-    Column('subject_id', ForeignKey('subjects.id'), nullable=False)
+    Column('subject_id', Integer(),ForeignKey('subjects.id'), nullable=False)
 )
 
 groups_subject = Table(
@@ -31,14 +31,14 @@ groups_subject = Table(
      Base.metadata,
     Column('group_id', Integer(),primary_key=True, autoincrement=True),
     Column('name', String(80), nullable=False),
-    Column('grouping_id', ForeignKey('groupings_subject.grouping_id'), nullable=False),
+    Column('grouping_id',Integer(), ForeignKey('groupings_subject.grouping_id'), nullable=False),
 )
 
 users_group_subject = Table(
     'users_group_subject',
      Base.metadata,
-    Column('group_id', ForeignKey('groups_subject.group_id'), nullable=False),
-    Column('user_id', ForeignKey('user.id'), nullable=False)
+    Column('group_id', Integer(), ForeignKey('groups_subject.group_id'), nullable=False),
+    Column('user_id', Integer(), ForeignKey('user.id'), nullable=False)
     )
 
 # Uncomment when session model is done
@@ -85,7 +85,6 @@ class Privilege(Base):
 
 
 class User(Base):
-
     __tablename__= 'user'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

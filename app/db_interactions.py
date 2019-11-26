@@ -48,6 +48,11 @@ def delete_user(db_session, user_id):
     db_session.execute('DELETE FROM privileges_users \
     WHERE user_id= :user_id'  , {'user_id': user_id})
 
+    db_session.execute('DELETE FROM users_group_subject \
+    WHERE user_id= :user_id'  , {'user_id': user_id})
+
+
+
     db_session.commit()
 
     # Delete Subject
@@ -321,6 +326,10 @@ def update_role(db_session, email, role, subject_id):
 # DELETE
 
 def delete_user_in_subject(db_session, user_id, subject_id):
+
+    db_session.execute('DELETE FROM users_group_subject \
+    WHERE user_id= :user_id'  , {'user_id': user_id})
+    
     db_session.execute('DELETE FROM users_subjects \
     WHERE subject_id = :subject_id AND user_id = :user_id'  , {'subject_id': subject_id, 'user_id': user_id})
 
@@ -417,6 +426,11 @@ def get_grouping(db_session, grouping_id):
     grouping=db_session.query(groupings_subject).filter(groupings_subject.c.grouping_id==grouping_id).first()
     return grouping
 
+def get_grouping_by_name_and_subject(db_session, name, subject_id):
+    grouping=db_session.query(groupings_subject).\
+    filter(groupings_subject.c.name==name).filter(groupings_subject.c.subject_id==subject_id).first()
+    return grouping
+
 def get_groupings_subject(db_session, subject_id):
     groupings= db_session.query(groupings_subject).filter(groupings_subject.c.subject_id==subject_id).all()
     return groupings
@@ -474,15 +488,23 @@ def get_group(db_session, group_id):
     group=db_session.query(groups_subject).filter(groups_subject.c.group_id==group_id).first()
     return group
 
+def get_groups_in_subject(db_session, subject_id):
+    groups=db_session.query(groups_subject).\
+    join(groupings_subject, groups_subject.c.grouping_id==groupings_subject.c.grouping_id).\
+    filter(groupings_subject.c.subject_id==subject_id).all()
+
+    return groups
+
+def get_group_by_name_and_subject(db_session, name, subject_id):
+    group=db_session.query(groups_subject).\
+    join(groupings_subject, groups_subject.c.grouping_id==groupings_subject.c.grouping_id).\
+    filter(groups_subject.c.name==name).filter(groupings_subject.c.subject_id==subject_id).first()
+    return group
+
 def get_groups_grouping(db_session, grouping_id):
     groups= db_session.query(groups_subject).filter(groups_subject.c.grouping_id==grouping_id).all()
     return groups
 
-def get_groups_subject(db_session, subject_id):
-    groups=db_session.query(groups_subject).\
-    join(groupings_subject, groups_subject.c.grouping_id==groupings_subject.c.grouping_id).\
-    filter(groupings_subject.c.subject_id==subject_id).all()
-    return groups
 
 def get_group_from_user_in_subject(db_session, user_id, subject_id):
     group=db_session.query(groups_subject).\
@@ -565,8 +587,9 @@ def update_user_group(db_session,old_group_id, group_id, user_id):
 
 # DELETE
 def delete_user_group_subject(db_session,user_id, group_id):
-    db_session.execute('DELETE FROM groups_subject \
-    WHERE group_id = :group_id AND user_id = :user_id', \
+    db_session.execute("DELETE FROM users_group_subject \
+    WHERE group_id = :group_id AND user_id = :user_id", \
+
     {'group_id': group_id,\
     'user_id': user_id})
 

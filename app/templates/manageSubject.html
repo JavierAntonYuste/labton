@@ -307,8 +307,13 @@
                     <div class="col">
                       <label> Group </label>
                       <select class="custom-select" name="addGroup" id="addGroup">
+                          <option value="0">No group</option>
                         {% for group in groups%}
-                        <option value={{group.group_id}}>Group {{group.name}}</option>
+                          {% for grouping in groupings%}
+                            {% if group.grouping_id == grouping.grouping_id%}
+                            <option value={{group.group_id}}>Grouping {{grouping.name}} - Group {{group.name}}</option>
+                            {% endif %}
+                          {% endfor %}
                         {% endfor %}
                       </select>
                     </div>
@@ -486,6 +491,9 @@
                           var groups = $(this).data('groups');
                           var userEmail = $(this).data('id');
                           var subjectId = $(this).data('subject-id');
+
+                          var o=new Option("No group","0");
+                          $(".modal-body #selectGroups").append(o);
 
                           for (i = 0; i < groups.length; i++) {
                             for (n = 0; n < groupings.length; n++) {

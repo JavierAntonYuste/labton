@@ -197,6 +197,7 @@ def create_app(config_name):
             role=get_role(db_session,users[i][1])
 
             group=get_group_from_user_in_subject(db_session, users[i][0], id)
+
             if (group != None):
                 grouping=get_grouping(db_session, group.grouping_id)
             else:
@@ -208,7 +209,7 @@ def create_app(config_name):
         roles_db=get_roles(db_session)
         groupings=get_groupings_subject(db_session,id)
         groupings_json=json.dumps(groupings)
-        groups=get_groups_subject(db_session,id)
+        groups=get_groups_in_subject(db_session,id)
         groups_json=json.dumps(groups)
 
         if session["privilege"]== 'admin':
@@ -344,36 +345,85 @@ def create_app(config_name):
             data = []
             stream = codecs.iterdecode(flask_file.stream, 'utf-8')
             read_file=list(csv.reader(stream, dialect=csv.excel))
-            if 'EMAIL' in read_file[0]:
-                email_index=read_file[0].index('EMAIL')
-            if 'email' in read_file[0]:
-                email_index=read_file[0].index('email')
-            if 'Email' in read_file[0]:
-                email_index=read_file[0].index('Email')
+            read_file_lower=[]
+
+            for x in read_file[0]:
+                read_file_lower.append(x.lower())
+
+            if 'email' in read_file_lower:
+                email_index=read_file_lower.index('email')
+
+            if 'grouping' in read_file_lower:
+                grouping_name_index=read_file_lower.index('grouping')
+
+            if 'group' in read_file_lower:
+                group_name_index=read_file_lower.index('group')
+
+            existent_groupings= get_groupings_subject(db_session, subject_id)
+            existent_groups= get_groups_in_subject(db_session, subject_id)
 
             for row in read_file:
                 if row:
-                    if (row[email_index]=='EMAIL' or row[email_index]=='email' or row[email_index]=='Email'):
+                    if (row[email_index].lower()=="email" or row[grouping_name_index].lower() == 'grouping' or row[group_name_index].lower() == 'group'):
                         continue
-                    data.append(row[email_index])
 
-            for email in data:
-                name = (email.split('@'))[0]
-                user_id = get_user_id(db_session, email)
+                    if (row[grouping_name_index]):
+                        grouping_exist=False
+                        for grouping in existent_groupings:
+                            if (row[grouping_name_index]==grouping.name):
+                                grouping_exist==True
+
+                        if (grouping_exist==False and row[grouping_name_index]):
+                            add_grouping_subject(engine, row[grouping_name_index], subject_id)
+
+                    if (row[group_name_index]):
+                        group_exist=False
+                        for group in existent_groups:
+                            if (row[group_name_index]==group.name):
+                                group_exist==True
+
+                        if (group_exist==False and row[grouping_name_index] and row[grouping_name_index]):
+
+                            grouping=get_grouping_by_name_and_subject(db_session,row[grouping_name_index], subject_id )
+                            add_group_subject(engine, row[group_name_index], grouping[0])
+
+                    if (row[email_index]):
+                        if (row[group_name_index]):
+                            data.append([row[email_index], row[group_name_index]])
+                        else:
+                            data.append([row[email_index]])
+
+
+
+
+
+            for line in data:
+                if (line[0].lower()=='email'):
+                    continue
+                if (len(line)==2):
+                    if (line[1].lower()== 'group'):
+                        continue
+
+                name = (line[0].split('@'))[0]
+                user_id = get_user_id(db_session, line[0])
 
                 # If the user isn't in the DB, we add it
                 if (user_id == None):
-                    create_user(db_session, engine, name, email, "user")
+                    create_user(db_session, engine, name, line[0], "user")
 
                 # Taking id again in case the user didn't exist
-                user_id = get_user_id(db_session, email)
+                user_id = get_user_id(db_session, line[0])
 
                 #If the user is already added, continue
                 if (check_user_in_subject(db_session,subject_id,user_id)==True):
-                    flash ("Warning! User "+ email + " was already added",'warning')
+                    flash ("Warning! User "+ line[0] + " was already added",'warning')
                     continue
 
-                add_user_to_subject(db_session, engine, email, subject_id, request.form["role"])
+                add_user_to_subject(db_session, engine, line[0], subject_id, request.form["role"])
+
+                if (len(line)==2):
+                    group=get_group_by_name_and_subject(db_session, line[1], subject_id)
+                    add_user_group_subject(engine, group[0], user_id)
 
             return redirect('/manageSubject/'+ subject_id)
         else:
@@ -385,6 +435,7 @@ def create_app(config_name):
     def uploadUser():
         # Getting subject_id from form
         subject_id = request.form['subject_id']
+        group = request.form['addGroup']
 
         # Checking if we have email in form
         if request.form['email']:
@@ -406,6 +457,9 @@ def create_app(config_name):
                 return redirect('/manageSubject/'+ subject_id)
 
             add_user_to_subject(db_session, engine, email, subject_id,  request.form["role"])
+
+            if (group!="0"):
+                add_user_group_subject(engine, group, user_id)
 
             # Redirecting to same page with a success message
             flash ("Success! User " + email +" added to subject",'success')
@@ -445,6 +499,21 @@ def create_app(config_name):
 
         if (group_id==""):
             flash('Error! Incompleted fields', 'danger')
+            return redirect('/manageSubject/'+ subject_id)
+
+        groups_user=get_group_id_user(db_session,user_id[0])
+
+        if (group_id == "0" and groups_user==[]):
+            return redirect('/manageSubject/'+ subject_id)
+
+        elif (group_id == "0" and groups_user!=[]):
+            for group_user in groups_user:
+                group=get_group(db_session,group_user[0])
+                grouping= get_grouping(db_session, group.grouping_id)
+
+                if (str(grouping.subject_id)==subject_id):
+                    delete_user_group_subject(db_session,user_id[0], group[0])
+
             return redirect('/manageSubject/'+ subject_id)
 
 
