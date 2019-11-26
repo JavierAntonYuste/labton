@@ -34,6 +34,8 @@ groups_subject = Table(
     Column('grouping_id',Integer(), ForeignKey('groupings_subject.grouping_id'), nullable=False),
 )
 
+
+
 users_group_subject = Table(
     'users_group_subject',
      Base.metadata,
@@ -65,6 +67,12 @@ users_group_subject = Table(
 #     Column('user_id', ForeignKey(user.id), nullable=False)
 #     )
 
+milestone_dependencies = Table(
+    'milestone_dependencies',
+     Base.metadata,
+    Column('milestone_id', Integer(),ForeignKey('milestones.id')),
+    Column('dependency_id', Integer(),ForeignKey('milestones.id'))
+)
 
 class Role(Base):
 

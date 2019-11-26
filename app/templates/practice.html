@@ -248,6 +248,20 @@
                         <input class= "form-control" name="description" placeholder="Description" maxlength="1000" >
                   </div>
                 </div>
+
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                    <label> Milestone dependencies</label><br>
+                  {% for milestone in milestones%}
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name= "dependsMilestone{{milestone.id}}" id="dependsMilestone{{milestone.id}}" value="{{milestone.id}}">
+                    <label class="form-check-label" for="inlineCheckbox{{milestone.id}}">{{milestone.name}}</label>
+                  </div>
+                  {% endfor %}
+                  </div>
+                </div>
+
+
                 <input type= "hidden" name="practice_id" value={{practice.id}}>
 
                 </div>

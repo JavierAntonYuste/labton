@@ -193,6 +193,12 @@ def get_milestone(db_session, id):
     milestone=db_session.query(Milestone).filter(Milestone.id==id).first()
     return milestone
 
+def get_milestone_id(db_session, name, mode, practice_id):
+    milestone=db_session.query(Milestone.id).filter(Milestone.name==name).filter(Milestone.mode==mode).\
+    filter(Milestone.practice_id==practice_id).first()
+
+    return milestone
+
 def get_practice_milestones(db_session, practice_id):
     list_milestones=db_session.query(Milestone).filter(Milestone.practice_id==practice_id).all()
     return list_milestones
@@ -569,4 +575,110 @@ def delete_user_group_subject(db_session,user_id, group_id):
 
     db_session.commit()
 
+    return
+
+
+# groups_subject CRUD methods__________________________________________________
+
+# INSERT
+
+def add_group_subject_session(db_session, name, grouping_id):
+    db_session.execute('INSERT INTO groups_subject(name, grouping_id) \
+    VALUES (:name,:grouping_id)'  , {'name': name, 'grouping_id': grouping_id})
+
+    db_session.commit()
+
+    return
+
+# READ
+def get_group(db_session, group_id):
+    group=db_session.query(groups_subject).filter(groups_subject.c.group_id==group_id).first()
+    return group
+
+def get_groups_in_subject(db_session, subject_id):
+    groups=db_session.query(groups_subject).\
+    join(groupings_subject, groups_subject.c.grouping_id==groupings_subject.c.grouping_id).\
+    filter(groupings_subject.c.subject_id==subject_id).all()
+
+    return groups
+
+def get_group_by_name_and_subject(db_session, name, subject_id):
+    group=db_session.query(groups_subject).\
+    join(groupings_subject, groups_subject.c.grouping_id==groupings_subject.c.grouping_id).\
+    filter(groups_subject.c.name==name).filter(groupings_subject.c.subject_id==subject_id).first()
+    return group
+
+def get_groups_grouping(db_session, grouping_id):
+    groups= db_session.query(groups_subject).filter(groups_subject.c.grouping_id==grouping_id).all()
+    return groups
+
+
+def get_group_from_user_in_subject(db_session, user_id, subject_id):
+    group=db_session.query(groups_subject).\
+    join(users_group_subject,groups_subject.c.group_id==users_group_subject.c.group_id).\
+    join(groupings_subject, groups_subject.c.grouping_id==groupings_subject.c.grouping_id).\
+    filter(users_group_subject.c.user_id==user_id).\
+    filter(groupings_subject.c.subject_id==subject_id).first()
+
+    return group
+
+# UPDATE
+
+def update_group(db_session,group_id, name, grouping_id):
+
+    db_session.execute('UPDATE groups_subject\
+    SET name = :name AND grouping_id = :grouping_id WHERE group_id = :group_id',\
+    {'name': name,\
+     'grouping_id': groupings_id, \
+     'group_id': group_id })
+
+    db_session.commit()
+    return
+
+# DELETE
+def delete_group_subject(db_session,group_id):
+    db_session.execute('DELETE FROM groups_subject \
+    WHERE group_id = :group_id'  , {'group_id': group_id})
+
+    db_session.commit()
+
+    return
+
+# users_group_subject CRUD methods__________________________________________________
+
+# INSERT
+
+def add_milestone_dependency(db_session, milestone_id, depending_milestone_id):
+    db_session.execute('INSERT INTO milestone_dependencies(milestone_id, dependency_id) \
+    VALUES (:milestone_id,:depending_milestone_id)'  , {'milestone_id': milestone_id, 'depending_milestone_id': depending_milestone_id})
+
+    db_session.commit()
+    return
+
+
+# READ
+
+def get_milestone_dependencies(db_session, milestone_id):
+    dependencies=db_session.query(milestone_dependencies).filter(milestone_dependencies.c.milestone_id==milestone_id).all()
+    return dependencies
+
+
+# UPDATE
+
+
+# DELETE
+
+def delete_dependencies(db_session, milestone_id):
+    db_session.execute('DELETE FROM milestone_dependencies\
+    WHERE milestone_id = :milestone_id'  , {'milestone_id': milestone_id})
+
+    db_session.commit()
+
+    return
+
+def delete_dependency(db_session, milestone_id, dependency_id):
+    db_session.execute('DELETE FROM milestone_dependencies\
+    WHERE milestone_id = :milestone_id AND dependency_id = :dependency_id'  , {'milestone_id': milestone_id, 'dependency_id': dependency_id})
+
+    db_session.commit()
     return

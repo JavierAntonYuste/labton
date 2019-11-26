@@ -320,7 +320,10 @@ def create_app(config_name):
         practice_id=request.form["practice_id"]
         description=request.form["description"]
 
-        practice=get_practice(db_session, practice_id )
+        practice=get_practice(db_session, practice_id)
+        milestone_dependencies=[]
+
+
         milestones=get_practice_milestones(db_session,practice_id)
 
         if (len(milestones)>=practice.milestones):
@@ -331,7 +334,15 @@ def create_app(config_name):
             flash('Error! Incompleted fields', 'danger')
             return redirect('/practice/'+practice_id)
 
+        for milestone in milestones:
+            if (("dependsMilestone"+str(milestone.id)) in request.form):
+                milestone_dependencies.append(request.form["dependsMilestone"+str(milestone.id)])
+
         create_milestone(db_session, name, mode, practice_id, description)
+        milestone_id= get_milestone_id(db_session, name, mode, practice_id)
+        
+        for dependency in milestone_dependencies:
+            add_milestone_dependency(db_session, milestone_id[0], dependency)
 
         return redirect('/practice/'+practice_id)
 
