@@ -475,6 +475,8 @@
 
                     <script>
 
+                    var modifyGroupTriggered;
+
                     $('.modifyUserModal').click( function (evt) {
                           evt.stopImmediatePropagation();
                           $("#modifyUserModal").modal()
@@ -486,25 +488,33 @@
                     $('.modifyGroupingGroup').click( function (evt) {
                           evt.stopImmediatePropagation();
                           $("#modifyGroupingGroup").modal()
+                          
+                          if (modifyGroupTriggered!=true){
+                            var groupings = $(this).data('groupings');
+                            var groups = $(this).data('groups');
+                            var userEmail = $(this).data('id');
+                            var subjectId = $(this).data('subject-id');
 
-                          var groupings = $(this).data('groupings');
-                          var groups = $(this).data('groups');
-                          var userEmail = $(this).data('id');
-                          var subjectId = $(this).data('subject-id');
+                            var o=new Option("No group","0");
+                            $(".modal-body #selectGroups").append(o);
 
-                          var o=new Option("No group","0");
-                          $(".modal-body #selectGroups").append(o);
-
-                          for (i = 0; i < groups.length; i++) {
-                            for (n = 0; n < groupings.length; n++) {
-                              if (groupings[n][2]==subjectId && groups[i][2]==groupings[n][0]){
-                                var o=new Option("Grouping " + groupings[n][1] +" - Group "+groups[i][1],groups[i][0]);
-                                $(".modal-body #selectGroups").append(o);
-                              }
+                            for (i = 0; i < groups.length; i++) {
+                              for (n = 0; n < groupings.length; n++) {
+                                if (groupings[n][2]==subjectId && groups[i][2]==groupings[n][0]){
+                                  var o=new Option("Grouping " + groupings[n][1] +" - Group "+groups[i][1],groups[i][0]);
+                                  $(".modal-body #selectGroups").append(o);
+                                }
+                            }
                           }
-                        }
 
-                          $(".modal-body #email").val( userEmail );
+                            $(".modal-body #email").val( userEmail );
+                          }
+
+                          modifyGroupTriggered=true;
+
+
+
+
                     });
 
 
