@@ -329,7 +329,7 @@ def delete_user_in_subject(db_session, user_id, subject_id):
 
     db_session.execute('DELETE FROM users_group_subject \
     WHERE user_id= :user_id'  , {'user_id': user_id})
-    
+
     db_session.execute('DELETE FROM users_subjects \
     WHERE subject_id = :subject_id AND user_id = :user_id'  , {'subject_id': subject_id, 'user_id': user_id})
 
@@ -400,25 +400,12 @@ def update_privilege(db_session, email, privilege):
 
 # INSERT
 
-def add_grouping_subject(engine, name, subject_id):
+def add_grouping_subject_session(db_session, name, subject_id):
+    db_session.execute('INSERT INTO groupings_subject(name, subject_id) \
+    VALUES (:name,:subject_id)'  , {'name': name, 'subject_id': subject_id})
 
-    try:
-        con = engine.connect()
-        trans = con.begin()
+    db_session.commit()
 
-        # Creating relations
-        con.execute(groupings_subject.insert().values(
-            name=name,
-            subject_id= subject_id
-            ))
-
-        trans.commit()
-
-    except:
-        trans.rollback()
-        raise
-
-    con.close()
     return
 
 # READ
@@ -462,25 +449,12 @@ def delete_grouping_subject(db_session,grouping_id):
 
 # INSERT
 
-def add_group_subject(engine, name, grouping_id):
+def add_group_subject_session(db_session, name, grouping_id):
+    db_session.execute('INSERT INTO groups_subject(name, grouping_id) \
+    VALUES (:name,:grouping_id)'  , {'name': name, 'grouping_id': grouping_id})
 
-    try:
-        con = engine.connect()
-        trans = con.begin()
+    db_session.commit()
 
-        # Creating relations
-        con.execute(groups_subject.insert().values(
-            name=name,
-            grouping_id= grouping_id
-            ))
-
-        trans.commit()
-
-    except:
-        trans.rollback()
-        raise
-
-    con.close()
     return
 
 # READ

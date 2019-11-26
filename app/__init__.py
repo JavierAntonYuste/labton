@@ -14,7 +14,6 @@ from instance import config
 from functools import wraps
 
 from flask_sslify import SSLify
-import datetime
 from app import decorators, appconfig
 from app.db_init import init_db, db, db_session, engine
 from app.db_interactions import *
@@ -359,43 +358,26 @@ def create_app(config_name):
             if 'group' in read_file_lower:
                 group_name_index=read_file_lower.index('group')
 
-            existent_groupings= get_groupings_subject(db_session, subject_id)
-            existent_groups= get_groups_in_subject(db_session, subject_id)
-
             for row in read_file:
                 if row:
-                    if (row[email_index].lower()=="email" or row[grouping_name_index].lower() == 'grouping' or row[group_name_index].lower() == 'group'):
+                    if (row[email_index].lower()=="email" or row[grouping_name_index].lower() == 'grouping' \
+                    or row[group_name_index].lower() == 'group' or row[grouping_name_index]==None or row[group_name_index] ==None):
                         continue
 
-                    if (row[grouping_name_index]):
-                        grouping_exist=False
-                        for grouping in existent_groupings:
-                            if (row[grouping_name_index]==grouping.name):
-                                grouping_exist==True
+                    exists_grouping=get_grouping_by_name_and_subject(db_session, str(row[grouping_name_index]), subject_id)
+                    if (exists_grouping==None and row[grouping_name_index]!=""):
+                        add_grouping_subject_session(db_session, row[grouping_name_index], subject_id)
 
-                        if (grouping_exist==False and row[grouping_name_index]):
-                            add_grouping_subject(engine, row[grouping_name_index], subject_id)
-
-                    if (row[group_name_index]):
-                        group_exist=False
-                        for group in existent_groups:
-                            if (row[group_name_index]==group.name):
-                                group_exist==True
-
-                        if (group_exist==False and row[grouping_name_index] and row[grouping_name_index]):
-
-                            grouping=get_grouping_by_name_and_subject(db_session,row[grouping_name_index], subject_id )
-                            add_group_subject(engine, row[group_name_index], grouping[0])
+                    exists_group=get_group_by_name_and_subject(db_session, str(row[group_name_index]), subject_id)
+                    if (exists_group==None and row[group_name_index] !="" ):
+                        grouping=get_grouping_by_name_and_subject(db_session, str(row[grouping_name_index]) , subject_id)
+                        add_group_subject_session(db_session, row[group_name_index], grouping[0])
 
                     if (row[email_index]):
                         if (row[group_name_index]):
                             data.append([row[email_index], row[group_name_index]])
                         else:
                             data.append([row[email_index]])
-
-
-
-
 
             for line in data:
                 if (line[0].lower()=='email'):
@@ -408,7 +390,7 @@ def create_app(config_name):
                 user_id = get_user_id(db_session, line[0])
 
                 # If the user isn't in the DB, we add it
-                if (user_id == None):
+                if (user_id == None ):
                     create_user(db_session, engine, name, line[0], "user")
 
                 # Taking id again in case the user didn't exist
@@ -421,7 +403,7 @@ def create_app(config_name):
 
                 add_user_to_subject(db_session, engine, line[0], subject_id, request.form["role"])
 
-                if (len(line)==2):
+                if (len(line)==2 and line[1]!=""):
                     group=get_group_by_name_and_subject(db_session, line[1], subject_id)
                     add_user_group_subject(engine, group[0], user_id)
 
@@ -546,7 +528,7 @@ def create_app(config_name):
             flash ("Error! Empty input",'danger')
             return redirect('/manageSubject/'+ subject_id)
 
-        add_grouping_subject(engine, name, subject_id)
+        add_grouping_subject_session(db_session, name, subject_id)
 
         flash ("Success! Grouping " + name +" added to subject",'success')
         return redirect('/manageSubject/'+ subject_id)
@@ -562,7 +544,7 @@ def create_app(config_name):
             flash ("Error! Empty input",'danger')
             return redirect('/manageSubject/'+ subject_id)
 
-        add_group_subject(engine, name, grouping_id)
+        add_group_subject_session(db_session, name, grouping_id)
 
         flash ("Success! Group " + name +" added to subject",'success')
         return redirect('/manageSubject/'+ subject_id)
