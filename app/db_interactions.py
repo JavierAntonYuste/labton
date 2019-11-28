@@ -443,10 +443,22 @@ def update_grouping(db_session,grouping_id, name, subject_id):
     return
 
 # DELETE
-def delete_grouping_subject(db_session,grouping_id):
+def delete_grouping_subject(db_session, grouping_id):
+    db_session.execute('DELETE users_group_subject FROM users_group_subject \
+    INNER JOIN groups_subject ON users_group_subject.group_id = groups_subject.group_id \
+    WHERE groups_subject.grouping_id = :grouping_id;',{'grouping_id':grouping_id})
+    db_session.commit()
+
+
+    db_session.execute('DELETE groups_subject FROM groups_subject \
+    JOIN groupings_subject on groups_subject.grouping_id=groupings_subject.grouping_id\
+    WHERE groupings_subject.grouping_id = :grouping_id;',\
+    {'grouping_id': grouping_id})
+    db_session.commit()
+
+
     db_session.execute('DELETE FROM groupings_subject \
     WHERE grouping_id = :grouping_id'  , {'grouping_id': grouping_id})
-
     db_session.commit()
 
     return
@@ -510,6 +522,12 @@ def update_group(db_session,group_id, name, grouping_id):
 
 # DELETE
 def delete_group_subject(db_session,group_id):
+    db_session.execute('DELETE FROM users_group_subject \
+    JOIN groups_subject ON users_group_subject.group_id=groups_subject.group_id\
+    WHERE groups_subject.group_id = :group_id',\
+    {'group_id': group_id})
+
+
     db_session.execute('DELETE FROM groups_subject \
     WHERE group_id = :group_id'  , {'group_id': group_id})
 
@@ -567,6 +585,7 @@ def update_user_group(db_session,old_group_id, group_id, user_id):
 
 # DELETE
 def delete_user_group_subject(db_session,user_id, group_id):
+
     db_session.execute("DELETE FROM users_group_subject \
     WHERE group_id = :group_id AND user_id = :user_id", \
 

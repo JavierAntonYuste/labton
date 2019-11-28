@@ -340,7 +340,7 @@ def create_app(config_name):
 
         create_milestone(db_session, name, mode, practice_id, description)
         milestone_id= get_milestone_id(db_session, name, mode, practice_id)
-        
+
         for dependency in milestone_dependencies:
             add_milestone_dependency(db_session, milestone_id[0], dependency)
 
@@ -662,6 +662,38 @@ def create_app(config_name):
         delete_practice(db_session, id)
 
         return redirect('/subject/'+session["subject_id"])
+
+    @app.route('/deleteGroup',  methods=['GET', 'POST'])
+    @decorators.login_required
+    def deleteGroup():
+
+        if not (session["role"]=="admin" or session["role"]=="professor"):
+            flash('Error! You cannot do that!', 'danger')
+            return redirect('/home')
+
+        group_id=request.form['group_id']
+        subject_id=request.form['subject_id']
+
+        delete_group_subject(db_session,group_id)
+
+        flash ("Success! Group deleted from subject",'success')
+        return redirect('/manageSubject/'+ subject_id)
+
+    @app.route('/deleteGrouping',  methods=['GET', 'POST'])
+    @decorators.login_required
+    def deleteGrouping():
+
+        if not (session["role"]=="admin" or session["role"]=="professor"):
+            flash('Error! You cannot do that!', 'danger')
+            return redirect('/home')
+
+        grouping_id=request.form['grouping_id']
+        subject_id=request.form['subject_id']
+
+        delete_grouping_subject(db_session,grouping_id)
+
+        flash ("Success! Grouping deleted from subject",'success')
+        return redirect('/manageSubject/'+ subject_id)
 
 # End of routes ______________________________________________________________________________
 

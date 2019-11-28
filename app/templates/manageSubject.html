@@ -172,18 +172,26 @@
       <div class="col-2">
         <div class="dropdown">
           <button class="btn btn-primary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="fas fa-plus mr-2"></i>
-            New
+            <i class="fas fa-sliders-h mr-2"></i>
+            Options
           </button>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
             <button type="button" class="dropdown-item" data-toggle="modal" data-target="#newGroupingModal">
-              <i class="fas fa-user mr-2"></i>
+              <i class="fas fa-users mr-2"></i>
               New grouping
-
             </button>
+            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#deleteGroupingModal">
+              <i class="fas fa-trash-alt mr-2"></i>
+              Delete grouping
+            </button>
+            <div class="dropdown-divider"></div>
             <button type="button" class="dropdown-item" data-toggle="modal" data-target="#newGroupModal">
-              <i class="fas fa-file-csv mr-2"></i>
+              <i class="fas fa-user-friends mr-2"></i>
               New group
+            </button>
+            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#deleteGroupModal">
+              <i class="fas fa-trash-alt mr-2"></i>
+              Delete group
             </button>
           </div>
         </div>
@@ -334,48 +342,91 @@
       </div>
     </div>
     <!-- end modal User -->
+      <!-- newGrouping Modal -->
 
-    <!-- newGrouping Modal -->
+        <div class="modal fade" id="newGroupingModal" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="uploadUsersCSVTitle"> Create new Grouping</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
 
-      <div class="modal fade" id="newGroupingModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title" id="uploadUsersCSVTitle"> Create new Grouping</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
+              <div class="modal-body">
 
-            <div class="modal-body">
-
-              <div class="row">
-                <div class="col">
-                  <div class="form-group">
-                  <form action="/createGrouping" method="post" id="upload-form">
-                    <div class="row pt-2 pb-2">
-                      <div class="col">
-                        <input class= "form-control" type="text" name="name" id="name" placeholder="Name" >
-                        <input type="hidden" name="subject_id" value={{subject.id}}>
+                <div class="row">
+                  <div class="col">
+                    <div class="form-group">
+                    <form action="/createGrouping" method="post" id="upload-form">
+                      <div class="row pt-2 pb-2">
+                        <div class="col">
+                          <input class= "form-control" type="text" name="name" id="name" placeholder="Name" >
+                          <input type="hidden" name="subject_id" value={{subject.id}}>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn  btn-primary">Create</button>
-                  </form>
+              <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn  btn-primary">Create</button>
+                    </form>
 
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <!-- end modal newGrouping -->
+        <!-- end modal newGrouping -->
 
-      <!-- newGrouping Modal -->
+        <!-- deleteGrouping Modal -->
+
+          <div class="modal fade" id="deleteGroupingModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="uploadUsersCSVTitle"> Delete Grouping</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+
+                <div class="modal-body">
+
+                  <div class="row">
+                    <div class="col">
+                      <div class="form-group">
+                      <form action="/deleteGrouping" method="post" id="upload-form">
+                        <div class="row pt-2 pb-2">
+                          <div class="col">
+                            <select class="custom-select" name="grouping_id" id="grouping_id">
+                              {% for grouping in groupings%}
+                              <option value={{grouping.grouping_id}}>Grouping {{grouping.name}}</option>
+                              {% endfor %}
+                            </select>
+                            <input type="hidden" name="subject_id" value={{subject.id}}>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn  btn-primary">Delete</button>
+                      </form>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- end modal deleteGrouping -->
+
+      <!-- newGroup Modal -->
 
         <div class="modal fade" id="newGroupModal" tabindex="-1" role="dialog" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered" role="document">
@@ -425,6 +476,137 @@
           </div>
         </div>
         <!-- end modal newGrouping -->
+
+        <!-- deleteGroup Modal -->
+
+          <div class="modal fade" id="deleteGroupModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" > Delete Group</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+
+                <div class="modal-body">
+
+                  <div class="row">
+                    <div class="col">
+                      <div class="form-group">
+                      <form action="/deleteGroup" method="post" id="upload-form">
+                        <div class="row pt-2 pb-2">
+                          <div class="col">
+                            <select class="custom-select" name="group_id" id="group_id">
+                              {% for group in groups%}
+                                {% for grouping in groupings%}
+                                  {% if group.grouping_id == grouping.grouping_id%}
+                                  <option value={{group.group_id}}>Grouping {{grouping.name}} - Group {{group.name}}</option>
+                                  {% endif %}
+                                {% endfor %}
+                              {% endfor %}
+
+                            </select>
+                          </div>
+                        </div>
+                        <input type="hidden" name="subject_id" value={{subject.id}}>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn  btn-primary">Create</button>
+                      </form>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- end modal deleteGrouping -->
+
+          <!-- modifychangeRole-->
+          <div class="modal fade" id="modifyUserModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" >Modify Role</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+
+                <div class="modal-body">
+                  <h6> Introduce new role </h6>
+                <form action="/changeRole" method="post" id="upload-form" enctype="multipart/form-data">
+                  <div class="row pt-2 pb-2">
+                    <div class="col">
+                      <select class="custom-select" name="role" id="role">
+                        {% for role in roles_db%}
+                        <option value={{role.name}}>{{role.name}}</option>
+                        {% endfor %}
+                      </select>
+                      <input type="hidden" name="email" id="email" value=""/>
+                      <input type="hidden" name="subject_id" value={{subject.id}}>
+
+                    </div>
+
+                  </div>
+
+                  </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn  btn-primary">Update</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- end modal changerole->
+
+
+          <!-- modifyGroupingGroupModal -->
+          <div class="modal fade" id="modifyGroupingGroup" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title">Modify Grouping/Group</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+
+                <div class="modal-body">
+                  <h6> Introduce new data</h6>
+                <form action="/updateUserGroup" method="post" id="upload-form" enctype="multipart/form-data">
+                  <div class="row pt-2 pb-2">
+                    <div class="col">
+                      <label> Select new group</label>
+                      <select class="custom-select" name="selectGroups" id="selectGroups">
+                      </select>
+                    </div>
+                      <input type="hidden" name="email" id="email" value=""/>
+                      <input type="hidden" name="subject_id" id="subject_id" value="{{subject.id}}"/>
+                  </div>
+
+                  </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn  btn-primary">Update</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- end modifyGroupingGroup-->
       {% endif %}
 
 
@@ -488,7 +670,7 @@
                     $('.modifyGroupingGroup').click( function (evt) {
                           evt.stopImmediatePropagation();
                           $("#modifyGroupingGroup").modal()
-                          
+
                           if (modifyGroupTriggered!=true){
                             var groupings = $(this).data('groupings');
                             var groups = $(this).data('groups');
@@ -539,168 +721,6 @@
 
 
 
-
-      <!-- modify User Modal -->
-      <div class="modal fade" id="modifyUserModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title" id="uploadUsersCSVTitle">Modify Role</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-
-            <div class="modal-body">
-              <h6> Introduce new role </h6>
-            <form action="/changeRole" method="post" id="upload-form" enctype="multipart/form-data">
-              <div class="row pt-2 pb-2">
-                <div class="col">
-                  <select class="custom-select" name="role" id="role">
-                    {% for role in roles_db%}
-                    <option value={{role.name}}>{{role.name}}</option>
-                    {% endfor %}
-                  </select>
-                  <input type="hidden" name="email" id="email" value=""/>
-                  <input type="hidden" name="subject_id" value={{subject.id}}>
-
-                </div>
-
-              </div>
-
-              </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn  btn-primary">Update</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- end modal modify User Subject-->
-      <!-- modify User Modal -->
-      <div class="modal fade" id="modifyUserModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title" id="uploadUsersCSVTitle">Modify Role</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-
-            <div class="modal-body">
-              <h6> Introduce new role </h6>
-            <form action="/changeRole" method="post" id="upload-form" enctype="multipart/form-data">
-              <div class="row pt-2 pb-2">
-                <div class="col">
-                  <select class="custom-select" name="role" id="role">
-                    {% for role in roles_db%}
-                    <option value={{role.name}}>{{role.name}}</option>
-                    {% endfor %}
-                  </select>
-                  <input type="hidden" name="email" id="email" value=""/>
-                  <input type="hidden" name="subject_id" value={{subject.id}}>
-
-                </div>
-
-              </div>
-
-              </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn  btn-primary">Update</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- end modal modify User Subject-->
-      <!-- modify User Modal -->
-      <div class="modal fade" id="modifyUserModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title" id="uploadUsersCSVTitle">Modify Role</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-
-            <div class="modal-body">
-              <h6> Introduce new role </h6>
-            <form action="/changeRole" method="post" id="upload-form" enctype="multipart/form-data">
-              <div class="row pt-2 pb-2">
-                <div class="col">
-                  <select class="custom-select" name="role" id="role">
-                    {% for role in roles_db%}
-                    <option value={{role.name}}>{{role.name}}</option>
-                    {% endfor %}
-                  </select>
-                  <input type="hidden" name="email" id="email" value=""/>
-                  <input type="hidden" name="subject_id" value={{subject.id}}>
-
-                </div>
-
-              </div>
-
-              </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn  btn-primary">Update</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- end modal modify User Subject-->
-
-      <!-- modifyGroupingGroupModal -->
-      <div class="modal fade" id="modifyGroupingGroup" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title">Modify Grouping/Group</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-
-            <div class="modal-body">
-              <h6> Introduce new data</h6>
-            <form action="/updateUserGroup" method="post" id="upload-form" enctype="multipart/form-data">
-              <div class="row pt-2 pb-2">
-                <div class="col">
-                  <label> Select new group</label>
-                  <select class="custom-select" name="selectGroups" id="selectGroups">
-                  </select>
-                </div>
-                  <input type="hidden" name="email" id="email" value=""/>
-                  <input type="hidden" name="subject_id" id="subject_id" value="{{subject.id}}"/>
-              </div>
-
-              </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn  btn-primary">Update</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- end modal modify User Subject-->
 
 
     </div>
