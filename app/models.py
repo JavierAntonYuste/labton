@@ -140,3 +140,15 @@ class Milestone(Base):
     mode= Column(String(80), nullable=False)
     practice_id=Column(Integer(), ForeignKey("practices.id"), nullable=False)
     description = Column(String(255))
+
+
+class Session(Base):
+
+    __tablename__= 'sessions'
+
+    id = Column(Integer(), primary_key=True, autoincrement=True)
+    name = Column(String(80), nullable=False)
+    start_datetime= Column(DateTime(timezone=False), nullable=False)
+    end_datetime= Column(DateTime(timezone=False), nullable=False)
+    practice_id=Column(Integer(), ForeignKey("practices.id"), nullable=False)
+    description = Column(String(255))

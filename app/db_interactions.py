@@ -60,6 +60,7 @@ def delete_user(db_session, user_id):
     WHERE id = :user_id'  , {'user_id': user_id})
 
     db_session.commit()
+    return
 
 # Subject CRUD methods _____________________________________________________________
 
@@ -122,6 +123,7 @@ def delete_subject(db_session, subject_id):
     WHERE id = :subject_id'  , {'subject_id': subject_id})
 
     db_session.commit()
+    return
 
 # Practice CRUD methods ______________________________________________________________
 
@@ -175,6 +177,7 @@ def delete_practice(db_session, id):
     WHERE id = :id'  , {'id': id})
 
     db_session.commit()
+    return
 
 # Milestones CRUD methods ______________________________________________________________
 
@@ -233,6 +236,52 @@ def delete_milestone(db_session, id):
     WHERE id = :id'  , {'id': id})
 
     db_session.commit()
+    return
+
+# Session CRUD methods ______________________________________________________________
+
+# INSERT
+
+def create_session(db_session, name, start_datetime, end_datetime, practice_id, description):
+    session=Session(name, start_datetime, end_datetime, practice_id, description)
+    db_session.add(session)
+    db_session.commit()
+
+    return
+
+# READ
+
+def get_session(db_session, id):
+    session=db_session.query(Session).filter(Session.id==id).first()
+    return session
+
+# def get_session_id(db_session, name, mode, practice_id):
+#     return milestone
+
+# UPDATE
+
+def update_session(db_session,id, name, start_datetime, end_datetime, practice_id, description):
+    db_session.execute('UPDATE sessions\
+    SET name = :name, start_datetime=:start_datetime,end_datetime=:end_datetime, practice_id=:practice_id, description=:description WHERE id = :id',\
+    {'name': name,\
+     'start_datetime'=:start_datetime, \
+     'start_datetime'=:start_datetime,\
+     'practice_id': practice_id,\
+     'description': description,\
+     'id': id})
+
+    db_session.commit()
+    return
+
+# DELETE
+
+
+def delete_session(db_session, id):
+    db_session.execute('DELETE FROM sessions \
+    WHERE id = :id'  , {'id': id})
+
+    db_session.commit()
+    return
 
 
 # Role CRUD methods _____________________________________________________________

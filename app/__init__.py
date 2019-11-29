@@ -627,10 +627,14 @@ def create_app(config_name):
         if not (role=="admin"):
             flash('Error! You cannot do that!', 'danger')
             return redirect('/home')
-
+        subject=get_subject(db_session, id)
+        name=subject.name
+        year=subject.year
         delete_subject(db_session, id)
 
+        flash ("Success! Subject "+ name + " ("+ str(year)+" - "+str(year+1)+") deleted",'success')
         return redirect('/home')
+
 
     @app.route('/deleteUser', methods=['GET', 'POST'])
     @decorators.login_required
