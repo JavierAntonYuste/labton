@@ -264,8 +264,8 @@ def update_session(db_session,id, name, start_datetime, end_datetime, practice_i
     db_session.execute('UPDATE sessions\
     SET name = :name, start_datetime=:start_datetime,end_datetime=:end_datetime, practice_id=:practice_id, description=:description WHERE id = :id',\
     {'name': name,\
-     'start_datetime'=:start_datetime, \
-     'start_datetime'=:start_datetime,\
+     'start_datetime'=start_datetime, \
+     'start_datetime'=start_datetime,\
      'practice_id': practice_id,\
      'description': description,\
      'id': id})
