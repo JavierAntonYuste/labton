@@ -43,29 +43,15 @@ users_group_subject = Table(
     Column('user_id', Integer(), ForeignKey('user.id'), nullable=False)
     )
 
-# Uncomment when session model is done
 
-# groupings_session = Table(
-#     'groupings_session',
-#      Base.metadata,
-#     Column('grouping_id', Integer(),primary_key=True, autoincrement=True),
-#     Column('name', String(80), nullable=False),
-#     Column('session_id', ForeignKey('session.id'), nullable=False)
-# )
-#
-# groups_session= Table(
-#     'groups_session',
-#      Base.metadata,
-#     Column('group_id', Integer(),primary_key=True, autoincrement=True),
-#     Column('grouping_id', ForeignKey(groupings_subject.grouping_id), nullable=False),
-#     Column('user_id', ForeignKey('user.id'), nullable=False)
-# )
-# users_group_session = Table(
-#     'users_group_session',
-#      Base.metadata,
-#     Column('group_id', ForeignKey(groups_session.group_id), nullable=False),
-#     Column('user_id', ForeignKey(user.id), nullable=False)
-#     )
+users_session = Table(
+    'users_session',
+     Base.metadata,
+    Column('session_id', ForeignKey('sessions.id'), nullable=False),
+    Column('user_id', ForeignKey('user.id'),nullable=False),
+    Column('group_id',ForeignKey('groups_subject.group_id'), nullable=False),
+    Column('points', Integer())
+    )
 
 milestone_dependencies = Table(
     'milestone_dependencies',
@@ -149,6 +135,6 @@ class Session(Base):
     id = Column(Integer(), primary_key=True, autoincrement=True)
     name = Column(String(80), nullable=False)
     start_datetime= Column(DateTime(timezone=False), nullable=False)
-    end_datetime= Column(DateTime(timezone=False), nullable=False)
+    end_datetime= Column(DateTime(timezone=False)   )
     practice_id=Column(Integer(), ForeignKey("practices.id"), nullable=False)
     description = Column(String(255))

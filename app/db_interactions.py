@@ -243,7 +243,7 @@ def delete_milestone(db_session, id):
 # INSERT
 
 def create_session(db_session, name, start_datetime, end_datetime, practice_id, description):
-    session=Session(name, start_datetime, end_datetime, practice_id, description)
+    session=Session(name=name,start_datetime=start_datetime,end_datetime=end_datetime,practice_id=practice_id,description=description)
     db_session.add(session)
     db_session.commit()
 
@@ -255,6 +255,15 @@ def get_session(db_session, id):
     session=db_session.query(Session).filter(Session.id==id).first()
     return session
 
+def get_session_from_param(db_session,name, start_datetime, end_datetime, practice_id, description):
+    session=db_session.query(Session).filter(Session.name==name, Session.start_datetime==start_datetime, Session.end_datetime==end_datetime,\
+    Session.practice_id==practice_id, Session.description==description).first()
+    return session
+
+def get_sessions_from_practice(db_session, practice_id):
+    sessions=db_session.query(Session).filter(Session.practice_id==practice_id).all()
+    return sessions
+
 # def get_session_id(db_session, name, mode, practice_id):
 #     return milestone
 
@@ -264,8 +273,8 @@ def update_session(db_session,id, name, start_datetime, end_datetime, practice_i
     db_session.execute('UPDATE sessions\
     SET name = :name, start_datetime=:start_datetime,end_datetime=:end_datetime, practice_id=:practice_id, description=:description WHERE id = :id',\
     {'name': name,\
-     'start_datetime'=start_datetime, \
-     'start_datetime'=start_datetime,\
+     'start_datetime': start_datetime, \
+     'start_datetime': start_datetime,\
      'practice_id': practice_id,\
      'description': description,\
      'id': id})
@@ -473,7 +482,7 @@ def get_grouping_by_name_and_subject(db_session, name, subject_id):
     filter(groupings_subject.c.name==name).filter(groupings_subject.c.subject_id==subject_id).first()
     return grouping
 
-def get_groupings_subject(db_session, subject_id):
+def get_groupings_in_subject(db_session, subject_id):
     groupings= db_session.query(groupings_subject).filter(groupings_subject.c.subject_id==subject_id).all()
     return groupings
 
@@ -618,6 +627,13 @@ def get_group_id_user(db_session, user_id):
     groups= db_session.query(users_group_subject.c.group_id).filter(users_group_subject.c.user_id==user_id).all()
     return groups
 
+def get_users_in_grouping(db_session, grouping_id):
+    users=db_session.query(users_group_subject).\
+    join(groups_subject, users_group_subject.c.group_id==groups_subject.c.group_id).\
+    join(groupings_subject, groups_subject.c.grouping_id==groupings_subject.c.grouping_id).\
+    filter(groupings_subject.c.grouping_id==grouping_id).all()
+    return users
+
 
 # UPDATE
 
@@ -749,4 +765,64 @@ def delete_dependency(db_session, milestone_id, dependency_id):
     WHERE milestone_id = :milestone_id AND dependency_id = :dependency_id'  , {'milestone_id': milestone_id, 'dependency_id': dependency_id})
 
     db_session.commit()
+    return
+
+# users_session CRUD methods__________________________________________________
+
+# INSERT
+
+def add_user_session(db_session, session_id,user_id,group_id,points):
+    db_session.execute('INSERT INTO users_session(session_id,user_id,group_id,points) \
+    VALUES (:session_id,:user_id,:group_id,:points)'  , \
+    {'session_id': session_id, \
+    'user_id': user_id,\
+    'group_id': group_id,
+    'points': points
+    })
+
+    db_session.commit()
+    return
+
+
+# READ
+
+def get_user_session(db_session, session_id, user_id):
+    user_session=db_session.query(users_session).filter(users_session.c.session_id==session_id)\
+    .filter(users_session.c.user_id==user_id).first()
+    return user_session
+
+def get_users_from_session(db_session,session_id):
+    users_session=db_session.query(users_session).filter(users_session.c.session_id==session_id).all()
+    return users_session
+
+def get_sessions_from_user(db_session, user_id):
+    user_sessions=db_session.query(users_session).filter(users_session.c.user_id==user_id).all()
+    return user_sessions
+
+def get_points_session(db_session, session_id, user_id):
+    points=db_session.query(users_session.c.points).filter(users_session.c.session_id==session_id).filter(users_session.c.user_id==user_id).first()
+    return points
+
+# UPDATE
+
+def update_user_session_points(db_session,session_id,user_id,group_id,points):
+    db_session.execute('UPDATE users_session\
+    SET points= :points WHERE session_id=:session_id AND user_id = :user_id AND group_id = :group_id',\
+    {'points': points,
+    'session_id': session_id,
+    'group_id': group_id,
+    'user_id': user_id,
+    'group_id':group_id})
+
+    db_session.commit()
+    return
+
+# DELETE
+
+def delete_user_session(db_session, session_id, user_id):
+    db_session.execute('DELETE FROM users_session\
+    WHERE session_id= :session_id AND user_id=:user_id'  , {'session_id': session_id, 'user_id':user_id})
+
+    db_session.commit()
+
     return

@@ -206,7 +206,7 @@ def create_app(config_name):
             users_in_subject.append(row)
 
         roles_db=get_roles(db_session)
-        groupings=get_groupings_subject(db_session,id)
+        groupings=get_groupings_in_subject(db_session,id)
         groupings_json=json.dumps(groupings)
         groups=get_groups_in_subject(db_session,id)
         groups_json=json.dumps(groups)
@@ -236,9 +236,14 @@ def create_app(config_name):
         user=(session["email"].split('@'))[0]
 
         milestones=get_practice_milestones(db_session, id)
+
+        sessions=get_sessions_from_practice(db_session, id)
+
+        groupings=get_groupings_in_subject(db_session, id)
+
         return render_template('practice.html',user=user, privilege=session["privilege"], \
         practice=practice, role=session["role"],milestones=milestones, modes=appconfig.milestone_modes,\
-        rating_ways=appconfig.rating_ways)
+        rating_ways=appconfig.rating_ways, groupings=groupings, sessions=sessions)
 
 
     @app.route('/users')
@@ -311,6 +316,53 @@ def create_app(config_name):
         create_practice(db_session,name,milestones,rating_way,subject_id, description)
 
         return redirect('/subject/'+subject_id)
+
+    @app.route('/createSession', methods=['GET', 'POST'])
+    @decorators.login_required
+    def createSession():
+        name=request.form["name"]
+        start_date=request.form["start_date"]
+        end_date=request.form["end_date"]
+        practice_id=request.form["practice_id"]
+        grouping_session=request.form["grouping_session"]
+        points=request.form["points"]
+        description=request.form["description"]
+
+        if (name=="" or start_date=="" or practice_id==""):
+            flash('Error! Incompleted fields', 'danger')
+            return redirect('/practice/'+practice_id)
+
+        start_year=(start_date.split(" ")[0]).split("/")[2]
+        start_month=(start_date.split(" ")[0]).split("/")[1]
+        start_day=(start_date.split(" ")[0]).split("/")[0]
+        start_hour=(start_date.split(" ")[1]).split(":")[0]
+        start_minute=(start_date.split(" ")[1]).split(":")[1]
+
+        sql_start_date=(start_year+"-"+start_month+"-"+start_day+" "+start_hour+":"+start_minute+":00")
+
+        if (end_date!=""):
+            end_year=(end_date.split(" ")[0]).split("/")[2]
+            end_month=(end_date.split(" ")[0]).split("/")[1]
+            end_day=(end_date.split(" ")[0]).split("/")[0]
+            end_hour=(end_date.split(" ")[1]).split(":")[0]
+            end_minute=(end_date.split(" ")[1]).split(":")[1]
+
+            sql_end_date=(end_year+"-"+end_month+"-"+end_day+" "+end_hour+":"+end_minute+":00")
+
+        else:
+            sql_end_date=None
+
+        create_session(db_session,name,sql_start_date,sql_end_date, practice_id, description)
+        session=get_session_from_param(db_session, name,sql_start_date,sql_end_date, practice_id, description)
+
+        users=get_users_in_grouping(db_session, grouping_session)
+
+        for user in users:
+            add_user_session(db_session, session.id,user[1],user[0],points)
+
+        ## TODO insert points
+
+        return redirect('/practice/'+practice_id)
 
     @app.route('/createMilestone', methods=['GET', 'POST'])
     @decorators.login_required
