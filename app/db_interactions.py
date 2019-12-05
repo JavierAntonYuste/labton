@@ -264,6 +264,12 @@ def get_sessions_from_practice(db_session, practice_id):
     sessions=db_session.query(Session).filter(Session.practice_id==practice_id).all()
     return sessions
 
+def get_sessions_from_subject(db_session, subject_id):
+    sessions=db_session.query(Session).\
+    join(Practice, Session.practice_id==Practice.id).\
+    filter(Practice.subject_id==subject_id).all()
+    return sessions
+
 # def get_session_id(db_session, name, mode, practice_id):
 #     return milestone
 

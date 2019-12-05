@@ -383,6 +383,27 @@
         {% endfor %}
       </div>
 
+
+      {% if role=='student'%}
+      <h4 class="pb-2">Sessions</h4>
+
+      <div class="row">
+
+        {% for element in sessions_in_subject%}
+          <div class="col-xl-3 col-sm-6 mb-5">
+            <div class="card">
+              <a href="/session/{{element.id}}" class="btn btn-primary" >
+                  <span class="icon text-white-50">
+                    <i class="pr-2 fas fa-map-marker"></i>
+                    <b class="icon text-white">{{element.name}}</b>
+                  </span>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
     </div>
     <!-- /.container-fluid -->
 

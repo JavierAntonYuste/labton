@@ -168,8 +168,12 @@ def create_app(config_name):
         session["role"]=role
         session["subject_id"]=id
 
+        sessions_in_subject=get_sessions_from_subject(db_session,id)
+        print(sessions_in_subject )
+
         return render_template('subject.html',user=user, privilege=session["privilege"], \
-        role=role, subject= subject, practices=practices, rating_ways=appconfig.rating_ways, degrees=appconfig.degrees)
+        role=role, subject= subject, practices=practices, rating_ways=appconfig.rating_ways, degrees=appconfig.degrees,\
+        sessions_in_subject=sessions_in_subject)
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -245,6 +249,19 @@ def create_app(config_name):
         practice=practice, role=session["role"],milestones=milestones, modes=appconfig.milestone_modes,\
         rating_ways=appconfig.rating_ways, groupings=groupings, sessions=sessions)
 
+    @app.route('/session/<id>', methods=['GET', 'POST'])
+    @decorators.login_required
+    def session_a(id):
+        session_a=get_session(db_session, id)
+
+        if (session_a== None):
+            flash('Error! Practice does not exists', 'danger')
+            return redirect('/home')
+
+        user=(session["email"].split('@'))[0]
+
+        return render_template('session.html',user=user, privilege=session["privilege"], \
+        session_a=session_a, role=session["role"])
 
     @app.route('/users')
     @decorators.login_required
