@@ -163,13 +163,13 @@
       {% endwith %}
       <!-- Page Heading -->
       <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <div class="col-7">
+        <div class="col-8">
           <h1 class="h3 mb-0 text-gray-800">Users from {{subject.acronym}} ({{subject.year}}-{{subject.year+1}})</h1>
         </div>
 
 
       {% if role=='professor' or role=='admin'%}
-      <div class="col-2">
+      <div class="col">
         <div class="dropdown">
           <button class="btn btn-primary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="fas fa-sliders-h mr-2"></i>
@@ -197,7 +197,7 @@
         </div>
       </div>
 
-      <div class="col-2">
+      <div class="col">
         <div class="dropdown">
           <button class="btn btn-primary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="fas fa-cloud-upload-alt mr-2"></i>
