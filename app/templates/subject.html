@@ -366,7 +366,7 @@
           <h6 class="w-wrap">{{subject.description}}</h6>
         </div>
       </div>
-
+      {% if role=="admin" or role=="professor"%}
       <h4 class="pb-2"> Practices </h4>
       <div class="row">
         {% for element in practices%}
@@ -382,6 +382,7 @@
           </div>
         {% endfor %}
       </div>
+      {% endif%}
 
 
       {% if role=='student'%}

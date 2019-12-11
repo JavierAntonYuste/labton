@@ -170,6 +170,15 @@
 
         {% if role=="admin" or role=="professor"%}
         <div class="col">
+          <a href="/manageSession/{{session_a.id}}" class="dropdown-item" >
+              <span class="btn btn-primary">
+                <i class="fas fa-user-friends mr-2"></i>
+                Manage Users
+              </span>
+          </a>
+        </div>
+
+        <div class="col">
         <div class="dropdown">
           <button class="btn btn-secondary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="fas fa-cog mr-2"></i>

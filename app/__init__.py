@@ -228,6 +228,52 @@ def create_app(config_name):
         role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db, \
         groupings_json=groupings_json, groups_json=groups_json, groupings=groupings, groups=groups)
 
+    @app.route('/manageSession/<id>', methods=['GET', 'POST'])
+    @decorators.login_required
+    def manageSession(id):
+
+        if not (session["role"] or session["role"]=="professor"):
+            flash('Error! You cannot do that!', 'danger')
+            return redirect('/home')
+
+        session_a= get_session(db_session, id)
+
+        if (session_a== None):
+            flash('Error! Session does not exists', 'danger')
+            return redirect('/home')
+
+        user=(session["email"].split('@'))[0]
+        users=get_users_in_session(db_session, id)
+
+        users_in_session=[]
+
+        for i in range(len(users)):
+            user_in=get_user_by_id(db_session,users[i][0])
+
+            group=get_group(db_session, users[i][1])
+
+            if (group != None):
+                grouping=get_grouping(db_session, group.grouping_id)
+            else:
+                grouping=None
+
+            points=get_points_session(db_session, id, users[i][0])[0]
+
+            row = [user_in, grouping, group,points]
+            users_in_session.append(row)
+
+
+        # if session["privilege"]== 'admin':
+        #     role='admin'
+        #
+        #     return render_template('manageSubject.html', privilege=session["privilege"], user=user,\
+        #      session= session, users_in_session=users_in_session)
+
+        # role=get_role_subject(db_session, session["email"], id)
+
+        return render_template('manageSession.html',user=user, privilege=session["privilege"],\
+        session_a= session_a, users_in_session=users_in_session)
+
     @app.route('/practice/<id>', methods=['GET', 'POST'])
     @decorators.login_required
     def practice(id):
@@ -729,6 +775,21 @@ def create_app(config_name):
 
         flash ("Success! User deleted from subject",'success')
         return redirect('/manageSubject/'+ subject_id)
+
+    @app.route('/deleteUserSession',  methods=['GET', 'POST'])
+    @decorators.login_required
+    def deleteUserSession():
+        user_id=request.form['user_id']
+        session_id=request.form['session_id']
+
+        if not (session["role"]=="admin" or session["role"]=="professor"):
+            flash('Error! You cannot do that!', 'danger')
+            return redirect('/session/'+session_id)
+
+        delete_user_in_session(db_session, session_id, user_id)
+
+        flash ("Success! User deleted from subject",'success')
+        return redirect('/manageSession/'+ session_id)
 
     @app.route('/deleteSubject/<id>', methods=['GET','POST'])
     @decorators.login_required

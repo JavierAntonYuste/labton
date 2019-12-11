@@ -807,9 +807,9 @@ def get_user_session(db_session, session_id, user_id):
     .filter(users_session.c.user_id==user_id).first()
     return user_session
 
-def get_users_from_session(db_session,session_id):
-    users_session=db_session.query(users_session).filter(users_session.c.session_id==session_id).all()
-    return users_session
+def get_users_in_session(db_session,session_id):
+    users=db_session.query(users_session.c.user_id, users_session.c.group_id).filter(users_session.c.session_id==session_id).all()
+    return users
 
 def get_sessions_from_user(db_session, user_id):
     user_sessions=db_session.query(users_session).filter(users_session.c.user_id==user_id).all()
@@ -835,7 +835,7 @@ def update_user_session_points(db_session,session_id,user_id,group_id,points):
 
 # DELETE
 
-def delete_user_session(db_session, session_id, user_id):
+def delete_user_in_session(db_session, session_id, user_id):
     db_session.execute('DELETE FROM users_session\
     WHERE session_id= :session_id AND user_id=:user_id'  , {'session_id': session_id, 'user_id':user_id})
 
