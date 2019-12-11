@@ -168,7 +168,139 @@
           <h1 class="h3 mb-0 text-gray-800">Session {{session_a.name}}</h1>
         </div>
 
+        {% if role=="admin" or role=="professor"%}
+        <div class="col-2">
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-cog mr-2"></i>
+            Settings
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+
+            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#updateSessionModal">
+              <i class="fas fa-redo-alt mr-2"></i>
+              Update Session
+            </button>
+            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#deleteSession">
+              <i class="fas fa-trash mr-2"></i>
+              Delete Session
+            </button>
+
+          </div>
+        </div>
       </div>
+
+      <!-- Delete Session Modal-->
+      <div class="modal fade" id="deleteSession" tabindex="-1" role="dialog"  aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Are you sure?</h5>
+              <button class="close" type="button" data-dismiss="modal" aria-label="Cancel">
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div class="modal-body">Click "Delete" for eliminate this Session</div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+              <a class="btn btn-primary" href="/deleteSession/{{session_a.id}}">Delete</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Delete Session Modal -->
+
+      <!-- update Practice Modal -->
+      <div class="modal fade" id="updateSessionModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Update Session</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+
+            <div class="modal-body">
+              <h6> Introduce new data </h6>
+            <form action="/updateSession" method="post" id="upload-form" enctype="multipart/form-data">
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                      <label> Name </label>
+                        <input class= "form-control" name="name" value="{{session_a.name}}" >
+                  </div>
+                </div>
+
+                <div class="row pt-2 pb-2">
+                    <div class='col'>
+                            <label> Start date</label>
+                           <div class="input-group date" data-target-input="nearest">
+                                <input type="text" class="form-control start-date" name="start_date"/>
+                                <div class="input-group-append" >
+                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                </div>
+                            </div>
+                            <script>
+                                $('.start-date').datetimepicker({
+                                   format: 'dd/mm/yyyy hh:ii',
+
+                                });
+                            </script>
+
+                    </div>
+                </div>
+                <div class="row pt-2 pb-2">
+                    <div class='col'>
+                            <label> End date <i>(Optional)</i></label>
+                           <div class="input-group date" data-target-input="nearest">
+                                <input type="text" class="form-control end-date" name="end_date" />
+                                <div class="input-group-append" >
+                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                </div>
+                            </div>
+                            <script>
+                                $('.end-date').datetimepicker({
+                                  format: 'dd/mm/yyyy hh:ii',
+                                });
+                            </script>
+
+                    </div>
+                </div>
+
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                    <label> Initial Points </label>
+                    <input class= "form-control" name="points" type="number" min="0" step="1" value="{{session_a.points}}">
+
+                  </div>
+                </div>
+
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                      <label> Description <i>(Optional)</i> </label>
+                        <input class= "form-control" name="description" value="{{session_a.description}}" maxlength="1000" >
+                  </div>
+                </div>
+
+                <input type= "hidden" name="practice_id" value={{session_a.practice_id}}>
+                <input type= "hidden" name="session_id" value={{session_a.id}}>
+
+              </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Update</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end create modal Practice-->
+        {% endif %}
+
+
+      </div>
+
 
       <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <div class="col">
@@ -176,16 +308,25 @@
         </div>
       </div>
 
-      <h4 class="pb-2"> Milestones </h4>
-
-      <div class="row">
-      </div>
-
-      <h4 class="pb-2">Sessions</h4>
+      <!-- Content Row -->
 
       <div class="row">
 
+        <!-- Area Chart -->
+        <div class="col-12">
+          <!-- partial:index.partial.html -->
+          <div id="podium"></div>
+          <!-- partial -->
+
+        </div>
+
+
       </div>
+
+
+
+
+
 
       </div>
     </div>
@@ -206,6 +347,11 @@
 <a class="scroll-to-top rounded" href="#page-top">
 <i class="fas fa-angle-up"></i>
 </a>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/react/15.0.2/react.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/react/15.0.2/react-dom.js'></script><script  src="/static/js/podium.js"></script>
+
+
 
 
 {% endblock body%}

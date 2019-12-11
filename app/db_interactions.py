@@ -150,6 +150,11 @@ def get_subject_id_practice(db_session, id):
     subject_id=db_session.query(Practice.subject_id).filter_by(id=id).first()
     return subject_id
 
+def get_subject_id_session(db_session, session_id):
+    subject_id=db_session.query(Practice.subject_id).\
+    join(Session, Practice.id==Session.practice_id).filter(Session.id==session_id).first()
+    return subject_id
+
 # UPDATE
 
 def update_practice(db_session,id, name, milestones, rating_way, subject_id, description):
@@ -280,7 +285,7 @@ def update_session(db_session,id, name, start_datetime, end_datetime, practice_i
     SET name = :name, start_datetime=:start_datetime,end_datetime=:end_datetime, practice_id=:practice_id, description=:description WHERE id = :id',\
     {'name': name,\
      'start_datetime': start_datetime, \
-     'start_datetime': start_datetime,\
+     'end_datetime': end_datetime,\
      'practice_id': practice_id,\
      'description': description,\
      'id': id})
@@ -292,6 +297,11 @@ def update_session(db_session,id, name, start_datetime, end_datetime, practice_i
 
 
 def delete_session(db_session, id):
+    db_session.execute('DELETE FROM users_session\
+    WHERE session_id= :session_id' , {'session_id': id})
+
+    db_session.commit()
+
     db_session.execute('DELETE FROM sessions \
     WHERE id = :id'  , {'id': id})
 

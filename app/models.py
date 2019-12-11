@@ -34,15 +34,12 @@ groups_subject = Table(
     Column('grouping_id',Integer(), ForeignKey('groupings_subject.grouping_id'), nullable=False),
 )
 
-
-
 users_group_subject = Table(
     'users_group_subject',
      Base.metadata,
     Column('group_id', Integer(), ForeignKey('groups_subject.group_id'), nullable=False),
     Column('user_id', Integer(), ForeignKey('user.id'), nullable=False)
     )
-
 
 users_session = Table(
     'users_session',

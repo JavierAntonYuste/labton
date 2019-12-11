@@ -648,6 +648,47 @@ def create_app(config_name):
 
         return redirect('/practice/'+id)
 
+
+    @app.route('/updateSession', methods=['GET', 'POST'])
+    @decorators.login_required
+    def updateSession():
+        id=request.form["session_id"]
+        name=request.form["name"]
+        start_date=request.form["start_date"]
+        end_date=request.form["end_date"]
+        practice_id=request.form["practice_id"]
+        points=request.form["points"]
+        description=request.form["description"]
+
+        if (name=="" or start_date=="" or practice_id==""):
+            flash('Error! Incompleted fields', 'danger')
+            return redirect('/practice/'+practice_id)
+
+        start_year=(start_date.split(" ")[0]).split("/")[2]
+        start_month=(start_date.split(" ")[0]).split("/")[1]
+        start_day=(start_date.split(" ")[0]).split("/")[0]
+        start_hour=(start_date.split(" ")[1]).split(":")[0]
+        start_minute=(start_date.split(" ")[1]).split(":")[1]
+
+        sql_start_date=(start_year+"-"+start_month+"-"+start_day+" "+start_hour+":"+start_minute+":00")
+
+        if (end_date!=""):
+            end_year=(end_date.split(" ")[0]).split("/")[2]
+            end_month=(end_date.split(" ")[0]).split("/")[1]
+            end_day=(end_date.split(" ")[0]).split("/")[0]
+            end_hour=(end_date.split(" ")[1]).split(":")[0]
+            end_minute=(end_date.split(" ")[1]).split(":")[1]
+
+            sql_end_date=(end_year+"-"+end_month+"-"+end_day+" "+end_hour+":"+end_minute+":00")
+
+        else:
+            sql_end_date=None
+
+        update_session(db_session,id, name, sql_start_date, sql_end_date, practice_id, description)
+
+        return redirect('/session/'+id)
+
+
     @app.route('/changePrivilege', methods=['GET', 'POST'])
     @decorators.login_required
     @decorators.privileges_required('admin')
@@ -735,6 +776,24 @@ def create_app(config_name):
         delete_practice(db_session, id)
 
         return redirect('/subject/'+session["subject_id"])
+
+    @app.route('/deleteSession/<id>', methods=['GET','POST'])
+    @decorators.login_required
+    def deleteSession(id):
+
+        subject_id= get_subject_id_session(db_session, id)
+        role=get_role_subject(db_session, session["email"] , subject_id)
+
+
+        if not (role=="admin" or role=="professor"):
+            flash('Error! You cannot do that!', 'danger')
+            return redirect('/home')
+
+        practice_id=(get_session(db_session, id)).practice_id
+
+        delete_session(db_session, id)
+
+        return redirect('/practice/'+ str(practice_id))
 
     @app.route('/deleteGroup',  methods=['GET', 'POST'])
     @decorators.login_required
