@@ -581,6 +581,16 @@ def get_group_from_user_in_subject(db_session, user_id, subject_id):
 
     return group
 
+def get_group_session(db_session, user_id, practice_id):
+    group=db_session.query(groups_subject).\
+    join(users_group_subject,groups_subject.c.group_id==users_group_subject.c.group_id).\
+    join(groupings_subject, groups_subject.c.grouping_id==groupings_subject.c.grouping_id).\
+    join(Subject, groupings_subject.c.subject_id==Subject.id).\
+    join(Practice, Subject.id==Practice.subject_id).\
+    filter(Practice.id==practice_id).filter(users_group_subject.c.user_id==user_id).first()
+
+    return group
+
 # UPDATE
 
 def update_group(db_session,group_id, name, grouping_id):
@@ -801,6 +811,9 @@ def add_user_session(db_session, session_id,user_id,group_id,points):
 
 
 # READ
+def get_session(db_session, session_id):
+    session=db_session.query(Session).filter(Session.id==session_id).first()
+    return session
 
 def get_user_session(db_session, session_id, user_id):
     user_session=db_session.query(users_session).filter(users_session.c.session_id==session_id)\
@@ -828,14 +841,13 @@ def get_top_3_points(db_session, session_id):
 
 # UPDATE
 
-def update_user_session_points(db_session,session_id,user_id,group_id,points):
+def update_user_session_points(db_session,session_id,user_id,points):
     db_session.execute('UPDATE users_session\
-    SET points= :points WHERE session_id=:session_id AND user_id = :user_id AND group_id = :group_id',\
+    SET points= :points WHERE session_id=:session_id AND user_id = :user_id',\
     {'points': points,
     'session_id': session_id,
-    'group_id': group_id,
-    'user_id': user_id,
-    'group_id':group_id})
+    'user_id': user_id
+    })
 
     db_session.commit()
     return

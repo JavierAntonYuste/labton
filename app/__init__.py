@@ -568,6 +568,45 @@ def create_app(config_name):
             flash ("Error! Empty input",'danger')
             return redirect('/manageSubject/'+ subject_id)
 
+    @app.route('/uploadUserSession', methods=['POST'])
+    @decorators.login_required
+    def uploadUserSession():
+        # Getting subject_id from form
+        session_id = request.form['session_id']
+        # Checking if we have email in form
+        if request.form['email']:
+            # Taking email, name and id
+            email=request.form['email']
+            user_id = get_user_id(db_session, email)
+
+            # If the user isn't in the DB, return error
+            if (user_id == None):
+                flash ("Error! User not found",'danger')
+                return redirect('/manageSession/'+ session_id)
+
+            if (get_user_session(db_session, session_id, user_id)!=None):
+                flash ("Error! User already added",'danger')
+                return redirect('/manageSession/'+ session_id)
+
+            session_a=get_session(db_session,session_id)
+            group=get_group_session(db_session,user_id,session_a.practice_id)
+
+            if (group==None):
+                flash ("Error! User not added in Subject",'danger')
+                return redirect('/manageSession/'+ session_id)
+
+            print(group)
+
+            add_user_session(db_session, session_id,user_id,group.group_id,0)
+
+            # Redirecting to same page with a success message
+            flash ("Success! User " + email +" added to session",'success')
+            return redirect('/manageSession/'+ session_id)
+        else:
+            # If there is not email, flash error
+            flash ("Error! Empty input",'danger')
+            return redirect('/manageSession/'+ session_id)
+
     @app.route('/updateSubject', methods=['GET', 'POST'])
     @decorators.login_required
     # @decorators.privileges_required('admin', 'professor')
@@ -751,6 +790,21 @@ def create_app(config_name):
 
         return redirect('/manageSubject/'+ subject_id)
 
+    @app.route('/changePoints', methods=['GET', 'POST'])
+    @decorators.login_required
+    def changePoints():
+        points=request.form['points']
+        email=request.form['email']
+        session_id=request.form['session_id']
+
+        user_id=get_user_id(db_session, email)
+
+        update_user_session_points(db_session, session_id, user_id, points)
+
+        flash ("Success! You changed the points of " + email + " to " + points ,'success')
+
+        return redirect('/manageSession/'+ session_id)
+
     @app.route('/deleteUserSubject',  methods=['GET', 'POST'])
     @decorators.login_required
     def deleteUserSubject():
@@ -884,7 +938,7 @@ def create_app(config_name):
     def getTop3Points():
         session_id=request.args.get("session_id")
         top=get_top_3_points(db_session, session_id)
-        print(top) 
+
 
         top_players=[]
 

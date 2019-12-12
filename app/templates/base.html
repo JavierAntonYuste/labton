@@ -53,10 +53,14 @@
   <script src="/static/js/bootstrap-datetimepicker.min.js"></script>
   <link rel="stylesheet" href="/static/css/bootstrap-datetimepicker.min.css">
   <link rel="stylesheet" href="/static/css/podium.css">
-  <!-- <script src="https://rawgit.com/moment/moment/2.2.1/min/moment.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.js"></script> -->
 
+  <!-- Clasification table  -->
+  <!--===============================================================================================-->
+  	<link rel="stylesheet" type="text/css" href="/static/Table_Fixed_Header/vendor/perfect-scrollbar/perfect-scrollbar.css">
+  <!--===============================================================================================-->
+  	<link rel="stylesheet" type="text/css" href="/static/Table_Fixed_Header/css/util.css">
+  	<link rel="stylesheet" type="text/css" href="/static/Table_Fixed_Header/css/main.css">
+  <!--===============================================================================================-->
 
 
 
@@ -220,8 +224,6 @@
 
 {% endblock footer%}
 
-
-</body>
 <!-- Bootstrap core JavaScript -->
 <script src="/static/vendor/jquery/jquery.js"></script>
 <script src="/static/vendor/bootstrap/js/bootstrap.bundle.js"></script>
@@ -237,8 +239,29 @@
 
 <!-- Page level custom scripts -->
 <script src="/static/js/charts/podium.js"></script>
-<script src="/static/js/demo/chart-area-demo.js"></script>
-<script src="/static/js/demo/chart-pie-demo.js"></script>
+
+<!--===============================================================================================-->
+	<script src="/static/Table_Fixed_Header/vendor/bootstrap/js/popper.js"></script>
+<!--===============================================================================================-->
+	<script src="/static/Table_Fixed_Header/vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/static/Table_Fixed_Header/vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+	<script>
+		$('.js-pscroll').each(function(){
+			var ps = new PerfectScrollbar(this);
+
+			$(window).on('resize', function(){
+				ps.update();
+			})
+		});
+	</script>
+<!--===============================================================================================-->
+	<script src="/static/Table_Fixed_Header/js/main.js"></script>
+
+
+
+</body>
+
 
 
 </html>
