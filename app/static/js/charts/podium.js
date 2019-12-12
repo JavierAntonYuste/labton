@@ -1,3 +1,5 @@
+
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -54,26 +56,38 @@ var Leaderboard = /** @class */ (function (_super) {
     }
     Leaderboard.prototype.getData = function () {
         /* Here you can implement data fetching */
-        var data = {
-            success: true,
-            leaders: [
-                { id: 1, name: 'Me', score: 350 },
-                { id: 3, name: 'You', score: 275 },
-                { id: 2, name: 'Someone', score: 220 },
+        session_id=document.getElementById('session_id').getAttribute('value');
 
-            ],
-            maxScore: 350
-        };
-        this.setState({
-            leaders: data.leaders,
-            maxScore: data.maxScore
+        fetch('/getTop3Points?session_id='+session_id)
+        .then(results =>{
+          return results.json();
+        }).then(output =>{
+          var data = {
+              success: true,
+              leaders: [
+                  { id: output[0][0], name: output[0][2], score: output[0][3] },
+                  { id: output[1][0], name: output[1][2], score: output[1][3]  },
+                  { id: output[2][0], name: output[2][2], score: output[2][3] },
+              ],
+              maxScore: output[0][3]
+          };
+
+          this.setState({
+              leaders: data.leaders,
+              maxScore: data.maxScore
+          });
         });
+
+
     };
+
     Leaderboard.prototype.componentWillMount = function () {
         this.getData();
-        /*data is refreshing every 3 minutes*/
-        setInterval(this.getData, 180000);
+        /*data is refreshing every 10 seconds*/
+        setInterval(this.getData, 10000);
     };
+
+
     Leaderboard.prototype.render = function () {
         var _this = this;
         return (

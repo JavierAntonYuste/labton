@@ -819,6 +819,13 @@ def get_points_session(db_session, session_id, user_id):
     points=db_session.query(users_session.c.points).filter(users_session.c.session_id==session_id).filter(users_session.c.user_id==user_id).first()
     return points
 
+def get_top_3_points(db_session, session_id):
+    top=db_session.execute('SELECT user_id, points FROM users_session WHERE session_id = :session_id ORDER BY points DESC LIMIT 3',\
+    {'session_id': session_id
+    }).fetchall()
+
+    return top
+
 # UPDATE
 
 def update_user_session_points(db_session,session_id,user_id,group_id,points):

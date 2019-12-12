@@ -169,7 +169,6 @@ def create_app(config_name):
         session["subject_id"]=id
 
         sessions_in_subject=get_sessions_from_subject(db_session,id)
-        print(sessions_in_subject )
 
         return render_template('subject.html',user=user, privilege=session["privilege"], \
         role=role, subject= subject, practices=practices, rating_ways=appconfig.rating_ways, degrees=appconfig.degrees,\
@@ -263,16 +262,8 @@ def create_app(config_name):
             users_in_session.append(row)
 
 
-        # if session["privilege"]== 'admin':
-        #     role='admin'
-        #
-        #     return render_template('manageSubject.html', privilege=session["privilege"], user=user,\
-        #      session= session, users_in_session=users_in_session)
-
-        # role=get_role_subject(db_session, session["email"], id)
-
         return render_template('manageSession.html',user=user, privilege=session["privilege"],\
-        session_a= session_a, users_in_session=users_in_session)
+        session_a= session_a, role=session["role"],users_in_session=users_in_session)
 
     @app.route('/practice/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -887,6 +878,26 @@ def create_app(config_name):
 
         flash ("Success! Grouping deleted from subject",'success')
         return redirect('/manageSubject/'+ subject_id)
+
+    @app.route("/getTop3Points")
+    @decorators.login_required
+    def getTop3Points():
+        session_id=request.args.get("session_id")
+        top=get_top_3_points(db_session, session_id)
+        print(top) 
+
+        top_players=[]
+
+        for i in range(len(top)):
+
+            user_in=get_user_by_id(db_session,top[i][0])
+            row = [user_in.id, user_in.username,user_in.email,top[i][1]]
+
+            top_players.append(row)
+
+        json_string = json.dumps(top_players)
+
+        return json_string
 
 # End of routes ______________________________________________________________________________
 
