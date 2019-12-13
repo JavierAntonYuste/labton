@@ -290,15 +290,24 @@ def create_app(config_name):
     @decorators.login_required
     def session_a(id):
         session_a=get_session(db_session, id)
+        user=(session["email"].split('@'))[0]
 
         if (session_a== None):
             flash('Error! Practice does not exists', 'danger')
             return redirect('/home')
 
-        user=(session["email"].split('@'))[0]
+        groups_points=get_groups_points_session(db_session, id)
+        print(groups_points)
+
+        data_table=[]
+        for element in groups_points:
+            group=get_group(db_session,element[0])
+            grouping=get_grouping(db_session, group.grouping_id)
+            row=[grouping.name, group.name,element[1]]
+            data_table.append(row)
 
         return render_template('session.html',user=user, privilege=session["privilege"], \
-        session_a=session_a, role=session["role"])
+        session_a=session_a, role=session["role"], data_table=data_table)
 
     @app.route('/users')
     @decorators.login_required
@@ -325,13 +334,16 @@ def create_app(config_name):
         email=request.form["email"]
         privilege=request.form["privilege"]
 
-        if (get_user(db_session, email)==None):
+        print(get_user(db_session, email))
+
+        if (get_user(db_session, email)!=None):
             flash('Error: User already exists', 'danger')
             return redirect('/users')
 
         name=email.split('@')[0]
         create_user(db_session,engine,name,email,privilege)
 
+        flash ("Success! User " + email +" added",'success')
         return redirect('/users')
 
     @app.route('/createSubject', methods=['GET', 'POST'])

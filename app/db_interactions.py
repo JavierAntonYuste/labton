@@ -20,12 +20,12 @@ def get_user_id(db_session, email):
     return id
 
 def get_user_by_id(db_session, id):
-    user= db_session.query(User).filter(User.id==id).one()
+    user= db_session.query(User).filter(User.id==id).first()
     return user
 
 
 def get_user(db_session, email ):
-    user= db_session.query(User).filter(User.email==email).one()
+    user= db_session.query(User).filter(User.email==email).first()
     return user
 
 # UPDATE
@@ -51,7 +51,8 @@ def delete_user(db_session, user_id):
     db_session.execute('DELETE FROM users_group_subject \
     WHERE user_id= :user_id'  , {'user_id': user_id})
 
-
+    db_session.execute('DELETE FROM users_session\
+    WHERE user_id=:user_id'  , {'user_id':user_id})
 
     db_session.commit()
 
@@ -838,6 +839,16 @@ def get_top_3_points(db_session, session_id):
     }).fetchall()
 
     return top
+
+def get_groups_points_session(db_session, session_id):
+    # groups=db_session.query(users_session).distinct(users_session.c.group_id).order_by(desc(users_session.c.points)).\
+    # filter(users_session.c.session_id==session_id).all()
+
+    groups=db_session.execute('SELECT DISTINCT group_id, points FROM users_session \
+    WHERE session_id=:session_id\
+    ORDER BY points DESC',{'session_id': session_id}).fetchall()
+
+    return groups
 
 # UPDATE
 
