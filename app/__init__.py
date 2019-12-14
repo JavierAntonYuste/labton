@@ -297,7 +297,6 @@ def create_app(config_name):
             return redirect('/home')
 
         groups_points=get_groups_points_session(db_session, id)
-        print(groups_points)
 
         data_table=[]
         for element in groups_points:
@@ -333,8 +332,6 @@ def create_app(config_name):
     def createUser():
         email=request.form["email"]
         privilege=request.form["privilege"]
-
-        print(get_user(db_session, email))
 
         if (get_user(db_session, email)!=None):
             flash('Error: User already exists', 'danger')
@@ -606,8 +603,6 @@ def create_app(config_name):
             if (group==None):
                 flash ("Error! User not added in Subject",'danger')
                 return redirect('/manageSession/'+ session_id)
-
-            print(group)
 
             add_user_session(db_session, session_id,user_id,group.group_id,0)
 
@@ -945,23 +940,24 @@ def create_app(config_name):
         flash ("Success! Grouping deleted from subject",'success')
         return redirect('/manageSubject/'+ subject_id)
 
-    @app.route("/getTop3Points")
+    @app.route("/getTopPoints")
     @decorators.login_required
     def getTop3Points():
         session_id=request.args.get("session_id")
-        top=get_top_3_points(db_session, session_id)
+        top=get_top_points(db_session, session_id)
 
-
-        top_players=[]
+        top_groups=[]
 
         for i in range(len(top)):
+            group_in=get_group(db_session,top[i][0])
+            grouping_in=get_grouping(db_session, group_in.grouping_id)
 
-            user_in=get_user_by_id(db_session,top[i][0])
-            row = [user_in.id, user_in.username,user_in.email,top[i][1]]
+            row = [group_in.group_id, group_in.name, grouping_in.name ,top[i][1]]
 
-            top_players.append(row)
+            top_groups.append(row)
 
-        json_string = json.dumps(top_players)
+        json_string = json.dumps(top_groups)
+
 
         return json_string
 

@@ -467,8 +467,9 @@
           <h6 class="w-wrap">{{practice.description}}</h6>
         </div>
       </div>
-
+      {% if milestones%}
       <h4 class="pb-2"> Milestones </h4>
+      {% endif %}
 
       <div class="row">
 
@@ -485,8 +486,9 @@
           </div>
         {% endfor %}
       </div>
-
+        {% if sessions%}
         <h4 class="pb-2">Sessions</h4>
+        {% endif %}
 
         <div class="row">
 
