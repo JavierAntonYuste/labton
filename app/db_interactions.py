@@ -840,6 +840,30 @@ def get_top_points(db_session, session_id):
 
     return top
 
+
+
+def get_top_points_subject(db_session, subject_id):
+    top=db_session.execute('SELECT user_id, SUM(points) AS points FROM users_session \
+    INNER JOIN sessions ON users_session.session_id=sessions.id\
+    INNER JOIN practices ON sessions.practice_id=practices.id\
+    INNER JOIN subjects ON practices.subject_id=subjects.id\
+    WHERE subject_id = :subject_id\
+    GROUP BY user_id ORDER BY points DESC',\
+    {'subject_id': subject_id
+    }).fetchall()
+
+    return top
+
+def get_top_points_practice(db_session, practice_id):
+    top=db_session.execute('SELECT user_id, SUM(points) AS points FROM users_session \
+    INNER JOIN sessions ON users_session.session_id=sessions.id\
+    WHERE practice_id = :practice_id\
+    GROUP BY user_id ORDER BY points DESC',\
+    {'practice_id': practice_id
+    }).fetchall()
+
+    return top
+
 def get_groups_points_session(db_session, session_id):
     groups=db_session.execute('SELECT DISTINCT group_id, points FROM users_session \
     WHERE session_id=:session_id\

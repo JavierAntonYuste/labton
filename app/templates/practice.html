@@ -166,6 +166,8 @@
       <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <div class="col-8">
           <h1 class="h3 mb-0 text-gray-800">{{practice.name}}</h1>
+          <div id="practice_id" value="{{practice.id}}"></div>
+
         </div>
         {% if role=="professor" or role=="admin"%}
         <div class="col">
@@ -187,27 +189,6 @@
               </button>
 
             </div>
-          </div>
-        </div>
-
-        {% if role=="admin"%}
-        <div class="col">
-        <div class="dropdown">
-          <button class="btn btn-secondary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="fas fa-cog mr-2"></i>
-            Settings
-          </button>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-
-            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#updatePracticeModal">
-              <i class="fas fa-redo-alt mr-2"></i>
-              Update Practice
-            </button>
-            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#deletePractice">
-              <i class="fas fa-trash mr-2"></i>
-              Delete Practice
-            </button>
-
           </div>
         </div>
 
@@ -373,6 +354,29 @@
           </div>
         </div>
         <!-- end modal Session -->
+
+        {% if role=="admin"%}
+        <div class="col">
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle shadow animated--grow-in w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-cog mr-2"></i>
+            Settings
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+
+            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#updatePracticeModal">
+              <i class="fas fa-redo-alt mr-2"></i>
+              Update Practice
+            </button>
+            <button type="button" class="dropdown-item" data-toggle="modal" data-target="#deletePractice">
+              <i class="fas fa-trash mr-2"></i>
+              Delete Practice
+            </button>
+
+          </div>
+        </div>
+
+
           <!-- Delete Practice Modal-->
           <div class="modal fade" id="deletePractice" tabindex="-1" role="dialog"  aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -507,6 +511,16 @@
         </div>
 
       </div>
+
+      <!-- Area Chart -->
+      <div class="col justify-content-center">
+        <h3 class="pb-3 text-center text-gray-800"> Practice Clasification </h3>
+
+        <!-- partial:index.partial.html -->
+        <div id="podiumPractice"></div>
+        <!-- partial -->
+
+      </div>
     </div>
     <!-- /.container-fluid -->
 
@@ -526,5 +540,8 @@
 <i class="fas fa-angle-up"></i>
 </a>
 
+<script src='https://cdnjs.cloudflare.com/ajax/libs/react/15.0.2/react.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/react/15.0.2/react-dom.js'></script>
+<script  src="/static/js/charts/podiumPractice.js"></script>
 
 {% endblock body%}

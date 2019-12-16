@@ -165,8 +165,8 @@
       <!-- Page Heading -->
       <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <div class="col-8">
-
           <h1 class="h3 mb-0 text-gray-800">{{subject.acronym}} ({{subject.year}}-{{subject.year+1}})</h1>
+          <div id="subject_id" name="subject_id" value="{{subject.id}}"></div>
         </div>
         {% if role=='professor' or role=='admin'%}
       <div class="col">
@@ -405,6 +405,16 @@
       </div>
       {% endif %}
 
+      <!-- Area Chart -->
+      <div class="col justify-content-center">
+        <h3 class="pb-3 text-center text-gray-800"> Subject Clasification </h3>
+
+        <!-- partial:index.partial.html -->
+        <div id="podiumSubject"></div>
+        <!-- partial -->
+
+      </div>
+
     </div>
     <!-- /.container-fluid -->
 
@@ -423,6 +433,7 @@
 <a class="scroll-to-top rounded" href="#page-top">
 <i class="fas fa-angle-up"></i>
 </a>
+
 
 
 {% endblock body%}

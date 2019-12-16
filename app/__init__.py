@@ -280,7 +280,7 @@ def create_app(config_name):
 
         sessions=get_sessions_from_practice(db_session, id)
 
-        groupings=get_groupings_in_subject(db_session, id)
+        groupings=get_groupings_in_subject(db_session, practice.subject_id)
 
         return render_template('practice.html',user=user, privilege=session["privilege"], \
         practice=practice, role=session["role"],milestones=milestones, modes=appconfig.milestone_modes,\
@@ -942,21 +942,60 @@ def create_app(config_name):
 
     @app.route("/getTopPoints")
     @decorators.login_required
-    def getTop3Points():
-        session_id=request.args.get("session_id")
-        top=get_top_points(db_session, session_id)
+    def getTopPoints():
+        if (request.args.get("session_id")):
+            session_id=request.args.get("session_id")
+            top=get_top_points(db_session, session_id)
 
-        top_groups=[]
+            top_groups=[]
 
-        for i in range(len(top)):
-            group_in=get_group(db_session,top[i][0])
-            grouping_in=get_grouping(db_session, group_in.grouping_id)
+            for i in range(len(top)):
+                group_in=get_group(db_session,top[i][0])
+                grouping_in=get_grouping(db_session, group_in.grouping_id)
 
-            row = [group_in.group_id, group_in.name, grouping_in.name ,top[i][1]]
+                row = [group_in.group_id, group_in.name, grouping_in.name ,top[i][1]]
 
-            top_groups.append(row)
+                top_groups.append(row)
 
-        json_string = json.dumps(top_groups)
+            json_string = json.dumps(top_groups)
+
+        if (request.args.get("subject_id")):
+            subject_id=request.args.get("subject_id")
+
+            top=get_top_points_subject(db_session, subject_id)
+
+
+            top_groups=[]
+
+            for i in range(len(top)):
+                user_in=get_user_by_id(db_session, top[i][0])
+
+                row = [user_in.id, user_in.email ,int(top[i][1])]
+
+
+                top_groups.append(row)
+
+            json_string = json.dumps(top_groups)
+
+
+        if (request.args.get("practice_id")):
+            practice_id=request.args.get("practice_id")
+
+            top=get_top_points_practice(db_session, practice_id)
+
+
+            top_groups=[]
+
+            for i in range(len(top)):
+                user_in=get_user_by_id(db_session, top[i][0])
+
+                row = [user_in.id, user_in.email ,int(top[i][1])]
+
+                top_groups.append(row)
+
+            json_string = json.dumps(top_groups)
+
+
 
 
         return json_string
