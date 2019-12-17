@@ -1,7 +1,7 @@
 from flask import Flask, url_for, redirect,  \
 render_template, request, abort, session, flash
 
-import csv, codecs, os, datetime, json
+import csv, codecs, os, datetime, json,sys
 
 # from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user
@@ -17,6 +17,7 @@ from flask_sslify import SSLify
 from app import decorators, appconfig
 from app.db_init import init_db, db, db_session, engine
 from app.db_interactions import *
+
 
 
 ## IMAPLogin depende de la base de datos, por eso se importa despues de crearla
@@ -282,8 +283,15 @@ def create_app(config_name):
 
         groupings=get_groupings_in_subject(db_session, practice.subject_id)
 
+        ## Get list of milestones modes implemented in milestones folder
+        modes=os.listdir(os.getcwd()+'/app/milestones')
+        modes_in=[]
+        for mode in modes:
+            index=mode.find('.')
+            modes_in.append(mode[:(index-len(mode))])
+
         return render_template('practice.html',user=user, privilege=session["privilege"], \
-        practice=practice, role=session["role"],milestones=milestones, modes=appconfig.milestone_modes,\
+        practice=practice, role=session["role"],milestones=milestones, modes=modes_in,\
         rating_ways=appconfig.rating_ways, groupings=groupings, sessions=sessions)
 
     @app.route('/session/<id>', methods=['GET', 'POST'])
@@ -307,6 +315,40 @@ def create_app(config_name):
 
         return render_template('session.html',user=user, privilege=session["privilege"], \
         session_a=session_a, role=session["role"], data_table=data_table)
+
+    @app.route('/milestone/<name>', methods=['GET', 'POST'])
+    @decorators.login_required
+    def milestone(name):
+        user=session['email'].split('@')[0]
+
+        return render_template('/milestoneViews/' +name+'.html',user=user, privilege=session["privilege"])
+
+    @app.route('/verifyMilestone/<name>', methods=['GET', 'POST'])
+    @decorators.login_required
+    def milestoneVerify(name):
+        args=request.args.to_dict(flat=False)
+        if (args=={}):
+            flash('Error! Missing parameters in request', 'danger')
+            return redirect('/milestone/'+name)
+
+        for arg in args:
+            if (arg=='session_id'):
+                continue
+            else:
+                flash('Error! Missing parameter session id in request', 'danger')
+                return redirect('/milestone/'+name)
+
+
+
+        # answer=name.verify()
+        answer=True
+        if (answer==True):
+            flash('Milestone completed', 'success')
+            return redirect('/milestone/'+name)
+        else:
+            flash('Error! Milestone not correct', 'danger')
+            return redirect('/milestone/'+name)
+
 
     @app.route('/users')
     @decorators.login_required
