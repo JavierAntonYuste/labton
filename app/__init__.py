@@ -1,7 +1,7 @@
 from flask import Flask, url_for, redirect,  \
 render_template, request, abort, session, flash
 
-import csv, codecs, os, datetime, json,sys, importlib
+import csv, codecs, os, datetime, json,sys, importlib, time
 
 # from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user
@@ -291,6 +291,8 @@ def create_app(config_name):
         modes=os.listdir(os.getcwd()+'/app/milestones')
         modes_in=[]
         for mode in modes:
+            if mode == 'files':
+                continue
             index=mode.find('.')
             modes_in.append(mode[:(index-len(mode))])
 
@@ -317,8 +319,17 @@ def create_app(config_name):
             row=[grouping.name, group.name,element[1]]
             data_table.append(row)
 
+        datetimes=get_session_datetimes(db_session, id)
+
+        start_datetime=time.mktime(datetimes[0].timetuple())
+        end_datetime=time.mktime(datetimes[1].timetuple())
+        timestamp=time.time()
+        print (end_datetime)
+
+
         return render_template('session.html',user=user, privilege=session["privilege"], \
-        session_a=session_a, role=session["role"], data_table=data_table)
+        session_a=session_a, role=session["role"], data_table=data_table, start_datetime=start_datetime, \
+        end_datetime=end_datetime, timestamp=timestamp)
 
     @app.route('/milestone/<name>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -333,12 +344,12 @@ def create_app(config_name):
             if (arg=='milestone_id'):
                 break
         else:
-            flash('Error! Missing parameter session id in request', 'danger')
+            flash('Error! Missing parameter milestone_id in request', 'danger')
             return redirect('/home')
 
         try:
             module_imported=importlib.import_module("app.milestones."+name)
-            data=module_imported.load(milestone_id)
+            data=module_imported.load()
 
         except:
             flash('Error! Milestone not valid', 'danger')
@@ -525,6 +536,19 @@ def create_app(config_name):
         for dependency in milestone_dependencies:
             add_milestone_dependency(db_session, milestone_id[0], dependency)
 
+        return redirect('/practice/'+practice_id)
+
+    @app.route('/deleteMilestone', methods=['GET', 'POST'])
+    @decorators.login_required
+    def deleteMilestone():
+
+        practice_id=request.form["practice_id"]
+        milestone_id=request.form["milestone_id"]
+
+        delete_milestone(db_session, milestone_id)
+
+        flash ("Success! Milestone removed",'success')
+        
         return redirect('/practice/'+practice_id)
 
     @app.route('/uploadUsers', methods=['POST'])

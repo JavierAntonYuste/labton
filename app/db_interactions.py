@@ -242,7 +242,12 @@ def update_milestone(db_session,id, name, mode, practice_id, description):
 
 
 def delete_milestone(db_session, id):
-    db_session.execute('DELETE FROM milestone \
+    db_session.execute('DELETE FROM milestone_dependencies \
+    WHERE milestone_id = :id'  , {'id': id})
+    db_session.commit()
+
+
+    db_session.execute('DELETE FROM milestones \
     WHERE id = :id'  , {'id': id})
 
     db_session.commit()
@@ -273,6 +278,10 @@ def get_session_from_param(db_session,name, start_datetime, end_datetime, practi
 def get_sessions_from_practice(db_session, practice_id):
     sessions=db_session.query(Session).filter(Session.practice_id==practice_id).all()
     return sessions
+
+def get_session_datetimes(db_session, session_id):
+    times=db_session.query(Session.start_datetime, Session.end_datetime).filter(Session.id==session_id).first()
+    return times
 
 def get_sessions_from_subject(db_session, subject_id):
     sessions=db_session.query(Session).\

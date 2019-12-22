@@ -3,9 +3,12 @@ def verify(args):
     # ademas Milestone, user_id, points
     return result
 
-def load(milestone_id):
+def load():
+
+
+    
     data = {
-    'milestone_id'=milestone_id
+    'milestone_id':1
     }
     return data
 
