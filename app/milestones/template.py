@@ -5,11 +5,11 @@ def verify(args):
 
 def load():
 
-
-    
     data = {
-    'milestone_id':1
+    'question': '¿Que tal?',
+    'answer': 'Bien'
     }
+
     return data
 
 def check():

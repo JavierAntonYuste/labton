@@ -73,7 +73,6 @@
 
 
 
-
 {% endblock sidebar_content%}
 
 {% block body %}
@@ -97,6 +96,10 @@
         {% endif %}
       {% endwith %}
       <!-- Page Heading -->
+
+      {% for key, value in data.items() %}
+          <h1>{{key}} : {{ value}}</h1>
+      {% endfor %}
 
 
     </div>
