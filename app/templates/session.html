@@ -319,6 +319,40 @@
       </div>
 
       <!-- Content Row -->
+      {% if end_datetime is none %}
+        {% if start_datetime < timestamp %}
+        <h6 class="pb-3"> Active milestones </h6>
+        {% for element in milestones%}
+          <div class="col-xl-3 col-sm-6 mb-5">
+            <div class="card">
+              <a href="/milestone/{{element.mode}}?milestone_id={{element.id}}" class="btn btn-primary" >
+                  <span class="icon text-white-50">
+                    <i class="pr-2 fas fa-map-marker"></i>
+                    <b class="icon text-white">{{element.name}}</b>
+                  </span>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+        {% endif%}
+      {% else %}
+        {% if start_datetime < timestamp and timestamp < end_datetime %}
+        <h6 class="pb-3"> Active milestones </h6>
+        {% for element in milestones%}
+          <div class="col-xl-3 col-sm-6 mb-5">
+            <div class="card">
+              <a href="/milestone/{{element.mode}}?milestone_id={{element.id}}" class="btn btn-primary" >
+                  <span class="icon text-white-50">
+                    <i class="pr-2 fas fa-map-marker"></i>
+                    <b class="icon text-white">{{element.name}}</b>
+                  </span>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+        {% endif%}
+
+      {% endif %}
 
       <div class="row">
 

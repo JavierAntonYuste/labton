@@ -322,14 +322,18 @@ def create_app(config_name):
         datetimes=get_session_datetimes(db_session, id)
 
         start_datetime=time.mktime(datetimes[0].timetuple())
-        end_datetime=time.mktime(datetimes[1].timetuple())
-        timestamp=time.time()
-        print (end_datetime)
+        if (datetimes[1]!=None):
+            end_datetime=time.mktime(datetimes[1].timetuple())
+        else:
+            end_datetime=None
 
+        timestamp=time.time()
+
+        milestones=get_practice_milestones(db_session, session_a.practice_id)
 
         return render_template('session.html',user=user, privilege=session["privilege"], \
         session_a=session_a, role=session["role"], data_table=data_table, start_datetime=start_datetime, \
-        end_datetime=end_datetime, timestamp=timestamp)
+        end_datetime=end_datetime, timestamp=timestamp, milestones=milestones)
 
     @app.route('/milestone/<name>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -548,7 +552,7 @@ def create_app(config_name):
         delete_milestone(db_session, milestone_id)
 
         flash ("Success! Milestone removed",'success')
-        
+
         return redirect('/practice/'+practice_id)
 
     @app.route('/uploadUsers', methods=['POST'])
