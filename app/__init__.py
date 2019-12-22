@@ -1,7 +1,7 @@
 from flask import Flask, url_for, redirect,  \
 render_template, request, abort, session, flash
 
-import csv, codecs, os, datetime, json,sys
+import csv, codecs, os, datetime, json,sys, importlib
 
 # from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user
@@ -9,6 +9,8 @@ from flask_migrate import Migrate
 
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security.utils import encrypt_password
+from werkzeug.utils import secure_filename
+
 
 from instance import config
 from functools import wraps
@@ -36,6 +38,8 @@ def create_app(config_name):
     # Chargin config
     app.config.from_pyfile('config.py')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['UPLOAD_FOLDER'] = os.getcwd()+'/app/milestones/files'
+
 
     from app import models
 
@@ -320,8 +324,29 @@ def create_app(config_name):
     @decorators.login_required
     def milestone(name):
         user=session['email'].split('@')[0]
+        args=request.args.to_dict(flat=False)
+        if (args=={}):
+            flash('Error! Missing parameters in request', 'danger')
+            return redirect('/milestone/'+name)
 
-        return render_template('/milestoneViews/' +name+'.html',user=user, privilege=session["privilege"])
+        for arg in args:
+            if (arg=='milestone_id'):
+                break
+        else:
+            flash('Error! Missing parameter session id in request', 'danger')
+            return redirect('/home')
+
+        try:
+            module_imported=importlib.import_module("app.milestones."+name)
+            data=module_imported.load(milestone_id)
+
+        except:
+            flash('Error! Milestone not valid', 'danger')
+            return redirect('/home')
+
+
+        return render_template('/milestoneViews/' +name+'.html',user=user, privilege=session["privilege"], \
+        milestone_id=request.args.get("milestone_id"), data=data)
 
     @app.route('/verifyMilestone/<name>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -333,21 +358,20 @@ def create_app(config_name):
 
         for arg in args:
             if (arg=='session_id'):
-                continue
-            else:
-                flash('Error! Missing parameter session id in request', 'danger')
-                return redirect('/milestone/'+name)
-
-
-
-        # answer=name.verify()
-        answer=True
-        if (answer==True):
-            flash('Milestone completed', 'success')
-            return redirect('/milestone/'+name)
+                break
         else:
-            flash('Error! Milestone not correct', 'danger')
+            flash('Error! Missing parameter session id in request', 'danger')
             return redirect('/milestone/'+name)
+
+        module_imported=importlib.import_module("app.milestones."+name)
+        answer=module_imported.verify(args)
+        for element in answer:
+            if (element=="answer" and answer.get("answer", False)==True):
+                flash('Milestone completed', 'success')
+                return redirect('/milestone/'+name)
+            else:
+                flash('Error! Milestone not correct', 'danger')
+                return redirect('/milestone/'+name)
 
 
     @app.route('/users')
@@ -1037,10 +1061,37 @@ def create_app(config_name):
 
             json_string = json.dumps(top_groups)
 
-
-
-
         return json_string
+
+    @app.route('/uploadFile', methods=['GET', 'POST'])
+    def upload_file():
+        if request.method == 'POST':
+            practice_id=request.form["practice_id"]
+            milestone_id=request.form["milestone_id"]
+            mode=get_milestone_mode(db_session, milestone_id)
+            print (mode)
+
+            # check if the post request has the file part
+            if 'file' not in request.files:
+                flash('No file part','danger')
+                return redirect('/practice/'+ practice_id)
+            file = request.files['file']
+            # if user does not select file, browser also
+            # submit an empty part without filename
+            if file.filename == '' or practice_id== '' or milestone_id=='':
+                flash('Not valid input arguments given','danger')
+                return redirect('/practice/'+ practice_id)
+
+            if file:
+                extension=file.filename.rsplit('.', 1)[1].lower()
+
+                name=mode[0]+'_'+milestone_id+'.'+extension
+
+                filename=secure_filename(name)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                flash ("Success! File uploaded",'success')
+
+        return redirect('/practice/'+ practice_id)
 
 # End of routes ______________________________________________________________________________
 

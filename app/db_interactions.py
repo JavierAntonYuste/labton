@@ -208,6 +208,10 @@ def get_milestone_id(db_session, name, mode, practice_id):
 
     return milestone
 
+def get_milestone_mode(db_session, milestone_id):
+    mode=db_session.query(Milestone.mode).filter(Milestone.id==milestone_id).first()
+    return mode
+
 def get_practice_milestones(db_session, practice_id):
     list_milestones=db_session.query(Milestone).filter(Milestone.practice_id==practice_id).all()
     return list_milestones

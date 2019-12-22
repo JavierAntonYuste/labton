@@ -187,6 +187,10 @@
                 <i class="fas fa-clipboard-list mr-2"></i>
                 Create session
               </button>
+              <button type="button" class="dropdown-item" data-toggle="modal" data-target="#uploadFile">
+                <i class="fas fa-clipboard-list mr-2"></i>
+                Upload file for milestone
+              </button>
 
             </div>
           </div>
@@ -258,6 +262,50 @@
           </div>
         </div>
         <!-- end modal Milestone -->
+        <!-- uploadFile Modal -->
+        <div class="modal fade" id="uploadFile" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="uploadUsersCSVTitle">Upload a file for a milestone</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+
+              <div class="modal-body">
+                <h6> Introduce data </h6>
+              <form action="/uploadFile" method="post" id="upload-form" enctype="multipart/form-data">
+                <div class="row pt-2 pb-2">
+                  <div class="col">
+                      <label> Belongs to Milestone:</label>
+                      <select class="custom-select" name="milestone_id" id=",ilestone_id" >
+                        {% for milestone in milestones%}
+                        <option value={{milestone.id}}>{{milestone.name}}</option>
+                        {% endfor%}
+                      </select>
+
+                  </div>
+                </div>
+
+                <div class="row pt-2 pb-2">
+                    <div class='col'>
+                      <input type=file name=file>
+                    </div>
+                </div>
+                <input type= "hidden" name="practice_id" value={{practice.id}}>
+
+                </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn  btn-primary">Upload</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end modal uploadFile -->
         <!-- Session Modal -->
         <div class="modal fade" id="createSession" tabindex="-1" role="dialog" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered" role="document">
