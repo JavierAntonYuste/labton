@@ -45,19 +45,6 @@ def create_app(config_name):
 
     # Initialisation of the app and the system
     db.init_app(app)
-    # init_db()
-    # init_system()
-
-
-    # # Function of Flask-Login. User loader
-    # @login_manager.user_loader
-    # def load_user(email):
-    #     return models.User.get(email)
-    #
-    # # Initialisation of Flask-Login
-    # login_manager.init_app(app)
-    # login_manager.login_message = 'You must be logged in to access this page'
-
 
     #Close session after each request
     @app.teardown_appcontext
