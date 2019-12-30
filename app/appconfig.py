@@ -14,12 +14,6 @@ degrees = [
     "MUIT"
 ]
 
-rating_ways = [
-    "Points",
-    "Marks",
-    "None"
-]
-
 milestone_modes = [
     "Quiz",
     "Against Time",

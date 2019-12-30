@@ -16,9 +16,20 @@ branch_labels = None
 depends_on = None
 
 def upgrade():
-  # Dropping dependant tables
+  # Dropping relation tables
   op.drop_table('privileges_users')
   op.drop_table('users_subjects')
+  op.drop_table('users_group_subject')
+  op.drop_table('groups_subject')
+  op.drop_table('groupings_subject')
+  op.drop_table('users_session')
+  op.drop_table('milestone_dependencies')
+  op.drop_table('milestone_log')
+
+  #Droping models dependant on others
+
+  op.drop_table('sessions')
+  op.drop_table('milestones')
   op.drop_table('practices')
 
   # Dropping the rest of tables

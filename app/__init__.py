@@ -153,8 +153,7 @@ def create_app(config_name):
             session["role"]=role
 
             return render_template('subject.html',privilege=session["privilege"], \
-            user=user, role=role, subject= subject,practices=practices, \
-            rating_ways=appconfig.rating_ways,degrees=appconfig.degrees )
+            user=user, role=role, subject= subject,practices=practices,degrees=appconfig.degrees )
 
         role=get_role_subject(db_session, session["email"], id)
         session["role"]=role
@@ -163,7 +162,7 @@ def create_app(config_name):
         sessions_in_subject=get_sessions_from_subject(db_session,id)
 
         return render_template('subject.html',user=user, privilege=session["privilege"], \
-        role=role, subject= subject, practices=practices, rating_ways=appconfig.rating_ways, degrees=appconfig.degrees,\
+        role=role, subject= subject, practices=practices, degrees=appconfig.degrees,\
         sessions_in_subject=sessions_in_subject)
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
@@ -285,7 +284,7 @@ def create_app(config_name):
 
         return render_template('practice.html',user=user, privilege=session["privilege"], \
         practice=practice, role=session["role"],milestones=milestones, modes=modes_in,\
-        rating_ways=appconfig.rating_ways, groupings=groupings, sessions=sessions)
+        groupings=groupings, sessions=sessions)
 
     @app.route('/session/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -370,7 +369,9 @@ def create_app(config_name):
         for element in answer:
             if (element=="answer" and answer.get("answer", False)==True):
                 flash('Milestone completed', 'success')
+                # TODO Process points
                 return redirect('/milestone/'+name)
+
             else:
                 flash('Error! Milestone not correct', 'danger')
                 return redirect('/milestone/'+name)
@@ -436,15 +437,15 @@ def create_app(config_name):
     def createPractice():
         name=request.form["name"]
         milestones=request.form["milestones"]
-        rating_way=request.form["rating_way"]
+        time_trial=request.form["time_trial"]
         subject_id=request.form["subject_id"]
         description=request.form["description"]
 
-        if (name=="" or milestones=="" or rating_way==""):
+        if (name=="" or milestones=="" or time_trial==""):
             flash('Error! Incompleted fields', 'danger')
             return redirect('/subject/'+subject_id)
 
-        create_practice(db_session,name,milestones,rating_way,subject_id, description)
+        create_practice(db_session,name,milestones,time_trial,subject_id, description)
 
         return redirect('/subject/'+subject_id)
 
@@ -456,7 +457,7 @@ def create_app(config_name):
         end_date=request.form["end_date"]
         practice_id=request.form["practice_id"]
         grouping_session=request.form["grouping_session"]
-        points=request.form["points"]
+        initial_points=request.form["points"]
         description=request.form["description"]
 
         if (name=="" or start_date=="" or practice_id==""):
@@ -483,15 +484,13 @@ def create_app(config_name):
         else:
             sql_end_date=None
 
-        create_session(db_session,name,sql_start_date,sql_end_date, practice_id, description)
+        create_session(db_session,name,sql_start_date,sql_end_date, initial_points, practice_id, description)
         session=get_session_from_param(db_session, name,sql_start_date,sql_end_date, practice_id, description)
 
         users=get_users_in_grouping(db_session, grouping_session)
 
         for user in users:
-            add_user_session(db_session, session.id,user[1],user[0],points)
-
-        ## TODO insert points
+            add_user_session(db_session, session.id,user[1],user[0],initial_points)
 
         return redirect('/practice/'+practice_id)
 
@@ -800,15 +799,15 @@ def create_app(config_name):
         id=request.form["practice_id"]
         name=request.form["name"]
         milestones=request.form["milestones"]
-        rating_way=request.form["rating_way"]
+        time_trial=request.form["time_trial"]
         description=request.form["description"]
         subject_id=request.form["subject_id"]
 
-        if (name=="" or milestones=="" or rating_way==""):
+        if (name=="" or milestones=="" or time_trial==""):
             flash('Error! Incompleted fields', 'danger')
             return redirect('/practice/'+id)
 
-        update_practice(db_session,id,name,milestones,rating_way,subject_id, description)
+        update_practice(db_session,id,name,milestones,time_trial,subject_id, description)
 
         return redirect('/practice/'+id)
 
@@ -821,7 +820,7 @@ def create_app(config_name):
         start_date=request.form["start_date"]
         end_date=request.form["end_date"]
         practice_id=request.form["practice_id"]
-        points=request.form["points"]
+        initial_points=request.form["points"]
         description=request.form["description"]
 
         if (name=="" or start_date=="" or practice_id==""):
@@ -848,7 +847,16 @@ def create_app(config_name):
         else:
             sql_end_date=None
 
-        update_session(db_session,id, name, sql_start_date, sql_end_date, practice_id, description)
+        old_points=get_session_initial_points(db_session,id)
+        difference_points=old_points - int(initial_points)
+
+        update_session(db_session,id, name, sql_start_date, sql_end_date,initial_points, practice_id, description)
+
+        users=get_users_in_session(db_session, id)
+
+        for user in users:
+            current_points= get_points_session(db_session,id, user[0]) - difference_points
+            update_user_session_points(db_session,id, user[0], current_points)
 
         return redirect('/session/'+id)
 

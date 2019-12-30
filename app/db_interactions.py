@@ -130,8 +130,8 @@ def delete_subject(db_session, subject_id):
 
 # INSERT
 
-def create_practice(db_session, name, milestones, rating_way, subject_id, description):
-    practice=Practice(name=name, milestones=milestones, rating_way=rating_way, subject_id=subject_id, description=description)
+def create_practice(db_session, name, milestones, time_trial, subject_id, description):
+    practice=Practice(name=name, milestones=milestones, time_trial=time_trial, subject_id=subject_id, description=description)
     db_session.add(practice)
     db_session.commit()
 
@@ -158,12 +158,12 @@ def get_subject_id_session(db_session, session_id):
 
 # UPDATE
 
-def update_practice(db_session,id, name, milestones, rating_way, subject_id, description):
+def update_practice(db_session,id, name, milestones, time_trial, subject_id, description):
     db_session.execute('UPDATE practices\
-    SET name = :name, milestones=:milestones, rating_way=:rating_way, subject_id=:subject_id, description=:description WHERE id = :id',\
+    SET name = :name, milestones=:milestones, time_trial=:time_trial, subject_id=:subject_id, description=:description WHERE id = :id',\
     {'name': name,\
      'milestones': milestones, \
-     'rating_way': rating_way, \
+     'time_trial': time_trial, \
      'subject_id': subject_id,\
      'description': description,
      'id': id})
@@ -257,8 +257,8 @@ def delete_milestone(db_session, id):
 
 # INSERT
 
-def create_session(db_session, name, start_datetime, end_datetime, practice_id, description):
-    session=Session(name=name,start_datetime=start_datetime,end_datetime=end_datetime,practice_id=practice_id,description=description)
+def create_session(db_session, name, start_datetime, end_datetime, initial_points, practice_id, description):
+    session=Session(name=name,start_datetime=start_datetime,end_datetime=end_datetime,initial_points=initial_points,practice_id=practice_id,description=description)
     db_session.add(session)
     db_session.commit()
 
@@ -283,6 +283,10 @@ def get_session_datetimes(db_session, session_id):
     times=db_session.query(Session.start_datetime, Session.end_datetime).filter(Session.id==session_id).first()
     return times
 
+def get_session_initial_points(db_session, session_id):
+    points=db_session.query(Session.initial_points).filter(Session.id==session_id).first()
+    return points
+
 def get_sessions_from_subject(db_session, subject_id):
     sessions=db_session.query(Session).\
     join(Practice, Session.practice_id==Practice.id).\
@@ -294,12 +298,13 @@ def get_sessions_from_subject(db_session, subject_id):
 
 # UPDATE
 
-def update_session(db_session,id, name, start_datetime, end_datetime, practice_id, description):
+def update_session(db_session,id, name, start_datetime, end_datetime,initial_points, practice_id, description):
     db_session.execute('UPDATE sessions\
-    SET name = :name, start_datetime=:start_datetime,end_datetime=:end_datetime, practice_id=:practice_id, description=:description WHERE id = :id',\
+    SET name = :name, start_datetime=:start_datetime,end_datetime=:end_datetime,initial_points=:initial_points, practice_id=:practice_id, description=:description WHERE id = :id',\
     {'name': name,\
      'start_datetime': start_datetime, \
      'end_datetime': end_datetime,\
+     'initial_points': initial_points,\
      'practice_id': practice_id,\
      'description': description,\
      'id': id})

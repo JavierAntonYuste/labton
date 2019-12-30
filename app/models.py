@@ -53,8 +53,17 @@ users_session = Table(
 milestone_dependencies = Table(
     'milestone_dependencies',
      Base.metadata,
-    Column('milestone_id', Integer(),ForeignKey('milestones.id')),
-    Column('dependency_id', Integer(),ForeignKey('milestones.id'))
+    Column('milestone_id', Integer(),ForeignKey('milestones.id'), nullable=False),
+    Column('dependency_id', Integer(),ForeignKey('milestones.id'), nullable=False)
+)
+
+milestone_log = Table(
+    'milestone_log',
+     Base.metadata,
+    Column('milestone_id', Integer(),ForeignKey('milestones.id'), nullable=False),
+    Column('user_id', Integer(), ForeignKey('user.id'), nullable=False),
+    Column('points', Integer(), nullable=False),
+    Column('timestamp', DateTime(timezone=False))
 )
 
 class Role(Base):
@@ -109,7 +118,7 @@ class Practice(Base):
     id = Column(Integer(), primary_key=True, autoincrement=True)
     name = Column(String(80), nullable=False)
     milestones= Column(Integer(), nullable=False)
-    rating_way= Column(String(80), nullable=False)
+    time_trial= Column(Boolean, nullable=False)
     subject_id=Column(Integer(), ForeignKey("subjects.id"), nullable=False)
     description = Column(String(255))
 
@@ -121,6 +130,7 @@ class Milestone(Base):
     id = Column(Integer(), primary_key=True, autoincrement=True)
     name = Column(String(80), nullable=False)
     mode= Column(String(80), nullable=False)
+    weight= Column(Float(), nullable=False)
     practice_id=Column(Integer(), ForeignKey("practices.id"), nullable=False)
     description = Column(String(255))
 
@@ -133,5 +143,6 @@ class Session(Base):
     name = Column(String(80), nullable=False)
     start_datetime= Column(DateTime(timezone=False), nullable=False)
     end_datetime= Column(DateTime(timezone=False))
+    initial_points= Column(Integer())
     practice_id=Column(Integer(), ForeignKey("practices.id"), nullable=False)
     description = Column(String(255))
