@@ -28,6 +28,17 @@ def get_user(db_session, email ):
     user= db_session.query(User).filter(User.email==email).first()
     return user
 
+
+def get_user_subject_session(db_session, user_id):
+    info=db_session.execute('SELECT  subjects.acronym, sessions.id, sessions.name FROM subjects \
+    JOIN practices ON subjects.id=practices.subject_id\
+    JOIN sessions ON practices.id=sessions.practice_id\
+    JOIN users_session ON sessions.id=users_session.session_id\
+    WHERE users_session.user_id = :user_id',\
+    {'user_id': user_id
+    }).fetchall()
+    return info
+
 # UPDATE
 def update_user(db_session, email, username):
     db_session.execute('UPDATE user\
@@ -89,6 +100,7 @@ def get_all_subjects(db_session):
 def get_subject_by_year(db_session, id, year):
     subject= db_session.query(Subject).filter_by(id=id,year=year).all()
     return subject
+
 
 # UPDATE
 
@@ -396,6 +408,17 @@ def get_role_subject(db_session, email, id):
     role=(db_session.query(Role.name).\
     join(users_subjects, Role.id==users_subjects.c.role_id).join(User, users_subjects.c.user_id==User.id).\
     filter(User.email==email).filter(users_subjects.c.subject_id==id).first())[0]
+
+    return role
+
+def get_role_session(db_session, email, id):
+    role=(db_session.query(Role.name).\
+    join(users_subjects, Role.id==users_subjects.c.role_id).\
+    join(User, users_subjects.c.user_id==User.id).\
+    join(Subject, users_subjects.c.subject_id==Subject.id).\
+    join(Practice, Subject.id==Practice.subject_id).\
+    join(Session, Practice.id==Session.practice_id).
+    filter(User.email==email).filter(Session.id==id).first())[0]
 
     return role
 

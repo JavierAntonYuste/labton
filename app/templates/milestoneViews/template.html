@@ -46,7 +46,6 @@
 </div>
 
 {% endblock nav_content%}
-
 {% block sidebar_content%}
 <!-- Nav Item - Dashboard -->
 <li class="nav-item active">
@@ -54,6 +53,10 @@
     <i class="fas fa-fw fa-home"></i>
     <span>Home </span></a>
 </li>
+
+
+<!-- Divider -->
+<hr class="sidebar-divider">
 
 {% if privilege == 'admin'%}
 <!-- Divider -->
@@ -72,9 +75,29 @@
 {% endif %}
 
 
+{% if sidebar_content%}
+{% for element in sidebar_content%}
+<!-- Divider -->
+<hr class="sidebar-divider">
+<!-- Heading -->
+<div class="sidebar-heading">
+  Sessions
+</div>
 
+<!-- Nav Item - Charts -->
+<li class="nav-item">
+  <a class="nav-link" href="/session/{{element[1]}}">
+    <i class="fas fa-chalkboard"></i>
+    <span>{{element[0]}} - {{element[2]}}</span></a>
+</li>
+
+{% endfor%}
+
+{% endif%}
+
+<!-- Divider -->
+<hr class="sidebar-divider">
 {% endblock sidebar_content%}
-
 {% block body %}
 <div id="content-wrapper" class="d-flex flex-column">
 <br>

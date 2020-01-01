@@ -111,8 +111,13 @@ def create_app(config_name):
 
         user=(session["email"].split('@'))[0]
 
+        user_id=get_user_id(db_session,session["email"])
+        sidebar_content=get_user_subject_session(db_session, user_id[0])
+
+
         return render_template('home.html', \
-        user=user, privilege=session["privilege"], subjects= subjects, degrees=appconfig.degrees)
+        user=user, privilege=session["privilege"], subjects= subjects, degrees=appconfig.degrees,\
+        sidebar_content=sidebar_content)
 
     @app.route('/allSubjects')
     @decorators.login_required
@@ -133,8 +138,11 @@ def create_app(config_name):
         for id in subjects_id:
             subjects.append(get_subject(db_session, id))
 
+        user_id=get_user_id(db_session,session["email"])
+        sidebar_content=get_user_subject_session(db_session, user_id[0])
+
         return render_template('allSubjects.html', privilege=session["privilege"], \
-        user=(session["email"].split('@'))[0], subjects= subjects)
+        user=(session["email"].split('@'))[0], subjects= subjects, sidebar_content=sidebar_content)
 
     @app.route('/subject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -161,9 +169,12 @@ def create_app(config_name):
 
         sessions_in_subject=get_sessions_from_subject(db_session,id)
 
+        user_id=get_user_id(db_session,session["email"])
+        sidebar_content=get_user_subject_session(db_session, user_id[0])
+
         return render_template('subject.html',user=user, privilege=session["privilege"], \
         role=role, subject= subject, practices=practices, degrees=appconfig.degrees,\
-        sessions_in_subject=sessions_in_subject)
+        sessions_in_subject=sessions_in_subject, sidebar_content=sidebar_content)
 
     @app.route('/manageSubject/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -205,18 +216,23 @@ def create_app(config_name):
         groups=get_groups_in_subject(db_session,id)
         groups_json=json.dumps(groups)
 
+        user_id=get_user_id(db_session,session["email"])
+        sidebar_content=get_user_subject_session(db_session, user_id[0])
+
         if session["privilege"]== 'admin':
             role='admin'
 
             return render_template('manageSubject.html', privilege=session["privilege"], user=user,\
              role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db, \
-             groupings_json=groupings_json, groups_json=groups_json, groupings=groupings, groups=groups)
+             groupings_json=groupings_json, groups_json=groups_json, groupings=groupings, groups=groups,\
+             sidebar_content=sidebar_content)
 
         role=get_role_subject(db_session, session["email"], id)
 
         return render_template('manageSubject.html',user=user, privilege=session["privilege"],\
         role=role, subject= subject, users_in_subject=users_in_subject, roles_db=roles_db, \
-        groupings_json=groupings_json, groups_json=groups_json, groupings=groupings, groups=groups)
+        groupings_json=groupings_json, groups_json=groups_json, groupings=groupings, groups=groups,\
+        sidebar_content=sidebar_content)
 
     @app.route('/manageSession/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -252,9 +268,12 @@ def create_app(config_name):
             row = [user_in, grouping, group,points]
             users_in_session.append(row)
 
+        user_id=get_user_id(db_session,session["email"])
+        sidebar_content=get_user_subject_session(db_session, user_id[0])
+
 
         return render_template('manageSession.html',user=user, privilege=session["privilege"],\
-        session_a= session_a, role=session["role"],users_in_session=users_in_session)
+        session_a= session_a, role=session["role"],users_in_session=users_in_session, sidebar_content=sidebar_content)
 
     @app.route('/practice/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -282,15 +301,20 @@ def create_app(config_name):
             index=mode.find('.')
             modes_in.append(mode[:(index-len(mode))])
 
+        user_id=get_user_id(db_session,session["email"])
+        sidebar_content=get_user_subject_session(db_session, user_id[0])
+
         return render_template('practice.html',user=user, privilege=session["privilege"], \
         practice=practice, role=session["role"],milestones=milestones, modes=modes_in,\
-        groupings=groupings, sessions=sessions)
+        groupings=groupings, sessions=sessions, sidebar_content=sidebar_content)
 
     @app.route('/session/<id>', methods=['GET', 'POST'])
     @decorators.login_required
     def session_a(id):
         session_a=get_session(db_session, id)
         user=(session["email"].split('@'))[0]
+        role=get_role_session(db_session, session["email"], id)
+        session["role"]=role
 
         if (session_a== None):
             flash('Error! Practice does not exists', 'danger')
@@ -317,9 +341,12 @@ def create_app(config_name):
 
         milestones=get_practice_milestones(db_session, session_a.practice_id)
 
+        user_id=get_user_id(db_session,session["email"])
+        sidebar_content=get_user_subject_session(db_session, user_id[0])
+
         return render_template('session.html',user=user, privilege=session["privilege"], \
         session_a=session_a, role=session["role"], data_table=data_table, start_datetime=start_datetime, \
-        end_datetime=end_datetime, timestamp=timestamp, milestones=milestones)
+        end_datetime=end_datetime, timestamp=timestamp, milestones=milestones, sidebar_content=sidebar_content)
 
     @app.route('/milestone/<name>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -345,9 +372,12 @@ def create_app(config_name):
             flash('Error! Milestone not valid', 'danger')
             return redirect('/home')
 
+        user_id=get_user_id(db_session,session["email"])
+        sidebar_content=get_user_subject_session(db_session, user_id[0])
+
 
         return render_template('/milestoneViews/' +name+'.html',user=user, privilege=session["privilege"], \
-        milestone_id=request.args.get("milestone_id"), data=data)
+        milestone_id=request.args.get("milestone_id"), sidebar_content=sidebar_content,data=data)
 
     @app.route('/verifyMilestone/<name>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -391,8 +421,11 @@ def create_app(config_name):
             row = [get_user_by_id(db_session, users[i][0]), get_privilege(db_session,users[i][1])]
             users_in_system.append(row)
 
+        user_id=get_user_id(db_session,session["email"])
+        sidebar_content=get_user_subject_session(db_session, user_id[0])
+
         return render_template('users.html', user=user, users=users_in_system, \
-        privilege=session["privilege"], privileges=privileges)
+        privilege=session["privilege"], privileges=privileges, sidebar_content=sidebar_content)
 
 # DB Interaction Routes _____________________________________________________________________________________________________________
     @app.route('/createUser', methods=['GET', 'POST'])
@@ -445,7 +478,9 @@ def create_app(config_name):
             flash('Error! Incompleted fields', 'danger')
             return redirect('/subject/'+subject_id)
 
-        create_practice(db_session,name,milestones,time_trial,subject_id, description)
+        time_trial_bool=str(time_trial).lower() in ('true')
+
+        create_practice(db_session,name,milestones,time_trial_bool,subject_id, description)
 
         return redirect('/subject/'+subject_id)
 
@@ -681,7 +716,7 @@ def create_app(config_name):
             group=get_group_session(db_session,user_id,session_a.practice_id)
 
             if (group==None):
-                flash ("Error! User not added in Subject",'danger')
+                flash ("Error! User does not belong to any group",'danger')
                 return redirect('/manageSession/'+ session_id)
 
             add_user_session(db_session, session_id,user_id,group.group_id,0)
@@ -807,7 +842,9 @@ def create_app(config_name):
             flash('Error! Incompleted fields', 'danger')
             return redirect('/practice/'+id)
 
-        update_practice(db_session,id,name,milestones,time_trial,subject_id, description)
+        time_trial_bool=str(time_trial).lower() in ('true')
+
+        update_practice(db_session,id,name,milestones,time_trial_bool,subject_id, description)
 
         return redirect('/practice/'+id)
 
