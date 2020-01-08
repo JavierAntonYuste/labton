@@ -1,5 +1,8 @@
 def verify(args):
-    result={"answer": True}
+    result={
+    "answer": True,
+    "points": 100
+    }
     # ademas Milestone, user_id, points
     return result
 

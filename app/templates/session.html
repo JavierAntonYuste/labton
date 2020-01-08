@@ -56,8 +56,6 @@
 </li>
 
 
-<!-- Divider -->
-<hr class="sidebar-divider">
 
 {% if privilege == 'admin'%}
 <!-- Divider -->
@@ -96,10 +94,9 @@
 
 {% endif%}
 
-<!-- Divider -->
-<hr class="sidebar-divider">
-{% endblock sidebar_content%}
 
+<br><br>
+{% endblock sidebar_content%}
 
 {% block body%}
 
@@ -282,8 +279,9 @@
         {% if milestones%}
         <h6 class="pb-3"> Active milestones </h6>
         {% endif %}
+        <div class="col">
         {% for element in milestones%}
-          <div class="col-xl-3 col-sm-6 mb-5">
+
             <div class="card">
               <a href="/milestone/{{element.mode}}?milestone_id={{element.id}}" class="btn btn-primary" >
                   <span class="icon text-white-50">
@@ -292,16 +290,20 @@
                   </span>
               </a>
             </div>
-          </div>
+
         {% endfor %}
+          </div>
         {% endif%}
       {% else %}
         {% if start_datetime < timestamp and timestamp < end_datetime %}
         {% if milestones%}
         <h6 class="pb-3"> Active milestones </h6>
         {% endif %}
+
+          <div class="row">
+
         {% for element in milestones%}
-          <div class="col-xl-3 col-sm-6 mb-5">
+          <div class="col pb-4">
             <div class="card">
               <a href="/milestone/{{element.mode}}?milestone_id={{element.id}}" class="btn btn-primary" >
                   <span class="icon text-white-50">
@@ -312,6 +314,9 @@
             </div>
           </div>
         {% endfor %}
+
+      </div>
+
         {% endif%}
 
       {% endif %}

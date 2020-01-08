@@ -121,7 +121,9 @@
       <!-- Page Heading -->
 
       {% for key, value in data.items() %}
+          {% if key=='question'%}
           <h1>{{key}} : {{ value}}</h1>
+          {% endif%}
       {% endfor %}
 
 

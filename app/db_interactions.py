@@ -122,12 +122,35 @@ def update_subject(db_session, id, acronym, name, degree, year, description):
 
 def delete_subject(db_session, subject_id):
     # Delete relations
-    practices=get_practices(db_session, subject_id)
-    for practice in practices:
-        delete_practice(db_session,practice.id)
 
     db_session.execute('DELETE FROM users_subjects \
     WHERE subject_id = :subject_id'  , {'subject_id': subject_id})
+
+    db_session.execute('DELETE users_group_subject FROM users_group_subject \
+    JOIN groups_subject ON users_group_subject.group_id = groups_subject.group_id \
+    JOIN groupings_subject on groups_subject.grouping_id=groupings_subject.grouping_id\
+    WHERE groupings_subject.subject_id = :subject_id;',{'subject_id':subject_id})
+
+    db_session.execute('DELETE groups_subject FROM groups_subject \
+    JOIN groupings_subject on groups_subject.grouping_id=groupings_subject.grouping_id\
+    WHERE groupings_subject.subject_id = :subject_id;',{'subject_id':subject_id})
+
+    db_session.execute('DELETE FROM groupings_subject \
+    WHERE subject_id = :subject_id;',{'subject_id':subject_id})
+
+    db_session.execute('DELETE users_session FROM users_session\
+    JOIN sessions ON users_session.session_id=sessions.id\
+    JOIN practices ON sessions.practice_id=practices.id\
+    WHERE practices.subject_id = :subject_id'  , {'subject_id': subject_id})
+
+    db_session.execute('DELETE sessions FROM sessions \
+    JOIN practices ON sessions.practice_id=practices.id\
+    WHERE practices.subject_id = :subject_id'  , {'subject_id': subject_id})
+
+    db_session.execute('DELETE practices FROM practices \
+    WHERE subject_id = :subject_id'  , {'subject_id': subject_id})
+
+
 
     db_session.commit()
 
@@ -201,8 +224,8 @@ def delete_practice(db_session, id):
 
 # INSERT
 
-def create_milestone(db_session, name, mode, practice_id, description):
-    milestone=Milestone(name=name, mode=mode, practice_id=practice_id, description=description)
+def create_milestone(db_session, name, mode,weight, practice_id, description):
+    milestone=Milestone(name=name, mode=mode, weight=weight, practice_id=practice_id, description=description)
     db_session.add(milestone)
     db_session.commit()
 
@@ -238,13 +261,14 @@ def get_milestones(db_session):
 
 # UPDATE
 
-def update_milestone(db_session,id, name, mode, practice_id, description):
+def update_milestone(db_session,id, name, mode, weight, practice_id, description):
     db_session.execute('UPDATE milestones\
-    SET name = :name, mode=:mode, practice_id=:practice_id, description=:description WHERE id = :id',\
+    SET name = :name, mode=:mode, weight=:weight, practice_id=:practice_id, description=:description WHERE id = :id',\
     {'name': name,\
      'mode': mode, \
+     'weight':weight,\
      'practice_id': practice_id,\
-     'description': description,
+     'description': description,\
      'id': id})
 
     db_session.commit()
@@ -871,7 +895,8 @@ def get_sessions_from_user(db_session, user_id):
     return user_sessions
 
 def get_points_session(db_session, session_id, user_id):
-    points=db_session.query(users_session.c.points).filter(users_session.c.session_id==session_id).filter(users_session.c.user_id==user_id).first()
+    points=db_session.query(users_session.c.points).\
+    filter(users_session.c.session_id==session_id).filter(users_session.c.user_id==user_id).first()
     return points
 
 def get_top_points(db_session, session_id):
@@ -880,6 +905,14 @@ def get_top_points(db_session, session_id):
     }).fetchall()
 
     return top
+
+def get_session_milestone_user(db_session, milestone_id, user_id):
+    id= db_session.query(users_session.c.session_id).\
+    join(Session, users_session.c.session_id==Session.id).\
+    join(Milestone, Session.practice_id==Milestone.practice_id).\
+    join(milestone_log, Milestone.id==milestone_log.c.milestone_id).\
+    filter(milestone_log.c.milestone_id==milestone_id).filter(milestone_log.c.user_id==user_id).first()
+    return id
 
 
 
@@ -915,6 +948,78 @@ def get_groups_points_session(db_session, session_id):
 # UPDATE
 
 def update_user_session_points(db_session,session_id,user_id,points):
+    db_session.execute('UPDATE users_session\
+    SET points= :points WHERE session_id=:session_id AND user_id = :user_id',\
+    {'points': points,
+    'session_id': session_id,
+    'user_id': user_id
+    })
+
+    db_session.commit()
+    return
+
+def update_user_session_points(db_session,session_id,user_id,points):
+    db_session.execute('UPDATE users_session\
+    SET points= :points WHERE session_id=:session_id AND user_id = :user_id',\
+    {'points': points,
+    'session_id': session_id,
+    'user_id': user_id
+    })
+
+    db_session.commit()
+    return
+
+
+# DELETE
+
+def delete_user_in_session(db_session, session_id, user_id):
+    db_session.execute('DELETE FROM users_session\
+    WHERE session_id= :session_id AND user_id=:user_id'  , {'session_id': session_id, 'user_id':user_id})
+
+    db_session.commit()
+
+    return
+
+# milestone_log CRUD methods__________________________________________________
+
+# INSERT
+
+def add_milestone_log(db_session, milestone_id,user_id,points, timestamp):
+    db_session.execute('INSERT INTO milestone_log(milestone_id,user_id,points, timestamp) \
+    VALUES (:milestone_id,:user_id,:points,:timestamp)'  , \
+    {'milestone_id': milestone_id, \
+    'user_id': user_id,\
+    'points': points,\
+    'timestamp': timestamp
+    })
+
+    db_session.commit()
+    return
+
+
+# READ
+def get_log_milestone(db_session, milestone_id):
+    log=db_session.query(milestone_log).filter(milestone_log.c.milestone_id==milestone_id).all()
+    return log
+
+def get_log_user(db_session, user_id):
+    log=db_session.query(milestone_log).filter(milestone_log.c.user_id==user_id).all()
+    return log
+
+def get_log(db_session, milestone_id, user_id):
+    log=db_session.query(milestone_log).\
+    filter(milestone_log.c.milestone_id==milestone_id).filter(milestone_log.c.milestone_id==milestone_id).all()
+    return log
+
+def get_log_maxpoints(db_session, milestone_id, user_id):
+    points=db_session.query(func.max(milestone_log.c.points)).\
+    filter(milestone_log.c.milestone_id==milestone_id).filter(milestone_log.c.milestone_id==milestone_id).first()
+    return points
+
+
+# UPDATE
+
+def update_log(db_session,milestone_id,user_id,points,timestamp):
     db_session.execute('UPDATE users_session\
     SET points= :points WHERE session_id=:session_id AND user_id = :user_id',\
     {'points': points,
