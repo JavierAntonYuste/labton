@@ -119,13 +119,16 @@
         {% endif %}
       {% endwith %}
       <!-- Page Heading -->
-
-      {% for key, value in data.items() %}
-          {% if key=='question'%}
-          <h1>{{key}} : {{ value}}</h1>
-          {% endif%}
-      {% endfor %}
-
+      <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div class="col-8">
+          <h1 class="h3 mb-0 text-gray-800">Template</h1>
+        </div>
+      </div>
+      <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div class="col">
+          <h6 class="w-wrap">Template description</h6>
+        </div>
+      </div>
 
     </div>
     <!-- /.container-fluid -->

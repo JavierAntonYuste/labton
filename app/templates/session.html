@@ -305,7 +305,8 @@
         {% for element in milestones%}
           <div class="col pb-4">
             <div class="card">
-              <a href="/milestone/{{element.mode}}?milestone_id={{element.id}}" class="btn btn-primary" >
+              <a href="/milestone/{{element.id}}" class="btn btn-primary" >
+              <!-- {{element.mode}}?milestone_id={{element.id}}" class="btn btn-primary" > -->
                   <span class="icon text-white-50">
                     <i class="pr-2 fas fa-map-marker"></i>
                     <b class="icon text-white">{{element.name}}</b>

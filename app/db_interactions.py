@@ -899,21 +899,18 @@ def get_points_session(db_session, session_id, user_id):
     filter(users_session.c.session_id==session_id).filter(users_session.c.user_id==user_id).first()
     return points
 
+def get_users_group(db_session, session_id, group_id):
+    users=db_session.query(users_session).\
+    filter(users_session.c.session_id).filter(users_session.c.group_id).all()
+
+    return users
+
 def get_top_points(db_session, session_id):
     top=db_session.execute('SELECT DISTINCT group_id, points FROM users_session WHERE session_id = :session_id ORDER BY points DESC',\
     {'session_id': session_id
     }).fetchall()
 
     return top
-
-def get_session_milestone_user(db_session, milestone_id, user_id):
-    id= db_session.query(users_session.c.session_id).\
-    join(Session, users_session.c.session_id==Session.id).\
-    join(Milestone, Session.practice_id==Milestone.practice_id).\
-    join(milestone_log, Milestone.id==milestone_log.c.milestone_id).\
-    filter(milestone_log.c.milestone_id==milestone_id).filter(milestone_log.c.user_id==user_id).first()
-    return id
-
 
 
 def get_top_points_subject(db_session, subject_id):
@@ -946,17 +943,6 @@ def get_groups_points_session(db_session, session_id):
     return groups
 
 # UPDATE
-
-def update_user_session_points(db_session,session_id,user_id,points):
-    db_session.execute('UPDATE users_session\
-    SET points= :points WHERE session_id=:session_id AND user_id = :user_id',\
-    {'points': points,
-    'session_id': session_id,
-    'user_id': user_id
-    })
-
-    db_session.commit()
-    return
 
 def update_user_session_points(db_session,session_id,user_id,points):
     db_session.execute('UPDATE users_session\
@@ -1015,6 +1001,14 @@ def get_log_maxpoints(db_session, milestone_id, user_id):
     points=db_session.query(func.max(milestone_log.c.points)).\
     filter(milestone_log.c.milestone_id==milestone_id).filter(milestone_log.c.milestone_id==milestone_id).first()
     return points
+
+def get_log_count(db_session, milestone_id, session_id):
+    count=db_session.query(func.count(milestone_log.c.milestone_id)).\
+    join(Milestone, milestone_log.c.milestone_id==Milestone.id).\
+    join(Session, Milestone.practice_id==Session.practice_id).\
+    filter(milestone_log.c.milestone_id==milestone_id).filter(Session.id==session_id).first()
+    return count
+
 
 
 # UPDATE

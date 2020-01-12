@@ -299,7 +299,7 @@ def create_app(config_name):
         modes=os.listdir(os.getcwd()+'/app/milestones')
         modes_in=[]
         for mode in modes:
-            if mode == 'files':
+            if mode == 'files' or mode=='__pycache__':
                 continue
             index=mode.find('.')
             modes_in.append(mode[:(index-len(mode))])
@@ -318,6 +318,7 @@ def create_app(config_name):
         user=(session["email"].split('@'))[0]
         role=get_role_session(db_session, session["email"], id)
         session["role"]=role
+        session["session_id"]=id
 
         if (session_a== None):
             flash('Error! Practice does not exists', 'danger')
@@ -351,25 +352,27 @@ def create_app(config_name):
         session_a=session_a, role=session["role"], data_table=data_table, start_datetime=start_datetime,\
         end_datetime=end_datetime, timestamp=timestamp, milestones=milestones, sidebar_content=sidebar_content)
 
-    @app.route('/milestone/<name>', methods=['GET', 'POST'])
+    @app.route('/milestone/<id>', methods=['GET', 'POST'])
     @decorators.login_required
-    def milestone(name):
+    def milestone(id):
         user=session['email'].split('@')[0]
         args=request.args.to_dict(flat=False)
+        milestone=get_milestone(db_session, id)
+        session["milestone_id"]=id
 
-        if (args=={}):
-            flash('Error! Missing parameters in request', 'danger')
-            return redirect('/home')
-
-        for arg in args:
-            if (arg=='milestone_id'):
-                break
-        else:
-            flash('Error! Missing parameter milestone_id in request', 'danger')
-            return redirect('/home')
+        # if (args=={}):
+        #     flash('Error! Missing parameters in request', 'danger')
+        #     return redirect('/home')
+        #
+        # for arg in args:
+        #     if (arg=='milestone_id'):
+        #         break
+        # else:
+        #     flash('Error! Missing parameter milestone_id in request', 'danger')
+        #     return redirect('/home')
 
         try:
-            module_imported=importlib.import_module("app.milestones."+name)
+            module_imported=importlib.import_module("app.milestones."+milestone.mode)
             data=module_imported.load()
 
         except:
@@ -380,51 +383,70 @@ def create_app(config_name):
         sidebar_content=get_user_subject_session(db_session, user_id[0])
 
 
-        return render_template('/milestoneViews/' +name+'.html',user=user, privilege=session["privilege"], \
-        milestone_id=request.args.get("milestone_id"), sidebar_content=sidebar_content,data=data)
+        return render_template('/milestoneViews/' +milestone.mode+'.html',user=user, privilege=session["privilege"], \
+        milestone_id=id, sidebar_content=sidebar_content,data=data)
 
-    @app.route('/verifyMilestone/<name>', methods=['GET', 'POST'])
+    @app.route('/verifyMilestone/', methods=['GET', 'POST'])
     @decorators.login_required
-    def milestoneVerify(name):
-        args=request.args.to_dict(flat=False)
-        if (args=={}):
-            flash('Error! Missing parameters in request', 'danger')
-            return redirect('/home')
+    def milestoneVerify():
 
-        for arg in args:
-            if (arg=='milestone_id'):
-                break
-        else:
-            flash('Error! Missing parameter milestone id in request', 'danger')
-            return redirect('/home')
-
-        milestone_id=args.get("milestone_id")
+        milestone_id=session["milestone_id"]
+        session_id=session["session_id"]
         user_id=get_user_id(db_session,session["email"])
 
-        session_id=get_session_milestone_user(db_session, milestone_id, user_id)
-        # TODO check if get_session_milestone_user works
+        user_session=get_user_session(db_session, session_id, user_id)
+        milestone=get_milestone(db_session, milestone_id)
 
-        module_imported=importlib.import_module("app.milestones."+name)
-        answer=module_imported.verify(args)
+        module_imported=importlib.import_module("app.milestones."+milestone.mode)
+        answer=module_imported.verify(request.args.to_dict(flat=False))
 
 
         for element in answer:
             if (element=="answer" and answer.get("answer", False)==True):
-                points=answer.get("points",0)
-
+                points=round(answer.get("points",0)*(milestone.weight/100))
                 timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+                # Calculate bonus for accomplishing in 1st, 2nd or 3rd place
+                position=get_log_count(db_session, milestone_id, session_id)[0]
 
-                add_milestone_log(db_session, milestone_id,user_id,points, timestamp)
+                if (position==0):
+                    bonus=appconfig.bonus_position.get("1", 0)
+                elif(position==1):
+                    bonus=appconfig.bonus_position.get("2", 0)
+                elif(position==2):
+                    bonus=appconfig.bonus_position.get("3", 0)
+                else:
+                    bonus=0
 
-                #TODO check if milestone already logged, take points and make difference with max result for updating users_session points
+
+                if (get_log(db_session, milestone_id, user_id)!=[]):
+                    max_points=get_log_maxpoints(db_session, milestone_id, user_id)
+                    add_milestone_log(db_session, milestone_id,user_id,points, timestamp)
+
+                    if (max_points[0]<points):
+                        diff=points-max_points[0]
+                        #TODO count time for giving more points to the fastest
+                        updated_points=user_session.points+diff+bonus
+
+                        users_group=get_users_group(db_session, session_id, user_session.group_id)
+
+                        for user in users_group:
+                            update_user_session_points(db_session,user.session_id,user.user_id,updated_points)
+                else:
+                    add_milestone_log(db_session, milestone_id,user_id,points, timestamp)
+
+                    updated_points=user_session.points+points+bonus
+
+                    users_group=get_users_group(db_session, session_id, user_session.group_id)
+                    for user in users_group:
+                        update_user_session_points(db_session,user.session_id,user.user_id,updated_points)
 
                 flash('Milestone completed', 'success')
-                return redirect('/milestone/'+name+'?milestone_id='+milestone_id[0])
+                return redirect('/milestone/'+milestone_id)
 
             else:
                 flash('Error! Milestone not correct', 'danger')
-                return redirect('/milestone/'+name+'?milestone_id='+milestone_id[0])
+                return redirect('/milestone/'+milestone_id)
 
 
     @app.route('/users')
@@ -1150,7 +1172,6 @@ def create_app(config_name):
             practice_id=request.form["practice_id"]
             milestone_id=request.form["milestone_id"]
             mode=get_milestone_mode(db_session, milestone_id)
-            print (mode)
 
             # check if the post request has the file part
             if 'file' not in request.files:

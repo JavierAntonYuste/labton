@@ -19,3 +19,9 @@ milestone_modes = [
     "Against Time",
     "None"
 ]
+
+bonus_position = {
+    "1": 500,
+    "2": 250,
+    "3": 100
+}
