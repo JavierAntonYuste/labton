@@ -283,12 +283,22 @@
           {% for element in milestones%}
             <div class="col-xl-3 col-sm-6 mb-5">
               <div class="card">
-                <a href="/milestone/{{element.mode}}?milestone_id={{element.id}}" class="btn btn-primary" >
+                {% if element[1]==True%}
+                <a href="#" class="btn btn-primary disabled" >
                     <span class="icon text-white-50">
                       <i class="pr-2 fas fa-map-marker"></i>
-                      <b class="icon text-white">{{element.name}}</b>
+                      <b class="icon text-white">{{element[0].name}} (Disabled)</b>
                     </span>
                 </a>
+                {% else %}
+                <a href="/milestone/{{element[0].id}}" class="btn btn-primary" >
+                    <span class="icon text-white-50">
+                      <i class="pr-2 fas fa-map-marker"></i>
+                      <b class="icon text-white">{{element[0].name}}</b>
+                    </span>
+                </a>
+                {% endif%}
+              {{element}}
               </div>
             </div>
           {% endfor %}
@@ -302,25 +312,29 @@
         {% endif %}
 
           <div class="row">
-
-        {% for element in milestones%}
-          <div class="col pb-4">
-            <div class="card">
-              <a href="/milestone/{{element.id}}" class="btn btn-primary" >
-              <!-- {{element.mode}}?milestone_id={{element.id}}" class="btn btn-primary" > -->
-                  <span class="icon text-white-50">
-                    <i class="pr-2 fas fa-map-marker"></i>
-                    <b class="icon text-white">{{element.name}}</b>
-                  </span>
-              </a>
-            </div>
-          </div>
-        {% endfor %}
-
+            {% for element in milestones%}
+              <div class="col-xl-3 col-sm-6 mb-5">
+                <div class="card">
+                  {% if element[1]==True%}
+                  <a href="#" class="btn btn-primary disabled" >
+                      <span class="icon text-white-50">
+                        <i class="pr-2 fas fa-map-marker"></i>
+                        <b class="icon text-white">{{element[0].name}} (Disabled)</b>
+                      </span>
+                  </a>
+                  {% else %}
+                  <a href="/milestone/{{element[0].id}}" class="btn btn-primary" >
+                      <span class="icon text-white-50">
+                        <i class="pr-2 fas fa-map-marker"></i>
+                        <b class="icon text-white">{{element[0].name}}</b>
+                      </span>
+                  </a>
+                  {% endif%}
+                </div>
+              </div>
+            {% endfor %}
       </div>
-
         {% endif%}
-
       {% endif %}
 
       <div class="row">

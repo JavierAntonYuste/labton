@@ -386,13 +386,27 @@ def create_app(config_name):
         timestamp=time.time()
 
         milestones=get_practice_milestones(db_session, session_a.practice_id)
+        user_id=get_user(db_session, session["email"]).id
 
-        user_id=get_user_id(db_session,session["email"])
-        sidebar_content=get_user_subject_session(db_session, user_id[0])
+        active_milestones=[]
+        for milestone in milestones:
+            dependencies=get_milestone_dependencies(db_session,milestone.id)
+            dependant=False
+            if (dependencies!=[]):
+                for element in dependencies:
+                    if (get_log(db_session, element.dependency_id, user_id)!=[]):
+                        dependant=False
+                    else:
+                        dependant=True
+                        break
+
+            active_milestones.append([milestone,dependant])
+
+        sidebar_content=get_user_subject_session(db_session, user_id)
 
         return render_template('session.html',user=user, privilege=session["privilege"], \
         session_a=session_a, role=session["role"], data_table=data_table, start_datetime=start_datetime,\
-        end_datetime=end_datetime, timestamp=timestamp, milestones=milestones, sidebar_content=sidebar_content)
+        end_datetime=end_datetime, timestamp=timestamp, milestones=active_milestones, sidebar_content=sidebar_content)
 
     @app.route('/milestone/<id>', methods=['GET', 'POST'])
     @decorators.login_required
@@ -406,7 +420,7 @@ def create_app(config_name):
             module_imported=importlib.import_module("app.milestones."+milestone.mode)
             data=module_imported.load()
 
-        except:
+        except: 
             flash('Error! Error in milestone module', 'danger')
             return redirect('/home')
 
