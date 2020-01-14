@@ -29,7 +29,6 @@ login_manager = LoginManager()
 def create_app(config_name):
     """ Main method of the server """
 
-    global app
     # Creation of the app
     app = Flask(__name__, instance_relative_config=True)
     # Forced encription for deploying SSL connection
@@ -40,10 +39,53 @@ def create_app(config_name):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = os.getcwd()+'/app/milestones/files'
 
-
     from app import models
 
+    # Initialisation method
+    def init_system():
+        with app.app_context():
+            # Checking if table role exists, if not, return
+            if not engine.dialect.has_table(engine, 'privilege'):
+              return
+            else:
+                # Adding different core privileges
+                user_privilege = models.Privilege(name='user')
+                professor_privilege = models.Privilege(name='professor')
+                admin_privilege = models.Privilege(name='admin')
+
+                if (models.Privilege.query.filter_by(name='user').first()==None):
+                    db_session.add(user_privilege)
+                if (models.Privilege.query.filter_by(name='professor').first()==None):
+                    db_session.add(professor_privilege)
+                if (models.Privilege.query.filter_by(name='admin').first()==None):
+                    db_session.add(admin_privilege)
+
+            if not engine.dialect.has_table(engine, 'role'):
+              return
+            else:
+                # Adding roles for functions in subjects
+                user_role = models.Role(name='student')
+                professor_role = models.Role(name='professor')
+                admin_role = models.Role(name='admin')
+
+                if (models.Role.query.filter_by(name='student').first()==None):
+                    db_session.add(user_role)
+                if (models.Role.query.filter_by(name='professor').first()==None):
+                    db_session.add(professor_role)
+                if (models.Role.query.filter_by(name='admin').first()==None):
+                    db_session.add(admin_role)
+
+                # Adding first user admin
+                # IMPORTANT: delete after transferring admin privilege for security reasons
+
+                privilege_admin=get_privilege_by_name(db_session, 'admin')
+                if (get_privileges_users(db_session, privilege_admin.id)==None):
+                    create_user(db_session, engine, 'admin', 'admin', 'admin')
+
+
+
     # Initialisation of the app and the system
+    init_system()
     db.init_app(app)
 
     #Close session after each request
@@ -1213,44 +1255,3 @@ def create_app(config_name):
     migrate = Migrate(app,db)
 
     return app
-
-
-def init_system():
-    global app
-    with app.app_context():
-
-        # Checking if table role exists, if not, return
-        if not engine.dialect.has_table(engine, 'privilege'):
-          return
-        else:
-            # Adding different core privileges
-            user_privilege = models.Privilege(name='user')
-            professor_privilege = models.Privilege(name='professor')
-            admin_privilege = models.Privilege(name='admin')
-
-            if (models.Privilege.query.filter_by(name='user').first()==None):
-                db_session.add(user_privilege)
-            if (models.Privilege.query.filter_by(name='professor').first()==None):
-                db_session.add(professor_privilege)
-            if (models.Privilege.query.filter_by(name='admin').first()==None):
-                db_session.add(admin_privilege)
-
-        if not engine.dialect.has_table(engine, 'role'):
-          return
-        else:
-            # Adding roles for functions in subjects
-            user_role = models.Role(name='student')
-            professor_role = models.Role(name='professor')
-            admin_role = models.Role(name='admin')
-
-            if (models.Role.query.filter_by(name='student').first()==None):
-                db_session.add(user_role)
-            if (models.Role.query.filter_by(name='professor').first()==None):
-                db_session.add(professor_role)
-            if (models.Role.query.filter_by(name='admin').first()==None):
-                db_session.add(admin_role)
-
-            # Adding first user admin
-            # IMPORTANT: delete after transferring admin privilege for security reasons
-            if (models.User.query.filter_by(email='admin').first()==None):
-                create_user(db_session, engine, 'admin', 'admin', 'admin')

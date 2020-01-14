@@ -1,7 +1,7 @@
 import os
 from os.path import join, dirname
 
-from app import create_app, init_system, init_db
+from app import create_app, init_db
 
 from dotenv import load_dotenv
 
@@ -15,5 +15,5 @@ app = create_app(config_name)
 
 if __name__ == "__main__":
     init_db()
-    init_system()
+
     app.run(host="0.0.0.0", debug=True)

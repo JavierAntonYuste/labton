@@ -375,6 +375,8 @@ def get_role(db_session, id):
     role=db_session.query(Role).filter(Role.id==id).one()
     return role
 
+
+
 # Privilege CRUD methods _____________________________________________________________
 
 # READ
@@ -384,6 +386,10 @@ def get_privileges(db_session):
 
 def get_privilege(db_session, id):
     privilege=db_session.query(Privilege).filter(Privilege.id==id).one()
+    return privilege
+
+def get_privilege_by_name(db_session, name):
+    privilege=db_session.query(Privilege).filter(Privilege.name==name).one()
     return privilege
 
 # Relational Tables_________________________________________________________________
@@ -523,6 +529,10 @@ def get_user_privileges(db_session, email):
     .filter(User.email==email).first()
 
     return privileges
+
+def get_privileges_users(db_session, privilege_id):
+    output=db_session.query(privileges_users).filter(privileges_users.c.privilege_id==privilege_id).first()
+    return output
 
 # UPDATE
 
