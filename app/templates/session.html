@@ -279,20 +279,21 @@
         {% if milestones%}
         <h6 class="pb-3"> Active milestones </h6>
         {% endif %}
-        <div class="col">
-        {% for element in milestones%}
-
-            <div class="card">
-              <a href="/milestone/{{element.mode}}?milestone_id={{element.id}}" class="btn btn-primary" >
-                  <span class="icon text-white-50">
-                    <i class="pr-2 fas fa-map-marker"></i>
-                    <b class="icon text-white">{{element.name}}</b>
-                  </span>
-              </a>
+        <div class="row">
+          {% for element in milestones%}
+            <div class="col-xl-3 col-sm-6 mb-5">
+              <div class="card">
+                <a href="/milestone/{{element.mode}}?milestone_id={{element.id}}" class="btn btn-primary" >
+                    <span class="icon text-white-50">
+                      <i class="pr-2 fas fa-map-marker"></i>
+                      <b class="icon text-white">{{element.name}}</b>
+                    </span>
+                </a>
+              </div>
             </div>
+          {% endfor %}
+        </div>
 
-        {% endfor %}
-          </div>
         {% endif%}
       {% else %}
         {% if start_datetime < timestamp and timestamp < end_datetime %}
@@ -335,52 +336,6 @@
 
           </div>
       </div>
-      <br><hr><br>
-
-      <div class="row pt-8 justify-content-center">
-        <div class="col-5 justify-content-center">
-        <h3 class="pb-3 text-center text-gray-800"> Milestones Information</h3>
-
-        <div class="table100 ver1 m-b-110">
-          <div class="table100-head">
-            <table>
-              <thead>
-                <tr class="row100 head">
-                  <th class="cell100 column2 text-center">Grouping</th>
-                  <th class="cell100 column2 text-center">Group</th>
-                  <th class="cell100 column2 text-center">Points</th>
-                </tr>
-              </thead>
-            </table>
-          </div>
-
-            <div class="table100-body js-pscroll">
-              <table>
-                <tbody>
-                  {% for element in data_table%}
-
-                  <tr class="row100 body">
-                    <td class="cell100 column2 text-center">{{element[0]}}</td>
-                    <td class="cell100 column2 text-center">{{element[1]}}</td>
-                    <td class="cell100 column2 text-center">{{element[2]}}</td>
-                  </tr>
-
-                  {% endfor %}
-
-
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-
-
-
-
-
       </div>
     </div>
     <!-- /.container-fluid -->

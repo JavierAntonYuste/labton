@@ -901,7 +901,7 @@ def get_points_session(db_session, session_id, user_id):
 
 def get_users_group(db_session, session_id, group_id):
     users=db_session.query(users_session).\
-    filter(users_session.c.session_id).filter(users_session.c.group_id).all()
+    filter(users_session.c.session_id==session_id).filter(users_session.c.group_id==group_id).all()
 
     return users
 

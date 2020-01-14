@@ -360,17 +360,6 @@ def create_app(config_name):
         milestone=get_milestone(db_session, id)
         session["milestone_id"]=id
 
-        # if (args=={}):
-        #     flash('Error! Missing parameters in request', 'danger')
-        #     return redirect('/home')
-        #
-        # for arg in args:
-        #     if (arg=='milestone_id'):
-        #         break
-        # else:
-        #     flash('Error! Missing parameter milestone_id in request', 'danger')
-        #     return redirect('/home')
-
         try:
             module_imported=importlib.import_module("app.milestones."+milestone.mode)
             data=module_imported.load()
@@ -396,15 +385,41 @@ def create_app(config_name):
 
         user_session=get_user_session(db_session, session_id, user_id)
         milestone=get_milestone(db_session, milestone_id)
+        session_s=get_session(db_session, session_id)
 
         module_imported=importlib.import_module("app.milestones."+milestone.mode)
-        answer=module_imported.verify(request.args.to_dict(flat=False))
+        answer=module_imported.verify(request)
 
+        datetime_now=datetime.datetime.now()
+
+        # Do not receive new answers if milestone is closed
+        if (session_s.end_datetime):
+            end_timestamp=time.mktime(session_s.end_datetime.timetuple())
+            if (session_s.end_datetime<datetime_now):
+                flash('Error! Milestone closed', 'danger')
+                return redirect('/milestone/'+milestone_id)
 
         for element in answer:
             if (element=="answer" and answer.get("answer", False)==True):
-                points=round(answer.get("points",0)*(milestone.weight/100))
-                timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                points=answer.get("points",0)*(milestone.weight/100)
+
+                # If time_trial==True calculate the score with time
+                datetime_sql=datetime_now.strftime("%Y-%m-%d %H:%M:%S")
+                timestamp =time.mktime(datetime_now.timetuple())
+                start_timestamp=time.mktime(session_s.start_datetime.timetuple())
+
+                practice=get_practice(db_session, session_s.practice_id)
+                if (practice.time_trial==True):
+                    if (end_timestamp):
+                        time_points=appconfig.max_time_points-\
+                        ((appconfig.max_time_points/end_datetime-start_timestamp)*(timestamp-start_timestamp))
+                    else:
+                        time_points=appconfig.max_time_points-\
+                        appconfig.points_lost_per_second*(timestamp-start_timestamp)
+                        if (time_points<0):
+                            time_points=0
+                else:
+                    time_points=0
 
                 # Calculate bonus for accomplishing in 1st, 2nd or 3rd place
                 position=get_log_count(db_session, milestone_id, session_id)[0]
@@ -418,22 +433,19 @@ def create_app(config_name):
                 else:
                     bonus=0
 
-
                 if (get_log(db_session, milestone_id, user_id)!=[]):
                     max_points=get_log_maxpoints(db_session, milestone_id, user_id)
-                    add_milestone_log(db_session, milestone_id,user_id,points, timestamp)
+                    add_milestone_log(db_session, milestone_id,user_id,points, datetime_sql)
 
-                    if (max_points[0]<points):
-                        diff=points-max_points[0]
-                        #TODO count time for giving more points to the fastest
-                        updated_points=user_session.points+diff+bonus
+                    diff=points-max_points[0]
+                    updated_points=user_session.points+diff+bonus+time_points
 
+                    if (max_points[0]<updated_points):
                         users_group=get_users_group(db_session, session_id, user_session.group_id)
-
                         for user in users_group:
                             update_user_session_points(db_session,user.session_id,user.user_id,updated_points)
                 else:
-                    add_milestone_log(db_session, milestone_id,user_id,points, timestamp)
+                    add_milestone_log(db_session, milestone_id,user_id,points, datetime_sql)
 
                     updated_points=user_session.points+points+bonus
 

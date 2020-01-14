@@ -1,9 +1,9 @@
-def verify(args):
+def verify(request):
+    
     result={
     "answer": True,
-    "points": 700
+    "points": 900
     }
-    # ademas Milestone, user_id, points
     return result
 
 def load():
