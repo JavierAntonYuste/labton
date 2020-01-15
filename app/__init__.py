@@ -411,16 +411,16 @@ def create_app(config_name):
     @app.route('/milestone/<id>', methods=['GET', 'POST'])
     @decorators.login_required
     def milestone(id):
-        user=session['email'].split('@')[0]
-        args=request.args.to_dict(flat=False)
+        user=get_user(db_session,session['email'])
         milestone=get_milestone(db_session, id)
         session["milestone_id"]=id
 
         try:
             module_imported=importlib.import_module("app.milestones."+milestone.mode)
-            data=module_imported.load()
+            data=module_imported.load(milestone)
 
-        except: 
+        except Exception as e:
+            print(e)
             flash('Error! Error in milestone module', 'danger')
             return redirect('/home')
 
@@ -436,15 +436,29 @@ def create_app(config_name):
     def milestoneVerify():
 
         milestone_id=session["milestone_id"]
-        session_id=session["session_id"]
         user_id=get_user_id(db_session,session["email"])
 
-        user_session=get_user_session(db_session, session_id, user_id)
-        milestone=get_milestone(db_session, milestone_id)
-        session_s=get_session(db_session, session_id)
+        if not "session_id" in session:
+            session_s=get_session_from_milestone(db_session, milestone_id, user_id)
+        else:
+            session_id=session["session_id"]
+            session_s=get_session(db_session, session_id)
 
-        module_imported=importlib.import_module("app.milestones."+milestone.mode)
-        answer=module_imported.verify(request)
+
+        user_session=get_user_session(db_session, session_s.id, user_id)
+        milestone=get_milestone(db_session, milestone_id)
+
+
+
+        try:
+            module_imported=importlib.import_module("app.milestones."+milestone.mode)
+            answer=module_imported.verify(request.args.to_dict(flat=False), milestone)
+
+        except Exception as e:
+            print(e)
+            flash('Error! Error in milestone module', 'danger')
+            return redirect('/home')
+
 
         datetime_now=datetime.datetime.now()
 
@@ -454,6 +468,7 @@ def create_app(config_name):
             if (session_s.end_datetime<datetime_now):
                 flash('Error! Milestone closed', 'danger')
                 return redirect('/milestone/'+milestone_id)
+
 
         for element in answer:
             if (element=="answer" and answer.get("answer", False)==True):
@@ -478,7 +493,7 @@ def create_app(config_name):
                     time_points=0
 
                 # Calculate bonus for accomplishing in 1st, 2nd or 3rd place
-                position=get_log_count(db_session, milestone_id, session_id)[0]
+                position=get_log_count(db_session, milestone_id, session_s.id)[0]
 
                 if (position==0):
                     bonus=appconfig.bonus_position.get("1", 0)
@@ -497,7 +512,7 @@ def create_app(config_name):
                     updated_points=user_session.points+diff+bonus+time_points
 
                     if (max_points[0]<updated_points):
-                        users_group=get_users_group(db_session, session_id, user_session.group_id)
+                        users_group=get_users_group(db_session, session_s.id, user_session.group_id)
                         for user in users_group:
                             update_user_session_points(db_session,user.session_id,user.user_id,updated_points)
                 else:
@@ -505,7 +520,7 @@ def create_app(config_name):
 
                     updated_points=user_session.points+points+bonus
 
-                    users_group=get_users_group(db_session, session_id, user_session.group_id)
+                    users_group=get_users_group(db_session, session_s.id, user_session.group_id)
                     for user in users_group:
                         update_user_session_points(db_session,user.session_id,user.user_id,updated_points)
 
@@ -513,9 +528,10 @@ def create_app(config_name):
                 return redirect('/milestone/'+milestone_id)
 
             else:
-                flash('Error! Milestone not correct', 'danger')
-                return redirect('/milestone/'+milestone_id)
-
+                continue
+        else:
+            flash('Error! Milestone not correct', 'danger')
+            return redirect('/milestone/'+milestone_id)
 
     @app.route('/users')
     @decorators.login_required

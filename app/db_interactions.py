@@ -329,6 +329,14 @@ def get_sessions_from_subject(db_session, subject_id):
     filter(Practice.subject_id==subject_id).all()
     return sessions
 
+def get_session_from_milestone(db_session, milestone_id, user_id):
+    session= db_session.query(Session).\
+    join(users_session, Session.id==users_session.c.session_id).\
+    join(Milestone, Session.practice_id==Milestone.practice_id).\
+    filter(users_session.c.user_id==user_id).filter(Milestone.id==milestone_id).first()
+
+    return session
+
 # def get_session_id(db_session, name, mode, practice_id):
 #     return milestone
 
@@ -915,6 +923,7 @@ def get_users_group(db_session, session_id, group_id):
 
     return users
 
+
 def get_top_points(db_session, session_id):
     top=db_session.execute('SELECT DISTINCT group_id, points FROM users_session WHERE session_id = :session_id ORDER BY points DESC',\
     {'session_id': session_id
@@ -951,6 +960,7 @@ def get_groups_points_session(db_session, session_id):
     ORDER BY points DESC',{'session_id': session_id}).fetchall()
 
     return groups
+
 
 # UPDATE
 
