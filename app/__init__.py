@@ -78,10 +78,13 @@ def create_app(config_name):
                 # Adding first user admin
                 # IMPORTANT: delete after transferring admin privilege for security reasons
 
-                privilege_admin=get_privilege_by_name(db_session, 'admin')
-                if (get_privileges_users(db_session, privilege_admin.id)==None):
-                    create_user(db_session, engine, 'admin', 'admin', 'admin')
 
+                try:
+                    privilege_admin=get_privilege_by_name(db_session, 'admin')
+                    if (get_privileges_users(db_session, privilege_admin.id)==None):
+                        create_user(db_session, engine, 'admin', 'admin', 'admin')
+                except:
+                    create_user(db_session, engine, 'admin', 'admin', 'admin')
 
 
     # Initialisation of the app and the system
