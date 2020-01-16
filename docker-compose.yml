@@ -8,7 +8,7 @@ services:
     env_file:
       - '.env'
     ports:
-      - '8000:5000'
+      - '80:5000'
     volumes:
       - './app:/home/App/app'
 
@@ -18,6 +18,6 @@ services:
       - "32000:3306"
     environment:
         MYSQL_ROOT_PASSWORD: root
-        MYSQL_USER: javi-anton
-        MYSQL_PASSWORD: Janyu97
-        MYSQL_DATABASE: tfg_db
+        MYSQL_USER: labton
+        MYSQL_PASSWORD: labton
+        MYSQL_DATABASE: labton
