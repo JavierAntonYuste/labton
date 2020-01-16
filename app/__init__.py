@@ -32,7 +32,7 @@ def create_app(config_name):
     # Creation of the app
     app = Flask(__name__, instance_relative_config=True)
     # Forced encription for deploying SSL connection
-    sslify = SSLify(app, subdomains=True)
+    # sslify = SSLify(app, subdomains=True)
 
     # Chargin config
     app.config.from_pyfile('config.py')
