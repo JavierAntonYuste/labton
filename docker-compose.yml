@@ -14,8 +14,6 @@ services:
 
   db:
     image: mysql:5.7
-    ports:
-      - "32000:3306"
     environment:
         MYSQL_ROOT_PASSWORD: root
         MYSQL_USER: labton

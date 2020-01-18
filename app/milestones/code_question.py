@@ -1,4 +1,4 @@
-import os, csv, codecs
+import os, csv
 
 def verify(data,milestone):
     format='csv' # Change wanted format

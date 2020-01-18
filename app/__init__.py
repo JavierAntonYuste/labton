@@ -497,7 +497,6 @@ def create_app(config_name):
 
                 # Calculate bonus for accomplishing in 1st, 2nd or 3rd place
                 position=get_log_count(db_session, milestone_id, session_s.id)[0]
-                print(position)
 
                 if (position==0):
                     bonus=appconfig.bonus_position.get("1", 0)
