@@ -486,7 +486,7 @@ def create_app(config_name):
                 if (practice.time_trial==True):
                     if (end_timestamp):
                         time_points=appconfig.max_time_points-\
-                        ((appconfig.max_time_points/end_datetime-start_timestamp)*(timestamp-start_timestamp))
+                        ((appconfig.max_time_points/(end_timestamp-start_timestamp))*(timestamp-start_timestamp))
                     else:
                         time_points=appconfig.max_time_points-\
                         appconfig.points_lost_per_second*(timestamp-start_timestamp)
@@ -509,23 +509,24 @@ def create_app(config_name):
 
                 if (get_log(db_session, milestone_id, user_id)!=[]):
                     max_points=get_log_maxpoints(db_session, milestone_id, user_id)
-                    add_milestone_log(db_session, milestone_id,user_id,points, datetime_sql)
+                    new_points=points+bonus+time_points
 
-                    diff=points-max_points[0]
-                    updated_points=user_session.points+diff+bonus+time_points
+                    add_milestone_log(db_session, milestone_id,user_id,new_points, datetime_sql)
 
-                    if (max_points[0]<updated_points):
+                    if (max_points[0]<new_points):
                         users_group=get_users_group(db_session, session_s.id, user_session.group_id)
                         for user in users_group:
-                            update_user_session_points(db_session,user.session_id,user.user_id,updated_points)
+                            update_user_session_points(db_session,user.session_id,user.user_id,new_points)
                 else:
-                    add_milestone_log(db_session, milestone_id,user_id,points, datetime_sql)
 
-                    updated_points=user_session.points+points+bonus
+                    new_points=points+bonus+time_points
+                    add_milestone_log(db_session, milestone_id,user_id,new_points, datetime_sql)
+
+                    updated_points=user_session.points+new_points
 
                     users_group=get_users_group(db_session, session_s.id, user_session.group_id)
                     for user in users_group:
-                        update_user_session_points(db_session,user.session_id,user.user_id,updated_points)
+                        update_user_session_points(db_session,user.session_id,user.user_id,new_points)
 
                 flash('Milestone completed', 'success')
                 return redirect('/milestone/'+milestone_id)
