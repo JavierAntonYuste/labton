@@ -431,8 +431,8 @@ def create_app(config_name):
         sidebar_content=get_user_subject_session(db_session, user_id[0])
 
 
-        return render_template('/milestoneViews/' +milestone.mode+'.html',user=user, privilege=session["privilege"], \
-        milestone_id=id, sidebar_content=sidebar_content,data=data)
+        return render_template('/milestoneViews/' +milestone.mode+'.html',user=user.username, \
+        privilege=session["privilege"], sidebar_content=sidebar_content,data=data)
 
     @app.route('/verifyMilestone/', methods=['GET', 'POST'])
     @decorators.login_required
@@ -497,6 +497,7 @@ def create_app(config_name):
 
                 # Calculate bonus for accomplishing in 1st, 2nd or 3rd place
                 position=get_log_count(db_session, milestone_id, session_s.id)[0]
+                print(position)
 
                 if (position==0):
                     bonus=appconfig.bonus_position.get("1", 0)
@@ -514,9 +515,12 @@ def create_app(config_name):
                     add_milestone_log(db_session, milestone_id,user_id,new_points, datetime_sql)
 
                     if (max_points[0]<new_points):
+
+                        updated_points=user_session.points-max_points+new_points
+
                         users_group=get_users_group(db_session, session_s.id, user_session.group_id)
                         for user in users_group:
-                            update_user_session_points(db_session,user.session_id,user.user_id,new_points)
+                            update_user_session_points(db_session,user.session_id,user.user_id,updated_points)
                 else:
 
                     new_points=points+bonus+time_points
@@ -526,7 +530,7 @@ def create_app(config_name):
 
                     users_group=get_users_group(db_session, session_s.id, user_session.group_id)
                     for user in users_group:
-                        update_user_session_points(db_session,user.session_id,user.user_id,new_points)
+                        update_user_session_points(db_session,user.session_id,user.user_id,updated_points)
 
                 flash('Milestone completed', 'success')
                 return redirect('/milestone/'+milestone_id)
