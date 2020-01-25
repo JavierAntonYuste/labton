@@ -7,7 +7,8 @@ It begun as an improvement of the software produce to support an Innovation Proj
 ## Basic structure
 In order to provide support the structure of a laboratory, this following structure has been created.
 
-![Relations](image/relations.png?raw=true "Relations")
+![relations](https://user-images.githubusercontent.com/36293800/73128160-714cf000-3fcb-11ea-994f-9d017ac4bdb8.png)
+
 
 There are three types of users:
 
@@ -44,22 +45,22 @@ It is compose by 2 Docker ([Docker website](https://www.docker.com/)) containers
 For recreating the enviroment of this repository, there are some easy steps that should be taken.
 
  1. Clone the repository in local and enter the folder.
- 
+
 ```
 git clone git@github.com:greenlsi/labton.git
 cd labton/
  ```
- 
- 
+
+
  2. Build the containers and then stop them running.
 ```
 docker-compose up --build
 ```
 Then type  Ctrl + C.
 
-3. Run the containers 
+3. Run the containers
 ```
-docker-compose up 
+docker-compose up
 ```
 4. Type the direction of locahost ([localhost](localhost)) in your web browser.
 
@@ -77,7 +78,7 @@ docker-compose up
 ###  Troubleshooting
 If a problem rises with the platform meanwhile it is being used, the problem can be fixed and run again the Docker containers with:
 ```
-docker-compose up 
+docker-compose up
 ```
 ## Platform configurations
 
@@ -87,7 +88,7 @@ In order to modify these settings, go to app/appconfig.py.
 ## Database
 The Docker container of the database is, as it is mentioned before, implemented with MySQL. The defined tables schema and their definition can be found in this following figure.
 
-![Database](image/database.png?raw=true "Database")
+![database](https://user-images.githubusercontent.com/36293800/73128154-54182180-3fcb-11ea-9a19-27061db7dc10.png)
 
 ### How to enter database Docker container
 If a query or a fix are necessary, for entering the Docker container and in it, the mysql service, you should introduce the following commands.
@@ -141,17 +142,17 @@ It needs to have a form defined in the following way:
 ```
 
  **A template has been included** as app/templates/milestoneViews/template.html.
- 
+
 
 *Note*: Boostrap source is already added in templates/base.html.
-	 
+
 ### Support files
 
 For giving support to the milestones, a mechanism for uploading data files has been implemented. Through the platform, specifically in [/practice](/practice) page, a file can be added to the server.
 
 This file can be in any format, recommended in CSV or JSON since they are specifically designed for data transfer.
 
-The instructions for accessing these files are deeply  detailed in /app/milestones/templete.py. 
+The instructions for accessing these files are deeply  detailed in /app/milestones/templete.py.
 ## System requirements
 
 In order to make LabTon run, you will only need Docker, since it is the one responsible of running the services in the containers.
@@ -159,4 +160,3 @@ In order to make LabTon run, you will only need Docker, since it is the one resp
 For installing it, [visit this webpage.](https://docs.docker.com/install/)
 
 As this platform is the result of joining two docker images, we should run them using docker-compose as it is stated before. For adding docker-compose, [visit this webpage](https://docs.docker.com/compose/install/).
-
