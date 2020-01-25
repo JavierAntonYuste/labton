@@ -35,12 +35,30 @@ def verify(data,milestone):
 
 def load(milestone):
 
+    '''
+    Method used for load content of the milestone. It is executed before the milestone template is rendered.
+    Parameters:
+        Input:
+            - Milestone: Object milestone where some interesting parameters like id or mode can be found.
+            Check app/Models.py for further information.
+
+        Output: IMPORTANT: It is mandatory to send what is required there
+            - data: Dictionary that contains all the parameters that can be changed in the template.
+
+        Additional data:
+            - The support file that is uploaded through the platform can be recovered with:
+                file=os.getcwd()+"/app/milestones/files/"+milestone.mode+"_"+str(milestone.id)+"."+format
+                    with format equals to the format of the wanted file
+
+    '''
+
+    format='csv' # Change wanted format
+
+    file=os.getcwd()+"/app/milestones/files/"+milestone.mode+"_"+str(milestone.id)+"."+format
+
     data = {
-    'question': '¿Que tal?',
-    'answer': 'Bien'
+    'question': 'How much is 1+1?',
+    'description': 'Provide an Integer result.'
     }
 
     return data
-
-# def check():
-#     return True

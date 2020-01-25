@@ -1,5 +1,7 @@
+<!-- If you want to use the layout of the whole platform include this line -->
 {% extends 'base.html' %}
 
+<!-- Here the body starts -->
 {% block body %}
 <div id="content-wrapper" class="d-flex flex-column">
 <br>
@@ -31,6 +33,15 @@
           <h6 class="w-wrap">Template description</h6>
         </div>
       </div>
+
+
+
+      <!-- IMPORTANT: This form is required for submitting the answers,
+    inputs can be variable. -->
+      <form  action="/verifyMilestone">
+        <input type="Text"></input>
+        <button type="submit" class="btn btn-primary float-right">Send answer</button>
+      </form>
 
     </div>
     <!-- /.container-fluid -->
