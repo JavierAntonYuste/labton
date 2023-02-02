@@ -15,7 +15,7 @@ python-editor==1.0.3
 six==1.11.0
 
 SQLAlchemy==1.2.12
-Werkzeug==0.15.3
+Werkzeug==0.15.5
 Flask-Admin
 Flask-Security>=1.7.5
 enum34==1.1.6
